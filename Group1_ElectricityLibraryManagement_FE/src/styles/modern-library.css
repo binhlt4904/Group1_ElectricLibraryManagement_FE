@@ -1,0 +1,72 @@
+/* === MODERN LIBRARY DESIGN SYSTEM === */
+
+/* 1. TYPOGRAPHY & GLOBAL STYLES */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400;500&display=swap');
+
+:root {
+  /* Color Scheme */
+  --primary-blue: #007BFF;
+  --accent-green: #28A745;
+  --neutral-white: #FFFFFF;
+  --neutral-light-gray: #F8F9FA;
+  --neutral-medium-gray: #6C757D;
+  --text-dark: #212529;
+  --border-color: #dee2e6;
+
+  /* Typography */
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Roboto', sans-serif;
+
+  /* Effects */
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --border-radius: 8px;
+  --transition-smooth: all 0.3s ease-in-out;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-dark);
+  background-color: var(--neutral-white);
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2.25rem; }
+h3 { font-size: 1.75rem; }
+
+a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+a:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+section {
+  padding: 4rem 0;
+}
+
+.section-bg-alt {
+    background-color: var(--neutral-light-gray);
+}

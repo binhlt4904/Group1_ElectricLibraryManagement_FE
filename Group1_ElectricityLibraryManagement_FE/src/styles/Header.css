@@ -1,0 +1,213 @@
+/* === MODERN LIBRARY HEADER === */
+
+.header-sticky {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: var(--shadow-subtle);
+}
+
+/* 2. TOP BAR */
+.top-bar {
+    background-color: var(--neutral-white);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.top-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-decoration: none;
+}
+
+.logo:hover {
+    opacity: 1;
+    text-decoration: none;
+}
+
+.logo-icon {
+    color: var(--primary-blue);
+    margin-right: 0.5rem;
+    font-size: 2rem;
+}
+
+.search-bar-desktop {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .search-bar-desktop {
+        display: flex;
+        width: 40%;
+    }
+}
+
+.search-bar-desktop input, .search-bar-mobile input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    transition: var(--transition-smooth);
+}
+
+.search-bar-desktop input:focus, .search-bar-mobile input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.search-bar-desktop button, .search-bar-mobile button {
+    background-color: var(--primary-blue);
+    color: var(--neutral-white);
+    border: none;
+    padding: 0 1rem;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    transition: var(--transition-smooth);
+}
+
+.search-bar-desktop button:hover, .search-bar-mobile button:hover {
+    background-color: #0056b3;
+}
+
+.quick-links {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .quick-links {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        font-weight: 500;
+    }
+}
+
+
+.mobile-menu-toggle {
+    display: block;
+    font-size: 1.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+@media (min-width: 992px) {
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+
+/* 3. MAIN NAVIGATION */
+.main-nav {
+    background-color: var(--neutral-white);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+.main-nav.open {
+    max-height: 100vh; /* Arbitrary large value */
+}
+
+@media (min-width: 992px) {
+    .main-nav {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+.main-nav ul.container {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 992px) {
+    .main-nav ul.container {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 2.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+.main-nav a {
+    display: block;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 992px) {
+    .main-nav a {
+        padding: 0.5rem 0;
+        border-bottom: 2px solid transparent;
+    }
+     .main-nav a:hover {
+        color: var(--primary-blue);
+        border-bottom-color: var(--primary-blue);
+    }
+}
+
+.search-bar-mobile {
+    padding: 1rem 1.5rem;
+}
+
+@media (min-width: 992px) {
+    .search-bar-mobile {
+        display: none;
+    }
+}
+
+/* Dropdown styles */
+.has-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    list-style: none;
+    padding: 0;
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .has-dropdown:hover .dropdown-menu {
+        display: block;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: var(--neutral-white);
+        box-shadow: var(--shadow-subtle);
+        min-width: 220px;
+        padding: 0.5rem 0;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+    .dropdown-menu li a {
+        padding: 0.75rem 1.5rem;
+        border: none;
+    }
+}

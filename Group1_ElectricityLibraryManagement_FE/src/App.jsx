@@ -1,18 +1,11 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-function App() {
+import './styles/modern-library.css';
+import ModernHomePage from './components/HomePage';
 
+
+function App() {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-        </Routes>
-      </BrowserRouter>
-    </>
-  )
+    <ModernHomePage />
+  );
 }
 
 export default App

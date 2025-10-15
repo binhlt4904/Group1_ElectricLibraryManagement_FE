@@ -1,0 +1,122 @@
+/* === MODERN LIBRARY FOOTER === */
+
+.footer {
+    background-color: var(--text-dark);
+    color: var(--neutral-light-gray);
+    padding: 4rem 0 2rem;
+    position: relative;
+}
+
+.footer .logo {
+    color: var(--neutral-white);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 2rem;
+    }
+}
+
+
+.footer-about {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--neutral-medium-gray);
+}
+
+.footer-heading {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--neutral-white);
+    margin-bottom: 1.5rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a, .footer-col p a {
+    color: var(--neutral-medium-gray);
+    text-decoration: none;
+}
+
+.footer-links a:hover, .footer-col p a:hover {
+    color: var(--neutral-white);
+    text-decoration: underline;
+}
+
+.footer-col p {
+    color: var(--neutral-medium-gray);
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-icons a {
+    color: var(--neutral-medium-gray);
+    font-size: 1.5rem;
+    transition: var(--transition-smooth);
+}
+
+.social-icons a:hover {
+    transform: translateY(-3px);
+    color: var(--neutral-white);
+}
+
+.footer-bottom {
+    border-top: 1px solid #495057;
+    padding-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--neutral-medium-gray);
+}
+
+.back-to-top {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    background-color: var(--primary-blue);
+    color: var(--neutral-white);
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-subtle);
+    transition: var(--transition-smooth);
+}
+
+.back-to-top:hover {
+    background-color: #0056b3;
+    transform: translateY(-5px);
+}
