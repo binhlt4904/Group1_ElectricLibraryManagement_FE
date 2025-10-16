@@ -20,7 +20,7 @@ const ModernFooter = () => {
                     <div className="footer-col">
                          <a href="#" className="logo">
                             <FiBookOpen className="logo-icon" />
-                            <span className="logo-text">Public Library</span>
+                            <span className="logo-text">Electricity Library</span>
                         </a>
                         <p className="footer-about">
                             Fostering a vibrant community of readers, learners, and creators. Explore a world of knowledge with us.
@@ -45,7 +45,7 @@ const ModernFooter = () => {
                         <p>123 Library Lane<br />Knowledge City, ST 12345</p>
                         <p>
                             <a href="tel:123-456-7890">(123) 456-7890</a><br/>
-                            <a href="mailto:info@publiclibrary.com">info@publiclibrary.com</a>
+                            <a href="mailto:info@electriclibrary.com">info@electriclibrary.com</a>
                         </p>
                     </div>
 
@@ -62,7 +62,7 @@ const ModernFooter = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; {new Date().getFullYear()} Public Library. All Rights Reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Electricity Library. All Rights Reserved.</p>
                 </div>
             </div>
             <button onClick={scrollToTop} className="back-to-top" aria-label="Back to top">

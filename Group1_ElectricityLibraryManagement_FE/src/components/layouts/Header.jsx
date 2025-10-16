@@ -21,7 +21,7 @@ const ModernHeader = () => {
                 <div className="container top-bar-content">
                     <a href="#" className="logo">
                         <FiBookOpen className="logo-icon" />
-                        <span className="logo-text">Public Library</span>
+                        <span className="logo-text">Electricity Library</span>
                     </a>
 
                     <div className="search-bar-desktop">

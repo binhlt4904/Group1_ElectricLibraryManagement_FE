@@ -17,7 +17,7 @@ const featuredCards = [
         description: 'Engaging story times, creative workshops, and fun activities for our youngest readers.'
     },
     {
-        image: 'https://images.unsplash.com/photo-1588666305168-5a8a1f8b36c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80',
+        image: 'https://img.freepik.com/premium-photo/modern-digital-book-learning-digital-futuristic-style-ai-generated-image_905368-467.jpg',
         title: 'Online Resources',
         description: 'Access e-books, audiobooks, research databases, and online courses with your library card.'
     }
@@ -71,7 +71,7 @@ const ModernHomePage = () => {
                         </div>
                         <div className="map-placeholder">
                            {/* In a real app, this would be an interactive map component */}
-                           <img src="https://i.imgur.com/SdY9s6k.png" alt="Map of library branches" />
+                           <img src="https://thumbs.dreamstime.com/b/enchanted-magic-book-ai-generated-image-ancient-emits-magical-glowing-aura-dark-library-setting-379754199.jpg" alt="Map of library branches" />
                         </div>
                     </div>
                 </section>
