@@ -1,0 +1,476 @@
+/* BorrowalsManagementPage Component Styles */
+
+.borrowalsManagementPage {
+  padding: 0;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+/* Statistics Cards */
+.statCard {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.statContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pure-white);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.statInfo {
+  flex: 1;
+}
+
+.statValue {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.75rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--weight-medium);
+}
+
+/* Filters */
+.searchInput {
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+  border-right: none;
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-blue);
+  box-shadow: none;
+}
+
+.filterSelect {
+  border-radius: var(--border-radius-sm);
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.filterSelect:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.75rem;
+  font-weight: var(--weight-medium);
+}
+
+/* Table */
+.borrowalsCard {
+  overflow: hidden;
+}
+
+.borrowalsCardBody {
+  padding: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.borrowalsTable {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.borrowalsTable th {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.borrowalRow {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.borrowalRow:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.borrowalsTable td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.idCell {
+  min-width: 140px;
+}
+
+.borrowalId {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--primary-blue);
+}
+
+.readerCell {
+  min-width: 200px;
+}
+
+.readerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.readerIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-blue);
+  color: var(--pure-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.readerDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.readerName {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.membershipBadge {
+  font-size: 0.7rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.bookCell {
+  min-width: 250px;
+}
+
+.bookInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bookCover {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.bookDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.bookTitle {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookAuthor {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.datesCell {
+  min-width: 180px;
+}
+
+.datesInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dateItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.dateLabel {
+  color: var(--medium-gray);
+  font-weight: var(--weight-medium);
+  margin-right: 0.5rem;
+}
+
+.overdue {
+  color: var(--alert-red);
+  font-weight: var(--weight-bold);
+}
+
+.overdueInfo {
+  font-size: 0.7rem;
+  color: var(--alert-red);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+.statusCell {
+  min-width: 120px;
+}
+
+.statusBadge {
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 0.25rem;
+}
+
+.renewalInfo {
+  font-size: 0.7rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fineCell {
+  min-width: 100px;
+}
+
+.fineAmount {
+  font-weight: var(--weight-bold);
+  color: var(--alert-red);
+  font-size: 1rem;
+}
+
+.noFine {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+}
+
+.actionsCell {
+  min-width: 140px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.actionButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.returnInfo {
+  background-color: var(--light-gray);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1199.98px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .resultsInfo {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .statContent {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .statIcon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .statValue {
+    font-size: 1.5rem;
+  }
+  
+  .borrowalsTable {
+    font-size: 0.8rem;
+  }
+  
+  .borrowalsTable th,
+  .borrowalsTable td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .readerInfo {
+    gap: 0.5rem;
+  }
+  
+  .readerIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .bookInfo {
+    gap: 0.5rem;
+  }
+  
+  .bookCover {
+    width: 32px;
+    height: 48px;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .actionButton {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .idCell {
+    min-width: 120px;
+  }
+  
+  .readerCell {
+    min-width: 150px;
+  }
+  
+  .bookCell {
+    min-width: 200px;
+  }
+  
+  .datesCell {
+    min-width: 150px;
+  }
+  
+  .statusCell {
+    min-width: 100px;
+  }
+  
+  .fineCell {
+    min-width: 80px;
+  }
+  
+  .actionsCell {
+    min-width: 100px;
+  }
+}

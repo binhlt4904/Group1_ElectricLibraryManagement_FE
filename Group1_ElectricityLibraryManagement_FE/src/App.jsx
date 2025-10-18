@@ -5,11 +5,14 @@ import BookListPage from './pages/public/BookListPage';
 import BookDetailPage from './pages/public/BookDetailPage';
 import LoginPage from './pages/public/LoginPage';
 import RegisterPage from './pages/public/RegisterPage';
+import EventsListPage from './pages/public/EventsListPage';
+import EventDetailPage from './pages/public/EventDetailPage';
 import ProfilePage from './pages/user/ProfilePage';
 import BorrowHistoryPage from './pages/user/BorrowHistoryPage';
 import LibraryCardPage from './pages/user/LibraryCardPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import WalletPage from './pages/user/WalletPage';
+import BookReaderPage from './pages/user/BookReaderPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
 
@@ -21,6 +24,11 @@ import AuthorsManagementPage from './pages/admin/AuthorsManagementPage';
 import ReadersManagementPage from './pages/admin/ReadersManagementPage';
 import ReportsPage from './pages/admin/ReportsPage';
 import SystemUsersPage from './pages/admin/SystemUsersPage';
+import PublishersManagementPage from './pages/admin/PublishersManagementPage';
+import BorrowalsManagementPage from './pages/admin/BorrowalsManagementPage';
+import EventManagementPage from './pages/admin/EventManagementPage';
+import ReportManagementPage from './pages/admin/ReportManagementPage';
+import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 
 const AppContent = () => {
   const location = useLocation();
@@ -35,9 +43,12 @@ const AppContent = () => {
       {!isAdminPage && <Header onNavigate={handleNavigate} myListCount={0} />}
       <main className="main-content">
         <Routes>
+          {/* Public Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/books" element={<BookListPage />} />
           <Route path="/books/:id" element={<BookDetailPage />} />
+          <Route path="/events" element={<EventsListPage />} />
+          <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
@@ -47,14 +58,20 @@ const AppContent = () => {
           <Route path="/library-card" element={<LibraryCardPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/book-reader/:bookId/:chapterId" element={<BookReaderPage />} />
 
           {/* Admin Pages */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="books" element={<BooksManagementPage />} />
             <Route path="authors" element={<AuthorsManagementPage />} />
+            <Route path="publishers" element={<PublishersManagementPage />} />
             <Route path="readers" element={<ReadersManagementPage />} />
+            <Route path="borrowals" element={<BorrowalsManagementPage />} />
+            <Route path="events" element={<EventManagementPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="user-reports" element={<ReportManagementPage />} />
+            <Route path="documents" element={<DocumentManagementPage />} />
             <Route path="system-users" element={<SystemUsersPage />} />
             {/* Default redirect to dashboard */}
             <Route index element={<DashboardPage />} />

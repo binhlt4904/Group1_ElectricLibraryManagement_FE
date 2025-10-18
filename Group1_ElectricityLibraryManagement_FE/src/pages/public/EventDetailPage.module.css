@@ -1,0 +1,469 @@
+/* EventDetailPage Component Styles */
+
+.eventDetailPage {
+  padding: 2rem 0;
+  background-color: var(--light-gray);
+  min-height: 100vh;
+}
+
+.backButton {
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--weight-medium);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  transform: translateY(-1px);
+}
+
+/* Main Card */
+.mainCard {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.imageContainer {
+  position: relative;
+  overflow: hidden;
+}
+
+.eventImage {
+  height: 400px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+}
+
+.categoryBadge {
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-pill);
+}
+
+.imageActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.favoriteButton,
+.shareButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.favoriteButton:hover,
+.shareButton:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.mainCardBody {
+  padding: 2rem;
+}
+
+/* Event Header */
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.eventTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin: 0;
+  line-height: 1.2;
+  flex: 1;
+}
+
+.availabilityBadge {
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+}
+
+/* Event Meta */
+.eventMeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-sm);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: var(--dark-charcoal);
+  font-weight: var(--weight-medium);
+}
+
+.metaIcon {
+  color: var(--primary-blue);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Registration Progress */
+.registrationProgress {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: var(--pure-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.progressLabel {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  font-size: 1rem;
+}
+
+.progressText {
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+}
+
+.progressBar {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.registrationAlert {
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Content Sections */
+.description {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-blue);
+}
+
+.descriptionText {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--dark-charcoal);
+}
+
+.descriptionText p {
+  margin-bottom: 1rem;
+}
+
+/* Tags */
+.tagsSection {
+  margin-bottom: 2rem;
+}
+
+.tagsTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.2rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 1rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  font-size: 0.8rem;
+  font-weight: var(--weight-medium);
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--border-radius-pill);
+  border: 1px solid var(--border-color);
+}
+
+/* Agenda */
+.agendaSection {
+  margin-bottom: 2rem;
+}
+
+.agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.agendaItem {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--primary-blue);
+}
+
+.agendaTime {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  font-size: 0.9rem;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.agendaActivity {
+  color: var(--dark-charcoal);
+  font-size: 1rem;
+  flex: 1;
+}
+
+/* Sidebar */
+.sidebarCard {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 1.5rem;
+}
+
+.sidebarTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.25rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 1.5rem;
+}
+
+.eventInfo {
+  margin-bottom: 1.5rem;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.infoItem:last-child {
+  border-bottom: none;
+}
+
+.registrationActions {
+  margin-bottom: 1rem;
+}
+
+.registrationButton {
+  width: 100%;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--weight-bold);
+  padding: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.registrationButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.fullAlert {
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Organizer Info */
+.organizerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.organizerHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.organizerIcon {
+  color: var(--primary-blue);
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.organizerName {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  font-size: 1rem;
+}
+
+.organizerTitle {
+  color: var(--medium-gray);
+  font-size: 0.85rem;
+}
+
+.organizerContact {
+  font-size: 0.85rem;
+  color: var(--medium-gray);
+  line-height: 1.5;
+}
+
+/* Requirements */
+.requirementsList {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--dark-charcoal);
+}
+
+.requirementsList li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 1199.98px) {
+  .eventHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .eventMeta {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .eventDetailPage {
+    padding: 1rem 0;
+  }
+  
+  .eventTitle {
+    font-size: 2rem;
+  }
+  
+  .eventImage {
+    height: 250px;
+  }
+  
+  .imageOverlay {
+    padding: 1rem;
+  }
+  
+  .mainCardBody {
+    padding: 1.5rem;
+  }
+  
+  .eventMeta {
+    padding: 1rem;
+  }
+  
+  .metaItem {
+    font-size: 0.9rem;
+  }
+  
+  .registrationProgress {
+    padding: 1rem;
+  }
+  
+  .agendaItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .agendaTime {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .eventTitle {
+    font-size: 1.75rem;
+  }
+  
+  .eventImage {
+    height: 200px;
+  }
+  
+  .mainCardBody {
+    padding: 1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+  
+  .categoryBadge {
+    font-size: 0.7rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .favoriteButton,
+  .shareButton {
+    width: 36px;
+    height: 36px;
+  }
+}

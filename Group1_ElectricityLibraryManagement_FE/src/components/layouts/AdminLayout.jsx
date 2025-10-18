@@ -3,9 +3,10 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Container, Row, Col, Nav, Navbar, Offcanvas, Button, Dropdown, Badge 
 } from 'react-bootstrap';
-import { 
-  List, X, House, BookFill, PersonFill, Building, People, 
-  ClipboardData, BarChart, Gear, BoxArrowRight, Bell, PersonCircle 
+import {
+  List, X, House, BookFill, PersonFill, Building, People,
+  ClipboardData, CalendarEvent, BarChart, ExclamationTriangle, FileEarmark,
+  Gear, BoxArrowRight, Bell, PersonCircle
 } from 'react-bootstrap-icons';
 import styles from './AdminLayout.module.css';
 
@@ -59,9 +60,27 @@ const AdminLayout = () => {
       badge: '45'
     },
     {
+      path: '/admin/events',
+      icon: CalendarEvent,
+      label: 'Events Management',
+      badge: null
+    },
+    {
       path: '/admin/reports',
       icon: BarChart,
       label: 'Reports',
+      badge: null
+    },
+    {
+      path: '/admin/user-reports',
+      icon: ExclamationTriangle,
+      label: 'User Reports',
+      badge: '3'
+    },
+    {
+      path: '/admin/documents',
+      icon: FileEarmark,
+      label: 'Documents',
       badge: null
     },
     {

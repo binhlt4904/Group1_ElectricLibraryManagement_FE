@@ -1,0 +1,456 @@
+/* BookReaderPage Component Styles */
+
+.bookReaderPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Theme Styles */
+.lightTheme {
+  background-color: var(--pure-white);
+  color: var(--dark-charcoal);
+}
+
+.darkTheme {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.darkTheme .readerHeader,
+.darkTheme .readerFooter {
+  background-color: #2d2d2d;
+  border-color: #404040;
+}
+
+.darkTheme .contentCard {
+  background-color: #2d2d2d;
+  border-color: #404040;
+}
+
+.darkTheme .progressContainer {
+  background-color: #2d2d2d;
+  border-color: #404040;
+}
+
+/* Header */
+.readerHeader {
+  background-color: var(--pure-white);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.bookInfo {
+  text-align: center;
+}
+
+.bookTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.bookAuthor {
+  color: var(--medium-gray);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.actionButton {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Progress */
+.progressContainer {
+  background-color: var(--pure-white);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 0;
+}
+
+.readingProgress {
+  height: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.progressText {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  font-weight: var(--weight-medium);
+}
+
+/* Content */
+.readerContent {
+  flex: 1;
+  padding: 2rem 0;
+  background-color: var(--light-gray);
+}
+
+.contentCard {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 2rem;
+}
+
+.contentBody {
+  padding: 3rem;
+}
+
+.chapterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.chapterInfo {
+  flex: 1;
+}
+
+.chapterNumber {
+  font-size: 0.9rem;
+  color: var(--primary-blue);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chapterTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2rem;
+  color: var(--dark-charcoal);
+  margin: 0.5rem 0 0 0;
+  line-height: 1.3;
+}
+
+.bookmarkButton {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* Chapter Content */
+.chapterContent {
+  line-height: 1.8;
+  font-family: var(--font-body);
+  color: var(--dark-charcoal);
+}
+
+.contentHeading1 {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2rem;
+  color: var(--dark-charcoal);
+  margin: 2rem 0 1rem 0;
+  line-height: 1.3;
+}
+
+.contentHeading2 {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.5rem;
+  color: var(--dark-charcoal);
+  margin: 1.5rem 0 1rem 0;
+  line-height: 1.3;
+}
+
+.contentHeading3 {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.25rem;
+  color: var(--dark-charcoal);
+  margin: 1.25rem 0 0.75rem 0;
+  line-height: 1.3;
+}
+
+.contentParagraph {
+  margin-bottom: 1.5rem;
+  text-align: justify;
+}
+
+/* Footer */
+.readerFooter {
+  background-color: var(--pure-white);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navButton {
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--weight-medium);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.navButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.chapterIndicator {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  font-size: 1rem;
+}
+
+/* Table of Contents */
+.tocOffcanvas {
+  width: 350px;
+}
+
+.tocItem {
+  padding: 1rem;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tocItem:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.tocItem.active {
+  background-color: var(--primary-blue);
+  color: var(--pure-white);
+}
+
+.tocChapterNumber {
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+  opacity: 0.8;
+}
+
+.tocChapterTitle {
+  font-weight: var(--weight-medium);
+  line-height: 1.3;
+}
+
+.tocBookmark {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: var(--primary-blue);
+}
+
+.tocItem.active .tocBookmark {
+  color: var(--pure-white);
+}
+
+/* Settings */
+.settingsOffcanvas {
+  width: 300px;
+}
+
+.settingsSection {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settingsSection:last-child {
+  border-bottom: none;
+}
+
+.settingsTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.fontControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.fontSizeDisplay {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  min-width: 40px;
+  text-align: center;
+}
+
+.themeControls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.themeButton {
+  flex: 1;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--weight-medium);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bookmarksList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bookmarkItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookmarkItem:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.bookmarkIcon {
+  color: var(--primary-blue);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.bookmarkChapter {
+  font-size: 0.8rem;
+  color: var(--primary-blue);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bookmarkTitle {
+  font-size: 0.9rem;
+  color: var(--dark-charcoal);
+  font-weight: var(--weight-medium);
+  line-height: 1.3;
+}
+
+.noBookmarks {
+  text-align: center;
+  color: var(--medium-gray);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contentBody {
+    padding: 2rem 1.5rem;
+  }
+  
+  .chapterTitle {
+    font-size: 1.5rem;
+  }
+  
+  .contentHeading1 {
+    font-size: 1.5rem;
+  }
+  
+  .contentHeading2 {
+    font-size: 1.25rem;
+  }
+  
+  .contentHeading3 {
+    font-size: 1.1rem;
+  }
+  
+  .bookTitle {
+    font-size: 1rem;
+  }
+  
+  .bookAuthor {
+    font-size: 0.8rem;
+  }
+  
+  .tocOffcanvas {
+    width: 300px;
+  }
+  
+  .settingsOffcanvas {
+    width: 280px;
+  }
+}
+
+@media (max-width: 576px) {
+  .contentBody {
+    padding: 1.5rem 1rem;
+  }
+  
+  .chapterHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .chapterTitle {
+    font-size: 1.25rem;
+  }
+  
+  .navButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .chapterIndicator {
+    font-size: 0.9rem;
+  }
+  
+  .readerContent {
+    padding: 1rem 0;
+  }
+}

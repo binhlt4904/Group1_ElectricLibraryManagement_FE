@@ -101,16 +101,47 @@ Build the UI for the admin area. The style can be more utilitarian and function-
 
 ---
 
-### Phase 4: 🚀 Final UI Polish
+### Phase 4: 🏗️ Build Missing Screens & Components
 
-Review and finalize the entire user interface.
+**Objective:** To build all remaining UI components from scratch to achieve feature completeness according to the ERD.
 
--   [ ] **Consistency Check**:
-    -   [ ] Review the entire site to ensure colors, fonts, spacing, and border-radius are applied consistently.
--   [ ] **Interaction States**:
-    -   [ ] Ensure all buttons, links, and inputs have clear `hover`, `focus`, `active`, and `disabled` states.
--   [ ] **Responsiveness Review**:
-    -   [ ] Open DevTools and re-check every page on common screen sizes (e.g., 375px, 768px, 1024px, 1440px).
--   [ ] **Accessibility (A11y) Polish**:
-    -   [ ] Add `aria-label` to icon-only buttons.
-    -   [ ] Ensure form inputs are associated with their `label`s.
+-   [ ] **Create Event-Related Pages (Public):**
+    -   [ ] **`EventsListPage.jsx`**: Build the page to display a list/calendar of upcoming events. Include UI for search and filter options.
+    -   [ ] **`EventDetailPage.jsx`**: Build the page to show detailed information for a single event.
+
+-   [ ] **Create Core User Experience Pages (User):**
+    -   [ ] **`BookReaderPage.jsx`**: Build the book reading interface. It must display the chapter title, the main content, and have "Previous/Next Chapter" navigation buttons.
+
+-   [ ] **Create Admin Layout & Management Pages (Admin):**
+    -   [ ] **`AdminLayout.jsx`**: Build the main layout wrapper for the admin area, including a persistent `Sidebar.jsx` component.
+    -   [ ] **`AdminPublishersPage.jsx`**: Build the CRUD interface for managing publishers.
+    -   [ ] **`AdminBorrowalsPage.jsx`**: Build the interface for librarians to manage and view borrowing records.
+    -   [ ] **`AdminEventManagementPage.jsx`**: Build the CRUD interface for managing events.
+    -   [ ] **`AdminReportManagementPage.jsx`**: Build the interface to view and manage user-submitted reports.
+    -   [ ] **`AdminDocumentManagementPage.jsx`**: Build the interface for managing internal documents.
+
+---
+
+### Phase 5: 🔍 Refinement & Final Polish
+
+**Objective:** To audit the entire application, integrate detailed data attributes from the ERD into the UI, and polish the user experience to a professional standard.
+
+-   [ ] **Attribute-Level Integration Audit:**
+    -   [ ] **`BookDetailPage.jsx` Review:**
+        -   [ ] Ensure `Book.imported_date` and `Book.Categoryname` are displayed.
+        -   [ ] Ensure 'Contents' tab lists all `BookContent.chapter` and `BookContent.title` as functional links.
+        -   [ ] Ensure 'Reviews' tab displays `Review.reviewer_id`'s name and `Review.note`.
+        -   [ ] Ensure "Report an Issue" functionality is present.
+    -   [ ] **`ProfilePage.jsx` Review:**
+        -   [ ] Ensure `Reader.reader_code` and `Reader.major` are displayed.
+        -   [ ] Implement UI changes based on `Account.role` (e.g., show "Admin Panel" link).
+    -   [ ] **`LibraryCardPage.jsx` Review:**
+        -   [ ] Ensure `card_number`, `issue_date`, `expiry_date`, and `status` are all visually represented.
+    -   [ ] **Admin Forms Review:**
+        -   [ ] Audit all Create/Edit forms to ensure they include input fields for all necessary attributes in their respective ERD tables.
+
+-   [ ] **Global Polish & Consistency:**
+    -   [ ] **Consistency Check**: Review the entire application to ensure consistent use of colors, fonts, spacing, and component styles.
+    -   [ ] **Interaction States**: Ensure all interactive elements (buttons, links, inputs) have clear `hover`, `focus`, `active`, and `disabled` states.
+    -   [ ] **Responsiveness Review**: Re-check every single page on common screen sizes (e.g., 375px, 768px, 1024px, 1440px) to fix any layout issues.
+    -   [ ] **Accessibility (A11y) Polish**: Finalize accessibility features like `aria-label`s for icon buttons and proper `label`-`input` associations in forms.
