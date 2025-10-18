@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Badge } from 'react-bootstrap';
-import { PersonFill, EnvelopeFill, TelephoneFill, GeoAltFill, CalendarFill, CameraFill } from 'react-bootstrap-icons';
+import { PersonFill, EnvelopeFill, TelephoneFill, GeoAltFill, CalendarFill, CameraFill, ShieldFillCheck } from 'react-bootstrap-icons';
+import { Link } from 'react-router-dom';
 import styles from './ProfilePage.module.css';
 
 const ProfilePage = () => {
@@ -14,7 +15,10 @@ const ProfilePage = () => {
     address: '123 Main Street, City, State 12345',
     dateOfBirth: '1990-05-15',
     membershipType: 'Premium',
-    joinDate: '2022-01-15'
+    joinDate: '2022-01-15',
+    reader_code: 'RDR-2024-001', // ERD attribute
+    major: 'Computer Science', // ERD attribute
+    role: 'admin' // For role-based UI changes - set to 'admin' to test admin panel button
   });
 
   const [originalData, setOriginalData] = useState({ ...formData });
@@ -102,6 +106,20 @@ const ProfilePage = () => {
 
                 <div className={styles.memberInfo}>
                   <div className={styles.infoItem}>
+                    <PersonFill className={styles.infoIcon} />
+                    <div>
+                      <small className={styles.infoLabel}>Reader Code</small>
+                      <div className={styles.infoValue}>{formData.reader_code}</div>
+                    </div>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <GeoAltFill className={styles.infoIcon} />
+                    <div>
+                      <small className={styles.infoLabel}>Major</small>
+                      <div className={styles.infoValue}>{formData.major}</div>
+                    </div>
+                  </div>
+                  <div className={styles.infoItem}>
                     <CalendarFill className={styles.infoIcon} />
                     <div>
                       <small className={styles.infoLabel}>Member Since</small>
@@ -129,6 +147,22 @@ const ProfilePage = () => {
                     <div className={styles.statLabel}>Wishlist Items</div>
                   </div>
                 </div>
+
+                {/* Admin Panel Access - Role-based UI */}
+                {formData.role === 'admin' && (
+                  <div className={styles.adminAccess}>
+                    <Button
+                      as={Link}
+                      to="/admin"
+                      variant="outline-primary"
+                      size="lg"
+                      className={styles.adminButton}
+                    >
+                      <ShieldFillCheck className="me-2" />
+                      Access Admin Panel
+                    </Button>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           </Col>
@@ -252,6 +286,41 @@ const ProfilePage = () => {
                       className={styles.input}
                     />
                   </Form.Group>
+
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className={styles.label}>
+                          <PersonFill className="me-2" />
+                          Reader Code
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="reader_code"
+                          value={formData.reader_code}
+                          onChange={handleInputChange}
+                          disabled={true} // Reader code should not be editable
+                          className={styles.input}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className={styles.label}>
+                          <GeoAltFill className="me-2" />
+                          Major
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="major"
+                          value={formData.major}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className={styles.input}
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
                 </Form>
               </Card.Body>
             </Card>

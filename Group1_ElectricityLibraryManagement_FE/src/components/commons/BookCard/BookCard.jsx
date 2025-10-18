@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, Button, Badge } from 'react-bootstrap';
 import { Heart, HeartFill, Star, StarFill } from 'react-bootstrap-icons';
 import styles from './BookCard.module.css';
 
-const BookCard = ({ 
-  book, 
-  onBookClick, 
-  onWishlistToggle, 
+const BookCard = ({
+  book,
+  onWishlistToggle,
   isInWishlist = false,
   showRating = true,
-  showAvailability = true 
+  showAvailability = true
 }) => {
   const {
     id,
@@ -23,11 +23,7 @@ const BookCard = ({
     publishYear
   } = book;
 
-  const handleCardClick = () => {
-    if (onBookClick) {
-      onBookClick(book);
-    }
-  };
+
 
   const handleWishlistClick = (e) => {
     e.stopPropagation();
@@ -69,8 +65,9 @@ const BookCard = ({
   };
 
   return (
-    <Card className={`custom-card ${styles.bookCard}`} onClick={handleCardClick}>
-      <div className={styles.imageContainer}>
+    <Link to={`/books/${book.id}`} className={styles.bookCardLink}>
+      <Card className={`custom-card ${styles.bookCard}`}>
+        <div className={styles.imageContainer}>
         <Card.Img 
           variant="top" 
           src={coverImage || 'https://via.placeholder.com/300x400?text=No+Cover'} 
@@ -138,7 +135,8 @@ const BookCard = ({
           </Button>
         </div>
       </Card.Body>
-    </Card>
+      </Card>
+    </Link>
   );
 };
 

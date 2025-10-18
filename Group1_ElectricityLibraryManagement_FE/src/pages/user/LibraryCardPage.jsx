@@ -11,9 +11,13 @@ const LibraryCardPage = () => {
     firstName: 'John',
     lastName: 'Doe',
     memberId: 'EL2024001234',
+    card_number: 'EL2024001234', // ERD attribute
     membershipType: 'Premium',
     issueDate: '2024-01-15',
+    issue_date: '2024-01-15', // ERD attribute
     expirationDate: '2025-01-15',
+    expiry_date: '2025-01-15', // ERD attribute
+    status: 'Active', // ERD attribute
     email: 'john.doe@email.com',
     phone: '+1 (555) 123-4567',
     address: '123 Main Street, City, State 12345',
@@ -48,6 +52,21 @@ const LibraryCardPage = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const getStatusBadgeVariant = (status) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'success';
+      case 'expired':
+        return 'danger';
+      case 'suspended':
+        return 'warning';
+      case 'pending':
+        return 'info';
+      default:
+        return 'secondary';
+    }
   };
 
   const isExpiringSoon = () => {
@@ -219,8 +238,8 @@ const LibraryCardPage = () => {
                       </div>
                     </div>
                     <div className={styles.infoGroup}>
-                      <label className={styles.infoLabel}>Member ID</label>
-                      <div className={styles.infoValue}>{userData.memberId}</div>
+                      <label className={styles.infoLabel}>Card Number</label>
+                      <div className={styles.infoValue}>{userData.card_number}</div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Membership Type</label>
@@ -234,19 +253,19 @@ const LibraryCardPage = () => {
                   <Col md={6}>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Issue Date</label>
-                      <div className={styles.infoValue}>{formatDate(userData.issueDate)}</div>
+                      <div className={styles.infoValue}>{formatDate(userData.issue_date)}</div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Expiration Date</label>
                       <div className={`${styles.infoValue} ${isExpiringSoon() ? styles.expiring : ''}`}>
-                        {formatDate(userData.expirationDate)}
+                        {formatDate(userData.expiry_date)}
                         {isExpiringSoon() && <span className={styles.expiringText}> (Expiring Soon)</span>}
                       </div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Status</label>
                       <div className={styles.infoValue}>
-                        <Badge bg="success">Active</Badge>
+                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status}</Badge>
                       </div>
                     </div>
                   </Col>

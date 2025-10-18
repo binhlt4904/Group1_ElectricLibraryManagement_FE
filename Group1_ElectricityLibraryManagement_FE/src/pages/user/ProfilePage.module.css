@@ -131,6 +131,25 @@
   letter-spacing: 0.5px;
 }
 
+/* Admin Access Section */
+.adminAccess {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.adminButton {
+  font-weight: var(--weight-bold);
+  border-width: 2px;
+  transition: all 0.2s ease;
+}
+
+.adminButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+}
+
 .detailsCard {
   margin-bottom: 2rem;
 }

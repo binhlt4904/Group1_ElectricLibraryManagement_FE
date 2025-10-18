@@ -16,8 +16,9 @@ import BookReaderPage from './pages/user/BookReaderPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
 
-// Admin Components
+// Layout Components
 import AdminLayout from './components/layouts/AdminLayout';
+import UserLayout from './components/layouts/UserLayout';
 import DashboardPage from './pages/admin/DashboardPage';
 import BooksManagementPage from './pages/admin/BooksManagementPage';
 import AuthorsManagementPage from './pages/admin/AuthorsManagementPage';
@@ -34,13 +35,11 @@ const AppContent = () => {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
 
-  const handleNavigate = (page) => {
-    console.log('Navigate to:', page);
-  };
+
 
   return (
     <div className="app-container">
-      {!isAdminPage && <Header onNavigate={handleNavigate} myListCount={0} />}
+      {!isAdminPage && <Header />}
       <main className="main-content">
         <Routes>
           {/* Public Pages */}
@@ -53,6 +52,15 @@ const AppContent = () => {
           <Route path="/register" element={<RegisterPage />} />
 
           {/* User Pages */}
+          <Route path="/user" element={<UserLayout />}>
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="borrow-history" element={<BorrowHistoryPage />} />
+            <Route path="library-card" element={<LibraryCardPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="wallet" element={<WalletPage />} />
+          </Route>
+
+          {/* Individual User Pages (outside layout) */}
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/borrow-history" element={<BorrowHistoryPage />} />
           <Route path="/library-card" element={<LibraryCardPage />} />

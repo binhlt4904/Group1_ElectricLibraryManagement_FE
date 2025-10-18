@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Form, InputGroup } from 'react-bootstrap';
 import { ArrowRight, GeoAlt, Send } from 'react-bootstrap-icons';
 import styles from './HomePage.module.css';
@@ -19,7 +20,7 @@ const HomePage = () => {
                                 Join our vibrant community of readers and learners.
                             </p>
                             <div className={styles.heroButtons}>
-                                <Button className="btn-accent-cta me-3">
+                                <Button as={Link} to="/books" className="btn-accent-cta me-3">
                                     Discover Now <ArrowRight className="ms-2" />
                                 </Button>
                                 <Button className="btn-primary-outline">
@@ -100,7 +101,7 @@ const HomePage = () => {
                                         Access our extensive digital collection including eBooks, audiobooks, 
                                         databases, and online learning platforms.
                                     </Card.Text>
-                                    <Button variant="primary" size="sm">Explore Digital</Button>
+                                    <Button as={Link} to="/books?category=digital" variant="primary" size="sm">Explore Digital</Button>
                                 </Card.Body>
                             </Card>
                         </Col>

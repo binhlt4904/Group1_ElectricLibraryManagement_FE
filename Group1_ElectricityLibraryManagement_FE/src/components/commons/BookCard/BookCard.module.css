@@ -1,5 +1,16 @@
 /* BookCard Component Styles */
 
+.bookCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.bookCardLink:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
 .bookCard {
   cursor: pointer;
   transition: all 0.3s ease;

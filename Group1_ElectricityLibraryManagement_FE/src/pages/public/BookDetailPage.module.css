@@ -199,6 +199,68 @@
   margin-right: 0.5rem;
 }
 
+/* Contents Section */
+.contents {
+  padding: 1.5rem 0;
+}
+
+.chapterList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chapterItem {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s ease;
+}
+
+.chapterItem:hover {
+  border-color: var(--primary-blue);
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.1);
+  transform: translateY(-1px);
+}
+
+.chapterLink {
+  display: block;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.chapterLink:hover {
+  text-decoration: none;
+  color: var(--primary-blue);
+}
+
+.chapterInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chapterNumber {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  min-width: 80px;
+  font-size: 0.9rem;
+}
+
+.chapterTitle {
+  flex: 1;
+  font-weight: var(--weight-medium);
+  color: var(--dark-charcoal);
+}
+
+.chapterPages {
+  font-size: 0.85rem;
+  color: var(--medium-gray);
+  min-width: 80px;
+  text-align: right;
+}
+
 .reviews {
   padding: 1rem 0;
 }

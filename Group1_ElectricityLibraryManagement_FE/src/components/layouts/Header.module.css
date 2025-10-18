@@ -99,6 +99,62 @@
 .navLink:hover {
   color: var(--primary-blue);
   text-decoration: none;
+  background-color: rgba(13, 110, 253, 0.1);
+  border-radius: 4px;
+}
+
+.navLink.active {
+  color: var(--primary-blue) !important;
+  font-weight: var(--weight-bold);
+  background-color: rgba(13, 110, 253, 0.1);
+  border-radius: 4px;
+}
+
+/* User Dropdown Styles */
+.userDropdown {
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--dark-charcoal) !important;
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.userDropdown:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+  color: var(--primary-blue) !important;
+}
+
+.userDropdown:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.userDropdownMenu {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  min-width: 220px;
+}
+
+.userInfo {
+  padding: 0.5rem 1rem;
+}
+
+.notificationBadge {
+  background-color: var(--alert-red);
+  color: var(--pure-white);
+  font-size: 0.7rem;
+  font-weight: var(--weight-bold);
+  padding: 0.2rem 0.4rem;
+  border-radius: 50px;
+  margin-left: 0.25rem;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
 }
 
 .badge {

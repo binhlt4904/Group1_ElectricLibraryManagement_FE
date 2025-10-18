@@ -142,10 +142,7 @@ const BookListPage = () => {
     setWishlist(newWishlist);
   };
 
-  const handleBookClick = (book) => {
-    console.log('Navigate to book detail:', book.id);
-    // Navigate to book detail page
-  };
+
 
   // Pagination
   const indexOfLastBook = currentPage * booksPerPage;
@@ -272,7 +269,6 @@ const BookListPage = () => {
             >
               <BookCard
                 book={book}
-                onBookClick={handleBookClick}
                 onWishlistToggle={handleWishlistToggle}
                 isInWishlist={wishlist.has(book.id)}
               />

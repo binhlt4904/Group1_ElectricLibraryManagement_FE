@@ -122,9 +122,9 @@ Build the UI for the admin area. The style can be more utilitarian and function-
 
 ---
 
-### Phase 5: 🔍 Refinement & Final Polish
+### Phase 5: 🔍 Refinement, Navigation & Final Polish
 
-**Objective:** To audit the entire application, integrate detailed data attributes from the ERD into the UI, and polish the user experience to a professional standard.
+**Objective:** To audit the entire application, integrate detailed data attributes from the ERD into the UI, implement logical navigation flows between pages, and polish the user experience to a professional standard.
 
 -   [ ] **Attribute-Level Integration Audit:**
     -   [ ] **`BookDetailPage.jsx` Review:**
@@ -139,6 +139,25 @@ Build the UI for the admin area. The style can be more utilitarian and function-
         -   [ ] Ensure `card_number`, `issue_date`, `expiry_date`, and `status` are all visually represented.
     -   [ ] **Admin Forms Review:**
         -   [ ] Audit all Create/Edit forms to ensure they include input fields for all necessary attributes in their respective ERD tables.
+
+-   [ ] **Navigation Flow Integration:** <!-- ADDED THIS ENTIRE SECTION -->
+    -   [ ] **`Header.jsx` Refinement:**
+        -   [ ] Ensure navigation links (`Home`, `Events`, `Collections`, etc.) correctly point to their respective pages using `<Link>`.
+        -   [ ] Implement a **User Dropdown Menu** that appears after login. This menu should contain `<Link>`s to:
+            -   `ProfilePage` (`/profile`)
+            -   `Borrowing History` (`/borrow-history`)
+            -   `My Wallet` (`/wallet`)
+            -   A "Logout" button.
+    -   [ ] **`BookListPage.jsx` -> `BookDetailPage.jsx`:**
+        -   [ ] Ensure each `BookCard` is wrapped in a `<Link to={'/books/' + book.id}>` so clicking on a book navigates to its detail page.
+    -   [ ] **`HomePage.jsx` -> Various Pages:**
+        -   [ ] Ensure CTA buttons like "Explore Catalogue" link to `/books`.
+        -   [ ] Ensure "New Books" or "Kids Programs" cards link to the appropriate search results or detail pages.
+    -   [ ] **`ProfilePage.jsx` -> `LibraryCardPage.jsx`:**
+        -   [ ] Add a prominent button or link on the profile page, like "View My Library Card", that navigates to `/library-card`.
+    -   [ ] **Cross-linking:**
+        -   [ ] Add "Back to List" links on detail pages (`BookDetailPage`, `EventDetailPage`).
+        -   [ ] Ensure a seamless flow from `BookDetailPage`'s "Contents" tab to the `BookReaderPage`.
 
 -   [ ] **Global Polish & Consistency:**
     -   [ ] **Consistency Check**: Review the entire application to ensure consistent use of colors, fonts, spacing, and component styles.
