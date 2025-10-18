@@ -1,0 +1,84 @@
+/* BookListPage Component Styles */
+
+.bookListPage {
+  padding: var(--section-padding);
+  min-height: 80vh;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.searchInput {
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+  border-right: none;
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-blue);
+  box-shadow: none;
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.viewToggle {
+  display: flex;
+  align-items: center;
+}
+
+.viewToggle .btn {
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .bookListPage {
+    padding: 2rem 0;
+  }
+  
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+  
+  .viewToggle {
+    justify-content: center;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 0.9rem;
+  }
+}

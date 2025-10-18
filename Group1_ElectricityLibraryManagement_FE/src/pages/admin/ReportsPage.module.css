@@ -1,0 +1,382 @@
+/* ReportsPage Component Styles */
+
+.reportsPage {
+  padding: 0;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.controlLabel {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reportContent {
+  margin-top: 2rem;
+}
+
+/* Summary Cards */
+.summaryCard {
+  transition: all 0.3s ease;
+  border: none;
+  overflow: hidden;
+}
+
+.summaryCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.summaryCardBody {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.summaryIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.summaryInfo {
+  flex: 1;
+}
+
+.summaryValue {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.75rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--weight-medium);
+}
+
+/* Card Headers */
+.cardHeader {
+  background-color: var(--pure-white);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+/* Chart Card */
+.chartCard {
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chartBody {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chartPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.chartBars {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  height: 200px;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.chartBarGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 4px;
+}
+
+.chartBar {
+  width: 100%;
+  max-width: 30px;
+  border-radius: 4px 4px 0 0;
+  min-height: 20px;
+  transition: all 0.3s ease;
+}
+
+.chartBar:hover {
+  opacity: 0.8;
+}
+
+.chartLabel {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  font-weight: var(--weight-medium);
+  margin-top: 0.5rem;
+}
+
+.chartLegend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--dark-charcoal);
+}
+
+.legendColor {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+/* Table Card */
+.tableCard {
+  overflow: hidden;
+}
+
+.tableCardBody {
+  padding: 0;
+}
+
+.reportTable {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.reportTable th {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.reportTable td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.reportTable tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.rankBadge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--primary-blue);
+  color: var(--pure-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  font-size: 0.8rem;
+}
+
+.bookTitle {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  line-height: 1.3;
+}
+
+.borrowCount {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  font-size: 1.1rem;
+}
+
+.fineAmount {
+  font-weight: var(--weight-bold);
+  color: var(--alert-red);
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1199.98px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .chartLegend {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .headerActions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .summaryCardBody {
+    padding: 1.25rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .summaryIcon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .summaryValue {
+    font-size: 1.5rem;
+  }
+  
+  .chartCard {
+    height: auto;
+  }
+  
+  .chartBody {
+    padding: 1.5rem;
+  }
+  
+  .chartBars {
+    height: 150px;
+    gap: 8px;
+  }
+  
+  .chartLegend {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .reportTable {
+    font-size: 0.8rem;
+  }
+  
+  .reportTable th,
+  .reportTable td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .summaryCardBody {
+    padding: 1rem;
+  }
+  
+  .summaryValue {
+    font-size: 1.25rem;
+  }
+  
+  .cardHeader {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .chartBody {
+    padding: 1rem;
+  }
+  
+  .chartBars {
+    height: 120px;
+    gap: 6px;
+  }
+  
+  .reportTable th,
+  .reportTable td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .rankBadge {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+}

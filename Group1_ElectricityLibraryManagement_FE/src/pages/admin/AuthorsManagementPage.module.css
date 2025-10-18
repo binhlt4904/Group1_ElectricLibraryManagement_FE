@@ -1,0 +1,371 @@
+/* AuthorsManagementPage Component Styles */
+
+.authorsManagementPage {
+  padding: 0;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.alert {
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+  border-right: none;
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-blue);
+  box-shadow: none;
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.75rem;
+}
+
+.authorsCard {
+  overflow: hidden;
+}
+
+.authorsCardBody {
+  padding: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.authorsTable {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.authorsTable th {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.authorRow {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.authorRow:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.authorsTable td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.authorCell {
+  min-width: 250px;
+}
+
+.authorInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.authorPhoto {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.authorDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.authorName {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authorAge {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.datesCell {
+  min-width: 180px;
+}
+
+.dateInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.birthDate,
+.deathDate {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+}
+
+.dateIcon {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.deathDate {
+  color: var(--alert-red);
+}
+
+.nationalityCell {
+  min-width: 120px;
+}
+
+.nationalityBadge {
+  font-size: 0.75rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booksCell {
+  min-width: 80px;
+  text-align: center;
+}
+
+.booksCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.booksIcon {
+  color: var(--primary-blue);
+  font-size: 0.9rem;
+}
+
+.booksNumber {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  font-size: 1.1rem;
+}
+
+.borrowsCell {
+  min-width: 100px;
+  text-align: center;
+}
+
+.borrowsNumber {
+  font-weight: var(--weight-bold);
+  color: var(--accent-green);
+  font-size: 1rem;
+}
+
+.statusCell {
+  min-width: 100px;
+}
+
+.dateCell {
+  min-width: 100px;
+  color: var(--medium-gray);
+  font-size: 0.85rem;
+}
+
+.actionsCell {
+  min-width: 140px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.actionButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.deleteAuthorInfo {
+  background-color: var(--light-gray);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1199.98px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .resultsInfo {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .headerActions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .authorsTable {
+    font-size: 0.8rem;
+  }
+  
+  .authorsTable th,
+  .authorsTable td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .authorInfo {
+    gap: 0.5rem;
+  }
+  
+  .authorPhoto {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .dateInfo {
+    gap: 0.125rem;
+  }
+  
+  .birthDate,
+  .deathDate {
+    font-size: 0.7rem;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .actionButton {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .authorCell {
+    min-width: 200px;
+  }
+  
+  .datesCell {
+    min-width: 140px;
+  }
+  
+  .nationalityCell {
+    min-width: 100px;
+  }
+  
+  .booksCell {
+    min-width: 60px;
+  }
+  
+  .borrowsCell {
+    min-width: 80px;
+  }
+  
+  .statusCell {
+    min-width: 80px;
+  }
+  
+  .dateCell {
+    min-width: 80px;
+  }
+  
+  .actionsCell {
+    min-width: 100px;
+  }
+}

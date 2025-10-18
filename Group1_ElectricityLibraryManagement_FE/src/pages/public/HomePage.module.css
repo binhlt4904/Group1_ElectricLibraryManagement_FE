@@ -1,0 +1,226 @@
+/* HomePage Component Styles */
+
+.homePage {
+  overflow-x: hidden;
+}
+
+/* Hero Section */
+.heroSection {
+  padding: var(--section-padding);
+  background: linear-gradient(135deg, var(--light-gray) 0%, var(--pure-white) 100%);
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 3.5rem;
+  color: var(--dark-charcoal);
+  line-height: var(--line-height-heading);
+  margin-bottom: 1.5rem;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: var(--medium-gray);
+  line-height: var(--line-height-body);
+  margin-bottom: 2rem;
+}
+
+.heroButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.heroImage {
+  position: relative;
+}
+
+.heroImage::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: 20px;
+  bottom: 20px;
+  background: var(--primary-blue);
+  border-radius: var(--border-radius-md);
+  z-index: -1;
+  opacity: 0.1;
+}
+
+/* What's Happening Section */
+.whatsHappeningSection {
+  padding: var(--section-padding);
+  background-color: var(--pure-white);
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 1rem;
+}
+
+.sectionSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 2rem;
+}
+
+.sectionText {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  line-height: var(--line-height-body);
+  margin-bottom: 1.5rem;
+}
+
+/* Branches Section */
+.branchesSection {
+  padding: var(--section-padding);
+  background-color: var(--light-gray);
+}
+
+.branchFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.branchFeatures li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--medium-gray);
+}
+
+.branchFeatures li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent-green);
+  font-weight: var(--weight-bold);
+}
+
+.branchImage {
+  position: relative;
+}
+
+.branchImage::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: -20px;
+  bottom: -20px;
+  background: var(--accent-green);
+  border-radius: var(--border-radius-md);
+  z-index: -1;
+  opacity: 0.1;
+}
+
+/* Newsletter Section */
+.newsletterSection {
+  padding: var(--section-padding);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, #0b5ed7 100%);
+  color: var(--pure-white);
+}
+
+.newsletterSection .sectionTitle {
+  color: var(--pure-white);
+}
+
+.newsletterSection .sectionText {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.newsletterForm {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.privacyText {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .heroTitle {
+    font-size: 2.8rem;
+  }
+  
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 2rem;
+  }
+  
+  .heroSection {
+    min-height: 60vh;
+    text-align: center;
+  }
+  
+  .heroImage {
+    margin-top: 2rem;
+  }
+  
+  .branchesSection .row {
+    flex-direction: column-reverse;
+  }
+  
+  .branchImage {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 2.2rem;
+  }
+  
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.8rem;
+  }
+  
+  .heroButtons {
+    justify-content: center;
+  }
+  
+  .heroSection,
+  .whatsHappeningSection,
+  .branchesSection,
+  .newsletterSection {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .heroTitle {
+    font-size: 1.8rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+  
+  .heroButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .heroButtons .btn {
+    width: 100%;
+    max-width: 280px;
+  }
+}

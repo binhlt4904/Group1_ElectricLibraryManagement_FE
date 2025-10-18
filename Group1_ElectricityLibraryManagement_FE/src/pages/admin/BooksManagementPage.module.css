@@ -1,0 +1,354 @@
+/* BooksManagementPage Component Styles */
+
+.booksManagementPage {
+  padding: 0;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.alert {
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+  border-right: none;
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-blue);
+  box-shadow: none;
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.75rem;
+}
+
+.booksCard {
+  overflow: hidden;
+}
+
+.booksCardBody {
+  padding: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.booksTable {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.booksTable th {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.bookRow {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.bookRow:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.booksTable td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.bookCell {
+  min-width: 280px;
+}
+
+.bookInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bookCover {
+  width: 50px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.bookDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.bookTitle {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookPublisher {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authorCell {
+  min-width: 150px;
+  font-weight: var(--weight-medium);
+  color: var(--dark-charcoal);
+}
+
+.isbnCell {
+  min-width: 140px;
+}
+
+.isbnCode {
+  background-color: var(--light-gray);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--dark-charcoal);
+  border: 1px solid var(--border-color);
+}
+
+.categoryCell {
+  min-width: 120px;
+}
+
+.categoryBadge {
+  font-size: 0.75rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.copiesCell {
+  min-width: 80px;
+  text-align: center;
+}
+
+.copiesInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.availableCopies {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  font-size: 1.1rem;
+}
+
+.copiesSeparator {
+  color: var(--medium-gray);
+}
+
+.totalCopies {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+}
+
+.availabilityCell {
+  min-width: 120px;
+}
+
+.statusCell {
+  min-width: 100px;
+}
+
+.dateCell {
+  min-width: 100px;
+  color: var(--medium-gray);
+  font-size: 0.85rem;
+}
+
+.actionsCell {
+  min-width: 140px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.actionButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.deleteBookInfo {
+  background-color: var(--light-gray);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1199.98px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .resultsInfo {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .headerActions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .booksTable {
+    font-size: 0.8rem;
+  }
+  
+  .booksTable th,
+  .booksTable td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .bookInfo {
+    gap: 0.5rem;
+  }
+  
+  .bookCover {
+    width: 40px;
+    height: 56px;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .actionButton {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .bookCell {
+    min-width: 200px;
+  }
+  
+  .authorCell {
+    min-width: 120px;
+  }
+  
+  .isbnCell {
+    min-width: 120px;
+  }
+  
+  .categoryCell {
+    min-width: 100px;
+  }
+  
+  .copiesCell {
+    min-width: 60px;
+  }
+  
+  .availabilityCell {
+    min-width: 100px;
+  }
+  
+  .statusCell {
+    min-width: 80px;
+  }
+  
+  .dateCell {
+    min-width: 80px;
+  }
+  
+  .actionsCell {
+    min-width: 100px;
+  }
+}

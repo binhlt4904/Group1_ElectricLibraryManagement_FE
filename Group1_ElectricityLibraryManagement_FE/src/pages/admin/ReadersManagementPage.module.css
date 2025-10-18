@@ -1,0 +1,408 @@
+/* ReadersManagementPage Component Styles */
+
+.readersManagementPage {
+  padding: 0;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.alert {
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+  border-right: none;
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-blue);
+  box-shadow: none;
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.75rem;
+}
+
+.readersCard {
+  overflow: hidden;
+}
+
+.readersCardBody {
+  padding: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.readersTable {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.readersTable th {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.readerRow {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.readerRow:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.readersTable td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.readerCell {
+  min-width: 250px;
+}
+
+.readerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.readerPhoto {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.readerDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.readerName {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberId {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+  font-family: monospace;
+  background-color: var(--light-gray);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.contactCell {
+  min-width: 200px;
+}
+
+.contactInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.contactIcon {
+  color: var(--medium-gray);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.contactText {
+  color: var(--dark-charcoal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.membershipCell {
+  min-width: 120px;
+}
+
+.statusCell {
+  min-width: 120px;
+}
+
+.borrowsCell {
+  min-width: 120px;
+}
+
+.borrowsInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.currentBorrows {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.borrowsIcon {
+  color: var(--primary-blue);
+  font-size: 0.8rem;
+}
+
+.borrowsNumber {
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+  font-size: 1rem;
+}
+
+.borrowsLabel {
+  font-size: 0.7rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.totalBorrows {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+}
+
+.finesCell {
+  min-width: 100px;
+}
+
+.finesAmount {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.finesIcon {
+  color: var(--alert-red);
+  font-size: 0.8rem;
+}
+
+.finesNumber {
+  font-weight: var(--weight-bold);
+  color: var(--alert-red);
+  font-size: 0.9rem;
+}
+
+.expiryCell {
+  min-width: 120px;
+}
+
+.expiryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.expiryDate {
+  font-size: 0.8rem;
+  color: var(--dark-charcoal);
+}
+
+.expiryWarning {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.actionsCell {
+  min-width: 140px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.actionButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.deleteReaderInfo {
+  background-color: var(--light-gray);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1199.98px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .resultsInfo {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .headerActions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .readersTable {
+    font-size: 0.8rem;
+  }
+  
+  .readersTable th,
+  .readersTable td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .readerInfo {
+    gap: 0.5rem;
+  }
+  
+  .readerPhoto {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .contactInfo {
+    gap: 0.125rem;
+  }
+  
+  .contactItem {
+    font-size: 0.7rem;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .actionButton {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .readerCell {
+    min-width: 200px;
+  }
+  
+  .contactCell {
+    min-width: 150px;
+  }
+  
+  .membershipCell {
+    min-width: 100px;
+  }
+  
+  .statusCell {
+    min-width: 100px;
+  }
+  
+  .borrowsCell {
+    min-width: 100px;
+  }
+  
+  .finesCell {
+    min-width: 80px;
+  }
+  
+  .expiryCell {
+    min-width: 100px;
+  }
+  
+  .actionsCell {
+    min-width: 100px;
+  }
+}

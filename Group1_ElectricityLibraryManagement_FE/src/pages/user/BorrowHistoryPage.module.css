@@ -1,0 +1,320 @@
+/* BorrowHistoryPage Component Styles */
+
+.borrowHistoryPage {
+  padding: var(--section-padding);
+  min-height: 80vh;
+  background-color: var(--light-gray);
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.statCard {
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+}
+
+.statCardDanger {
+  border-left: 4px solid var(--alert-red);
+}
+
+.statCardWarning {
+  border-left: 4px solid #ffc107;
+}
+
+.statCardBody {
+  padding: 1.5rem;
+}
+
+.statNumber {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2rem;
+  color: var(--primary-blue);
+  margin-bottom: 0.5rem;
+}
+
+.statCardDanger .statNumber {
+  color: var(--alert-red);
+}
+
+.statCardWarning .statNumber {
+  color: #ffc107;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--weight-medium);
+}
+
+.searchInput {
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+  border-right: none;
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-blue);
+  box-shadow: none;
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.75rem;
+}
+
+.historyCard {
+  overflow: hidden;
+}
+
+.historyCardBody {
+  padding: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.historyTable {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.historyTable th {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  padding: 1rem;
+  white-space: nowrap;
+}
+
+.historyRow {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.historyRow:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.historyTable td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.bookCell {
+  min-width: 250px;
+}
+
+.bookInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bookCover {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bookDetails {
+  flex: 1;
+}
+
+.bookTitle {
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+}
+
+.bookAuthor {
+  font-size: 0.8rem;
+  color: var(--medium-gray);
+}
+
+.dateCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.dateIcon {
+  color: var(--primary-blue);
+  font-size: 0.9rem;
+}
+
+.daysRemaining {
+  font-size: 0.75rem;
+  color: var(--medium-gray);
+  margin-top: 0.25rem;
+}
+
+.notReturned {
+  color: var(--medium-gray);
+  font-style: italic;
+}
+
+.statusCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusIcon {
+  font-size: 1rem;
+}
+
+.statusBadge {
+  font-size: 0.7rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.renewalCell {
+  text-align: center;
+  font-weight: var(--weight-bold);
+  color: var(--primary-blue);
+}
+
+.fineCell {
+  text-align: right;
+}
+
+.fineAmount {
+  color: var(--alert-red);
+  font-weight: var(--weight-bold);
+}
+
+.noFine {
+  color: var(--medium-gray);
+}
+
+.actionsCell {
+  min-width: 140px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .resultsInfo {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .borrowHistoryPage {
+    padding: 2rem 0;
+  }
+  
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+  
+  .statCardBody {
+    padding: 1rem;
+  }
+  
+  .statNumber {
+    font-size: 1.5rem;
+  }
+  
+  .historyTable {
+    font-size: 0.8rem;
+  }
+  
+  .historyTable th,
+  .historyTable td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .bookInfo {
+    gap: 0.5rem;
+  }
+  
+  .bookCover {
+    width: 30px;
+    height: 45px;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+  
+  .statCardBody {
+    padding: 0.75rem;
+  }
+  
+  .statNumber {
+    font-size: 1.25rem;
+  }
+  
+  .statLabel {
+    font-size: 0.8rem;
+  }
+  
+  .bookCell {
+    min-width: 200px;
+  }
+  
+  .actionsCell {
+    min-width: 100px;
+  }
+}

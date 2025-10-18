@@ -1,0 +1,509 @@
+/* LibraryCardPage Component Styles */
+
+.libraryCardPage {
+  padding: var(--section-padding);
+  min-height: 80vh;
+  background-color: var(--light-gray);
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.alert {
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+}
+
+.expirationAlert {
+  border-left: 4px solid #ffc107;
+}
+
+.cardContainer {
+  perspective: 1000px;
+  margin-bottom: 2rem;
+}
+
+.libraryCard {
+  width: 100%;
+  max-width: 400px;
+  height: 250px;
+  margin: 0 auto;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  cursor: pointer;
+}
+
+.libraryCard:hover {
+  transform: rotateY(180deg);
+}
+
+.cardFront,
+.cardBack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-green) 100%);
+  color: var(--pure-white);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardBack {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, var(--dark-charcoal) 0%, var(--medium-gray) 100%);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logoGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  width: 30px;
+  height: 30px;
+}
+
+.logoPixel {
+  background-color: var(--pure-white);
+  border-radius: 1px;
+  opacity: 0.9;
+}
+
+.logoPixel:nth-child(odd) {
+  opacity: 0.6;
+}
+
+.libraryName {
+  line-height: 1;
+}
+
+.libraryTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.librarySubtitle {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+
+.membershipBadge {
+  font-size: 0.7rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.25rem 0.5rem;
+}
+
+.memberSection {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  align-items: center;
+}
+
+.photoSection {
+  flex-shrink: 0;
+}
+
+.memberPhoto {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.memberInfo {
+  flex: 1;
+}
+
+.memberName {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+  color: var(--pure-white);
+}
+
+.memberId {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+.memberDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.detailIcon {
+  font-size: 0.8rem;
+}
+
+.barcodeSection {
+  margin-top: auto;
+  text-align: center;
+}
+
+.barcode {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  height: 30px;
+  margin-bottom: 0.5rem;
+  gap: 1px;
+}
+
+.barcodeLine {
+  background-color: var(--pure-white);
+  width: 2px;
+}
+
+.thin {
+  height: 20px;
+}
+
+.thick {
+  height: 30px;
+  width: 3px;
+}
+
+.barcodeNumber {
+  font-family: monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+/* Card Back Styles */
+.backHeader {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.backHeader h4 {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.servicesList {
+  flex: 1;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.serviceItem {
+  margin-bottom: 0.25rem;
+  opacity: 0.9;
+}
+
+.contactInfo {
+  margin-top: 1rem;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.contactInfo h5 {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  font-weight: var(--weight-bold);
+}
+
+.contactInfo p {
+  margin: 0.1rem 0;
+}
+
+.qrSection {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.qrCode {
+  margin-bottom: 0.25rem;
+}
+
+.qrSection small {
+  font-size: 0.6rem;
+  opacity: 0.7;
+}
+
+.cardActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.actionButton {
+  min-width: 150px;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--weight-medium);
+}
+
+.infoCard {
+  margin-bottom: 2rem;
+}
+
+.infoCardHeader {
+  background-color: var(--pure-white);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem;
+}
+
+.infoCardTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin: 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.infoCardBody {
+  padding: 2rem;
+}
+
+.infoGroup {
+  margin-bottom: 1.5rem;
+}
+
+.infoLabel {
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  color: var(--medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.infoValue {
+  font-size: 1rem;
+  color: var(--dark-charcoal);
+  font-weight: var(--weight-medium);
+}
+
+.expiring {
+  color: #ffc107;
+}
+
+.expiringText {
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+}
+
+.walletCard {
+  margin-bottom: 2rem;
+}
+
+.walletCardHeader {
+  background-color: var(--pure-white);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem;
+}
+
+.walletCardTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+  margin: 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.walletCardBody {
+  padding: 2rem;
+}
+
+.walletDescription {
+  color: var(--medium-gray);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.walletButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.walletButton {
+  flex: 1;
+  min-width: 150px;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--weight-medium);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .libraryCardPage {
+    padding: 2rem 0;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+  
+  .libraryCard {
+    max-width: 350px;
+    height: 220px;
+  }
+  
+  .cardFront,
+  .cardBack {
+    padding: 1.25rem;
+  }
+  
+  .memberPhoto {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .memberName {
+    font-size: 1rem;
+  }
+  
+  .cardActions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .actionButton {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .infoCardHeader,
+  .infoCardBody,
+  .walletCardHeader,
+  .walletCardBody {
+    padding: 1.5rem;
+  }
+  
+  .walletButtons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 576px) {
+  .libraryCard {
+    max-width: 320px;
+    height: 200px;
+  }
+  
+  .cardFront,
+  .cardBack {
+    padding: 1rem;
+  }
+  
+  .memberSection {
+    gap: 0.75rem;
+  }
+  
+  .memberPhoto {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .memberName {
+    font-size: 0.9rem;
+  }
+  
+  .libraryTitle {
+    font-size: 0.8rem;
+  }
+  
+  .librarySubtitle {
+    font-size: 0.6rem;
+  }
+  
+  .infoCardHeader,
+  .infoCardBody,
+  .walletCardHeader,
+  .walletCardBody {
+    padding: 1rem;
+  }
+  
+  .infoCardTitle,
+  .walletCardTitle {
+    font-size: 1.1rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .libraryCardPage {
+    background: white;
+    padding: 0;
+  }
+  
+  .pageTitle,
+  .pageSubtitle,
+  .cardActions,
+  .infoCard,
+  .walletCard {
+    display: none;
+  }
+  
+  .libraryCard {
+    transform: none !important;
+    max-width: none;
+    width: 3.375in;
+    height: 2.125in;
+    margin: 0;
+  }
+  
+  .cardBack {
+    display: none;
+  }
+}
