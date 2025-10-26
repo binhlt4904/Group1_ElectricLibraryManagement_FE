@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button, InputGroup, Dropdown, Pagination } f
 import { Search, Filter, Grid3x3Gap, List, SortDown } from 'react-bootstrap-icons';
 import BookCard from '../../components/commons/BookCard/BookCard';
 import styles from './BookListPage.module.css';
+import axiosClient from '../../api/axiosClient';
 
 const BookListPage = () => {
   const [books, setBooks] = useState([]);
@@ -18,76 +19,20 @@ const BookListPage = () => {
 
   // Mock data - replace with API call
   useEffect(() => {
-    const mockBooks = [
-      {
-        id: 1,
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop",
-        rating: 4.2,
-        totalRatings: 1250,
-        availability: "available",
-        category: "Classic Literature",
-        publishYear: 1925
-      },
-      {
-        id: 2,
-        title: "To Kill a Mockingbird",
-        author: "Harper Lee",
-        coverImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop",
-        rating: 4.5,
-        totalRatings: 2100,
-        availability: "borrowed",
-        category: "Classic Literature",
-        publishYear: 1960
-      },
-      {
-        id: 3,
-        title: "1984",
-        author: "George Orwell",
-        coverImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop",
-        rating: 4.3,
-        totalRatings: 1800,
-        availability: "available",
-        category: "Science Fiction",
-        publishYear: 1949
-      },
-      {
-        id: 4,
-        title: "Pride and Prejudice",
-        author: "Jane Austen",
-        coverImage: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop",
-        rating: 4.4,
-        totalRatings: 1650,
-        availability: "reserved",
-        category: "Romance",
-        publishYear: 1813
-      },
-      {
-        id: 5,
-        title: "The Catcher in the Rye",
-        author: "J.D. Salinger",
-        coverImage: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=400&fit=crop",
-        rating: 3.8,
-        totalRatings: 980,
-        availability: "available",
-        category: "Coming of Age",
-        publishYear: 1951
-      },
-      {
-        id: 6,
-        title: "Harry Potter and the Sorcerer's Stone",
-        author: "J.K. Rowling",
-        coverImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=300&h=400&fit=crop",
-        rating: 4.7,
-        totalRatings: 3200,
-        availability: "available",
-        category: "Fantasy",
-        publishYear: 1997
+
+    const fetchBooks = async () => {
+      try {
+        const response = await axiosClient.get('/api/v1/public/books/');
+        console.log(response.data)
+        setBooks(response.data);
+        setFilteredBooks(response.data);
       }
-    ];
-    setBooks(mockBooks);
-    setFilteredBooks(mockBooks);
+      catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+
+    fetchBooks();
   }, []);
 
   // Filter and search logic

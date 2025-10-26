@@ -15,14 +15,13 @@ const BookCard = ({
     id,
     title,
     author,
-    coverImage,
-    rating = 0,
-    totalRatings = 0,
-    availability = 'available',
+    image,
+    isDeleted,
     category,
-    publishYear
+    publishedDate
   } = book;
 
+  console.log(book)
 
 
   const handleWishlistClick = (e) => {
@@ -49,20 +48,20 @@ const BookCard = ({
     return stars;
   };
 
-  const getAvailabilityBadge = () => {
-    switch (availability) {
-      case 'available':
-        return <Badge bg="success" className={styles.availabilityBadge}>Available</Badge>;
-      case 'borrowed':
-        return <Badge bg="warning" className={styles.availabilityBadge}>Borrowed</Badge>;
-      case 'reserved':
-        return <Badge bg="info" className={styles.availabilityBadge}>Reserved</Badge>;
-      case 'unavailable':
-        return <Badge bg="danger" className={styles.availabilityBadge}>Unavailable</Badge>;
-      default:
-        return null;
-    }
-  };
+  // const getAvailabilityBadge = () => {
+  //   switch (isDeleted) {
+  //     case 'available':
+  //       return <Badge bg="success" className={styles.availabilityBadge}>Available</Badge>;
+  //     case 'borrowed':
+  //       return <Badge bg="warning" className={styles.availabilityBadge}>Borrowed</Badge>;
+  //     case 'reserved':
+  //       return <Badge bg="info" className={styles.availabilityBadge}>Reserved</Badge>;
+  //     case 'unavailable':
+  //       return <Badge bg="danger" className={styles.availabilityBadge}>Unavailable</Badge>;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   return (
     <Link to={`/books/${book.id}`} className={styles.bookCardLink}>
@@ -70,7 +69,7 @@ const BookCard = ({
         <div className={styles.imageContainer}>
         <Card.Img 
           variant="top" 
-          src={coverImage || 'https://via.placeholder.com/300x400?text=No+Cover'} 
+          src={image || 'https://via.placeholder.com/300x400?text=No+Cover'} 
           alt={`${title} cover`}
           className={styles.bookCover}
         />
@@ -86,11 +85,11 @@ const BookCard = ({
             <Heart className={styles.heartEmpty} />
           )}
         </Button>
-        {showAvailability && (
+        {/* {showAvailability && (
           <div className={styles.availabilityContainer}>
             {getAvailabilityBadge()}
           </div>
-        )}
+        )} */}
       </div>
       
       <Card.Body className={styles.cardBody}>
@@ -102,7 +101,7 @@ const BookCard = ({
           by {author}
         </Card.Subtitle>
         
-        {showRating && rating > 0 && (
+        {/* {showRating && rating > 0 && (
           <div className={styles.ratingContainer}>
             <div className={styles.stars}>
               {renderStars(rating)}
@@ -111,7 +110,7 @@ const BookCard = ({
               {rating.toFixed(1)} ({totalRatings} reviews)
             </span>
           </div>
-        )}
+        )} */}
         
         <div className={styles.bookMeta}>
           {category && (
@@ -119,8 +118,8 @@ const BookCard = ({
               {category}
             </Badge>
           )}
-          {publishYear && (
-            <span className={styles.publishYear}>{publishYear}</span>
+          {publishedDate && (
+            <span className={styles.publishYear}>{publishedDate}</span>
           )}
         </div>
         
@@ -129,9 +128,9 @@ const BookCard = ({
             variant="primary" 
             size="sm" 
             className={styles.actionButton}
-            disabled={availability === 'unavailable'}
+            disabled={isDeleted === 'unavailable'}
           >
-            {availability === 'available' ? 'Borrow' : 'View Details'}
+            {isDeleted === false ? 'Out' : 'View Details'}
           </Button>
         </div>
       </Card.Body>
