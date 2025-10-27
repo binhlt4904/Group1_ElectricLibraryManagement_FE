@@ -234,21 +234,7 @@ const BookDetailPage = () => {
                 ))}
               </div>
 
-              <div className={styles.availabilitySection}>
-                <div className={styles.availabilityHeader}>
-                  <Badge bg={availabilityInfo.variant} className={styles.availabilityBadge}>
-                    {availabilityInfo.text}
-                  </Badge>
-                  <span className={styles.copiesInfo}>
-                    {book.copiesAvailable} of {book.copiesTotal} copies available
-                  </span>
-                </div>
-                <ProgressBar
-                  variant={availabilityInfo.variant}
-                  now={availabilityInfo.percentage}
-                  className={styles.availabilityBar}
-                />
-              </div>
+              
 
               <div className={styles.actionButtons}>
                 <Button

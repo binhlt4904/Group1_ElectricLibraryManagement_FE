@@ -20,7 +20,7 @@ import Footer from "./components/layouts/Footer";
 import AdminLayout from './components/layouts/AdminLayout';
 import UserLayout from './components/layouts/UserLayout';
 import DashboardPage from './pages/admin/DashboardPage';
-import BooksManagementPage from './pages/admin/BooksManagementPage';
+import BooksManagementPage from './pages/admin/book/BooksManagementPage';
 import AuthorsManagementPage from './pages/admin/AuthorsManagementPage';
 import ReadersManagementPage from './pages/admin/ReadersManagementPage';
 import ReportsPage from './pages/admin/ReportsPage';
@@ -30,6 +30,7 @@ import BorrowalsManagementPage from './pages/admin/BorrowalsManagementPage';
 import EventManagementPage from './pages/admin/EventManagementPage';
 import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
+import AddBookPage from './pages/admin/book/AddBookPage';
 
 const AppContent = () => {
   const location = useLocation();
@@ -72,6 +73,7 @@ const AppContent = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="books" element={<BooksManagementPage />} />
+            <Route path="books/add" element={<AddBookPage />} />
             <Route path="authors" element={<AuthorsManagementPage />} />
             <Route path="publishers" element={<PublishersManagementPage />} />
             <Route path="readers" element={<ReadersManagementPage />} />

@@ -14,7 +14,7 @@ const BookListPage = () => {
   const [sortBy, setSortBy] = useState('title');
   const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
-  const [booksPerPage] = useState(12);
+  const [booksPerPage] = useState(4);
   const [wishlist, setWishlist] = useState(new Set());
 
   // Mock data - replace with API call

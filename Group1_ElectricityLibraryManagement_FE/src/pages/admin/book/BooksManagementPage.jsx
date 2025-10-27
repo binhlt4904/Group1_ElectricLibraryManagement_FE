@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Row, Col, Card, Button, Table, Badge, Form, InputGroup, Pagination, Modal, Alert } from 'react-bootstrap';
 import { 
   Plus, Search, Filter, Eye, Pencil, Trash, Download, 
   BookFill, ExclamationTriangleFill 
 } from 'react-bootstrap-icons';
 import styles from './BooksManagementPage.module.css';
+import bookApi from '../../../api/book';
+import { useNavigate } from 'react-router-dom';
 
 const BooksManagementPage = () => {
   const [books, setBooks] = useState([]);
@@ -13,14 +15,26 @@ const BooksManagementPage = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(4);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const navigate = useNavigate();
 
   // Mock books data
   useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await bookApi.findAllAdmin();
+        console.log(response.data)
+        setBooks(response.data);
+    setFilteredBooks(response.data);
+      }
+      catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
     const mockBooks = [
       {
         id: 1,
@@ -93,8 +107,8 @@ const BooksManagementPage = () => {
         coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60&h=80&fit=crop'
       }
     ];
-    setBooks(mockBooks);
-    setFilteredBooks(mockBooks);
+    fetchBooks();
+    
   }, []);
 
   // Filter and search logic
@@ -105,8 +119,7 @@ const BooksManagementPage = () => {
     if (searchTerm) {
       filtered = filtered.filter(book =>
         book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.isbn.includes(searchTerm)
+        book.author.toLowerCase().includes(searchTerm.toLowerCase()) 
       );
     }
 
@@ -117,7 +130,7 @@ const BooksManagementPage = () => {
 
     // Status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(book => book.status === statusFilter);
+      filtered = filtered.filter(book => book.isDeleted === statusFilter);
     }
 
     setFilteredBooks(filtered);
@@ -126,24 +139,12 @@ const BooksManagementPage = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'active':
+      case 'false':
         return <Badge bg="success">Active</Badge>;
-      case 'inactive':
+      case 'true':
         return <Badge bg="secondary">Inactive</Badge>;
-      case 'maintenance':
-        return <Badge bg="warning">Maintenance</Badge>;
       default:
         return <Badge bg="secondary">Unknown</Badge>;
-    }
-  };
-
-  const getAvailabilityBadge = (available, total) => {
-    if (available === 0) {
-      return <Badge bg="danger">Out of Stock</Badge>;
-    } else if (available <= total * 0.2) {
-      return <Badge bg="warning">Low Stock</Badge>;
-    } else {
-      return <Badge bg="success">Available</Badge>;
     }
   };
 
@@ -170,8 +171,7 @@ const BooksManagementPage = () => {
   };
 
   const handleAddNew = () => {
-    console.log('Add new book');
-    // Navigate to add form
+    navigate('/admin/books/add');
   };
 
   const handleExport = () => {
@@ -242,7 +242,7 @@ const BooksManagementPage = () => {
           <InputGroup size="lg">
             <Form.Control
               type="text"
-              placeholder="Search by title, author, or ISBN..."
+              placeholder="Search by title, author"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={styles.searchInput}
@@ -271,9 +271,8 @@ const BooksManagementPage = () => {
             size="lg"
           >
             <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="maintenance">Maintenance</option>
+            <option value="false">Active</option>
+            <option value="true">Inactive</option>
           </Form.Select>
         </Col>
         <Col lg={4} className="mb-3">
@@ -292,10 +291,7 @@ const BooksManagementPage = () => {
                 <tr>
                   <th>Book</th>
                   <th>Author</th>
-                  <th>ISBN</th>
                   <th>Category</th>
-                  <th>Copies</th>
-                  <th>Availability</th>
                   <th>Status</th>
                   <th>Added Date</th>
                   <th>Actions</th>
@@ -307,42 +303,30 @@ const BooksManagementPage = () => {
                     <td className={styles.bookCell}>
                       <div className={styles.bookInfo}>
                         <img
-                          src={book.coverImage}
+                          src={`http://localhost:8080${book.image}`}
                           alt={book.title}
                           className={styles.bookCover}
                         />
                         <div className={styles.bookDetails}>
                           <div className={styles.bookTitle}>{book.title}</div>
-                          <div className={styles.bookPublisher}>{book.publisher} ({book.publicationYear})</div>
+                          <div className={styles.bookPublisher}>{book.publisher} ({book.publishedDate})</div>
                         </div>
                       </div>
                     </td>
                     <td className={styles.authorCell}>
                       {book.author}
                     </td>
-                    <td className={styles.isbnCell}>
-                      <code className={styles.isbnCode}>{book.isbn}</code>
-                    </td>
                     <td className={styles.categoryCell}>
                       <Badge bg="info" className={styles.categoryBadge}>
                         {book.category}
                       </Badge>
                     </td>
-                    <td className={styles.copiesCell}>
-                      <div className={styles.copiesInfo}>
-                        <span className={styles.availableCopies}>{book.availableCopies}</span>
-                        <span className={styles.copiesSeparator}>/</span>
-                        <span className={styles.totalCopies}>{book.totalCopies}</span>
-                      </div>
-                    </td>
-                    <td className={styles.availabilityCell}>
-                      {getAvailabilityBadge(book.availableCopies, book.totalCopies)}
-                    </td>
+    
                     <td className={styles.statusCell}>
-                      {getStatusBadge(book.status)}
+                      {getStatusBadge(book.isDeleted)}
                     </td>
                     <td className={styles.dateCell}>
-                      {formatDate(book.addedDate)}
+                      {formatDate(book.importedDate)}
                     </td>
                     <td className={styles.actionsCell}>
                       <div className={styles.actionButtons}>
@@ -428,7 +412,6 @@ const BooksManagementPage = () => {
               <div className={styles.deleteBookInfo}>
                 <strong>Title:</strong> {bookToDelete.title}<br />
                 <strong>Author:</strong> {bookToDelete.author}<br />
-                <strong>ISBN:</strong> {bookToDelete.isbn}
               </div>
               <p className="text-danger mt-3">
                 <small>This action cannot be undone.</small>
