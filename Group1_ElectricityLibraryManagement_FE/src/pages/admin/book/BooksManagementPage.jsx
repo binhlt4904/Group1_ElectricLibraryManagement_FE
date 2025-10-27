@@ -174,10 +174,6 @@ const BooksManagementPage = () => {
     navigate('/admin/books/add');
   };
 
-  const handleExport = () => {
-    console.log('Export books data');
-    showAlertMessage('Books data exported successfully!');
-  };
 
   const showAlertMessage = (message) => {
     setAlertMessage(message);
@@ -217,10 +213,7 @@ const BooksManagementPage = () => {
               </p>
             </div>
             <div className={styles.headerActions}>
-              <Button variant="outline-primary" onClick={handleExport} className="me-2">
-                <Download className="me-1" />
-                Export
-              </Button>
+              
               <Button variant="primary" onClick={handleAddNew}>
                 <Plus className="me-1" />
                 Add New Book

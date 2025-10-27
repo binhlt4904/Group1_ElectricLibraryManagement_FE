@@ -14,6 +14,7 @@ const AddBookPage = () => {
     authorId: "",
     categoryId: "",
     publisherId: "",
+    publishedDate: "",
     image: null, // 🔹 đổi từ content -> image
   });
 
@@ -71,6 +72,7 @@ const AddBookPage = () => {
     data.append("authorId", formData.authorId);
     data.append("categoryId", formData.categoryId);
     data.append("publisherId", formData.publisherId);
+    data.append("publishedDate", formData.publishedDate);
     if (formData.image) {
       data.append("image", formData.image); // 🔹 đổi field name
     }
@@ -80,11 +82,13 @@ const AddBookPage = () => {
 
       setSuccessMessage("✅ Thêm sách thành công!");
       setFormData({
+        bookCode: "",
         title: "",
         description: "",
         authorId: "",
         categoryId: "",
         publisherId: "",
+        publishedDate: "",
         image: null,
       });
       setPreviewImage(null);
@@ -150,9 +154,20 @@ const AddBookPage = () => {
               />
             </div>
 
-            {/* Select fields */}
+
             <div className="row">
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold">Published Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  name="publishedDate"
+                  value={formData.publishedDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
                 <label className="form-label fw-bold">Author</label>
                 <select
                   className="form-select"
@@ -169,8 +184,13 @@ const AddBookPage = () => {
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div className="col-md-4 mb-3">
+            {/* Select fields */}
+            <div className="row">
+
+
+              <div className="col-md-6 mb-3">
                 <label className="form-label fw-bold">Category</label>
                 <select
                   className="form-select"
@@ -188,7 +208,7 @@ const AddBookPage = () => {
                 </select>
               </div>
 
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label fw-bold">Publisher</label>
                 <select
                   className="form-select"
@@ -206,6 +226,7 @@ const AddBookPage = () => {
                 </select>
               </div>
             </div>
+
 
             {/* Upload image */}
             <div className="mb-3">

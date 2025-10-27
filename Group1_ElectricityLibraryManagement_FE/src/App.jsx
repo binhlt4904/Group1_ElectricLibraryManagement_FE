@@ -31,7 +31,7 @@ import EventManagementPage from './pages/admin/EventManagementPage';
 import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 import AddBookPage from './pages/admin/book/AddBookPage';
-
+import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
 const AppContent = () => {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -73,6 +73,7 @@ const AppContent = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="books" element={<BooksManagementPage />} />
+            <Route path="books/:id" element={<AdminBookDetailPage />} />
             <Route path="books/add" element={<AddBookPage />} />
             <Route path="authors" element={<AuthorsManagementPage />} />
             <Route path="publishers" element={<PublishersManagementPage />} />

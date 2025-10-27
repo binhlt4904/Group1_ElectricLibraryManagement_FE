@@ -69,7 +69,7 @@ const BookCard = ({
         <div className={styles.imageContainer}>
         <Card.Img 
           variant="top" 
-          src={image || 'https://via.placeholder.com/300x400?text=No+Cover'} 
+          src={`http://localhost:8080${book.image}`|| 'https://via.placeholder.com/300x400?text=No+Cover'} 
           alt={`${title} cover`}
           className={styles.bookCover}
         />

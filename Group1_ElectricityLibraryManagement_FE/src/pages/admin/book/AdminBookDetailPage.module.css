@@ -1,0 +1,150 @@
+.bookDetailPage {
+  padding: 2rem;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.2rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: var(--medium-gray);
+}
+
+.sectionTitle {
+  font-weight: var(--weight-bold);
+  font-size: 1.25rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 1rem;
+}
+
+/* Book Info */
+.bookInfoCard {
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.bookInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+/* Contents Table */
+.contentsCard {
+  background-color: #fff;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.booksTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.booksTable th {
+  background-color: var(--light-gray);
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color);
+  font-weight: var(--weight-bold);
+  color: var(--dark-charcoal);
+}
+
+.booksTable td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+.bookRow:hover {
+  background-color: rgba(13, 110, 253, 0.02);
+}
+
+.contentCell {
+  white-space: pre-wrap;
+  color: var(--medium-gray);
+}
+
+/* Add Content Form */
+.addContentCard {
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: var(--weight-medium);
+  color: var(--dark-charcoal);
+}
+
+.formGroup input,
+.formGroup textarea {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.addButton {
+  background-color: var(--primary-blue);
+  color: #fff;
+  font-weight: var(--weight-bold);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 1.5rem;
+  align-self: flex-start;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addButton:hover {
+  background-color: #0a58ca;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 1.8rem;
+  }
+  .bookInfoGrid {
+    grid-template-columns: 1fr;
+  }
+}
