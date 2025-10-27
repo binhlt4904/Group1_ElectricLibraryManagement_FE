@@ -1,227 +1,160 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Badge, Form, InputGroup, Pagination, Modal, Alert } from 'react-bootstrap';
-import { 
-  Plus, Search, Eye, Pencil, Trash, Download, People, 
-  ExclamationTriangleFill, BookFill, CashCoin, Calendar,
-  PersonCheck, PersonX, Envelope, Telephone
+import React, { useEffect, useState } from 'react';
+import {
+  Row, Col, Card, Button, Table, Form, InputGroup, Pagination, Spinner, Modal, Alert
+} from 'react-bootstrap';
+import {
+  People, Search, Eye, Pencil, Trash, Envelope, Telephone, ExclamationTriangleFill
 } from 'react-bootstrap-icons';
+import accountManagementApi from '../../api/admin/accountManagementApi';
 import styles from './ReadersManagementPage.module.css';
 
+const PAGE_SIZE = 10;
+
 const ReadersManagementPage = () => {
-  const [readers, setReaders] = useState([]);
-  const [filteredReaders, setFilteredReaders] = useState([]);
+  // filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [membershipFilter, setMembershipFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [readerToDelete, setReaderToDelete] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('ALL'); // ALL | ACTIVE | INACTIVE | DELETED
+
+  // paging
+  const [currentPage, setCurrentPage] = useState(1); // UI 1-based
+  const [totalPages, setTotalPages] = useState(0);
+
+  // data
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+
+  // notifications
   const [showAlert, setShowAlert] = useState(false);
+  const [alertVariant, setAlertVariant] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
 
-  // Mock readers data
+  // edit modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    id: null,
+    username: '',
+    fullName: '',
+    email: '',
+    phone: '',
+    status: 'ACTIVE',
+    password: '',            // NEW
+  });
+
+  // delete modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    setErr('');
+    try {
+      const res = await accountManagementApi.findReaders({
+        full_name: searchTerm,
+        status: statusFilter === 'ALL' ? '' : statusFilter, // ALL => không gửi status
+        page: currentPage - 1,   // BE 0-based
+        size: PAGE_SIZE,
+      });
+      const pageData = res?.data ?? { content: [], totalPages: 0 };
+      setRows(pageData.content || []);
+      setTotalPages(pageData.totalPages || 0);
+    } catch (e) {
+      console.error(e);
+      setErr('Failed to load readers. Please try again.');
+      setRows([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const mockReaders = [
-      {
-        id: 1,
-        memberId: 'LIB001234',
-        firstName: 'John',
-        lastName: 'Smith',
-        email: 'john.smith@email.com',
-        phone: '+1 (555) 123-4567',
-        membershipType: 'Premium',
-        status: 'active',
-        joinDate: '2023-06-15',
-        expiryDate: '2024-06-15',
-        currentBorrows: 3,
-        totalBorrows: 45,
-        fines: 0,
-        address: '123 Main St, City, State 12345',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 2,
-        memberId: 'LIB001235',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        email: 'sarah.johnson@email.com',
-        phone: '+1 (555) 234-5678',
-        membershipType: 'Standard',
-        status: 'active',
-        joinDate: '2023-08-20',
-        expiryDate: '2024-08-20',
-        currentBorrows: 2,
-        totalBorrows: 28,
-        fines: 5.50,
-        address: '456 Oak Ave, City, State 12345',
-        photo: 'https://images.unsplash.com/photo-1494790108755-2616c6d4e6e8?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 3,
-        memberId: 'LIB001236',
-        firstName: 'Michael',
-        lastName: 'Brown',
-        email: 'michael.brown@email.com',
-        phone: '+1 (555) 345-6789',
-        membershipType: 'Student',
-        status: 'active',
-        joinDate: '2023-09-10',
-        expiryDate: '2024-09-10',
-        currentBorrows: 5,
-        totalBorrows: 67,
-        fines: 0,
-        address: '789 Pine St, City, State 12345',
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 4,
-        memberId: 'LIB001237',
-        firstName: 'Emily',
-        lastName: 'Davis',
-        email: 'emily.davis@email.com',
-        phone: '+1 (555) 456-7890',
-        membershipType: 'Premium',
-        status: 'suspended',
-        joinDate: '2023-03-05',
-        expiryDate: '2024-03-05',
-        currentBorrows: 0,
-        totalBorrows: 89,
-        fines: 25.00,
-        address: '321 Elm St, City, State 12345',
-        photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 5,
-        memberId: 'LIB001238',
-        firstName: 'David',
-        lastName: 'Wilson',
-        email: 'david.wilson@email.com',
-        phone: '+1 (555) 567-8901',
-        membershipType: 'Standard',
-        status: 'expired',
-        joinDate: '2022-11-15',
-        expiryDate: '2023-11-15',
-        currentBorrows: 1,
-        totalBorrows: 34,
-        fines: 12.75,
-        address: '654 Maple Dr, City, State 12345',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face'
-      }
-    ];
-    setReaders(mockReaders);
-    setFilteredReaders(mockReaders);
-  }, []);
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, statusFilter]);
 
-  // Filter and search logic
-  useEffect(() => {
-    let filtered = readers;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(reader =>
-        reader.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reader.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reader.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reader.memberId.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(reader => reader.status === statusFilter);
-    }
-
-    // Membership filter
-    if (membershipFilter !== 'all') {
-      filtered = filtered.filter(reader => reader.membershipType === membershipFilter);
-    }
-
-    setFilteredReaders(filtered);
+  const onSearch = (e) => {
+    e?.preventDefault?.();
     setCurrentPage(1);
-  }, [readers, searchTerm, statusFilter, membershipFilter]);
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'active':
-        return <Badge bg="success"><PersonCheck className="me-1" />Active</Badge>;
-      case 'suspended':
-        return <Badge bg="warning"><PersonX className="me-1" />Suspended</Badge>;
-      case 'expired':
-        return <Badge bg="danger"><Calendar className="me-1" />Expired</Badge>;
-      default:
-        return <Badge bg="secondary">Unknown</Badge>;
-    }
+    loadData();
   };
 
-  const getMembershipBadge = (type) => {
-    switch (type) {
-      case 'Premium':
-        return <Badge bg="primary">Premium</Badge>;
-      case 'Standard':
-        return <Badge bg="info">Standard</Badge>;
-      case 'Student':
-        return <Badge bg="success">Student</Badge>;
-      default:
-        return <Badge bg="secondary">Unknown</Badge>;
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  const openEdit = (u) => {
+    setEditForm({
+      id: u.id,
+      username: u.username ?? '',
+      fullName: u.fullName ?? '',
+      email: u.email ?? '',
+      phone: u.phone ?? '',
+      status: u.status ?? 'ACTIVE',
+      password: '',            // NEW: không fill mật khẩu cũ
     });
+    setShowEditModal(true);
   };
 
-  const isExpiringSoon = (expiryDate) => {
-    const expiry = new Date(expiryDate);
-    const today = new Date();
-    const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+  const submitEdit = async () => {
+    if (!editForm.id) return;
+    setEditing(true);
+    try {
+      const payload = {
+        username: editForm.username?.trim(),
+        fullName: editForm.fullName?.trim(),
+        email: editForm.email?.trim(),
+        phone: editForm.phone?.trim(),
+        status: editForm.status,
+      };
+      if (editForm.password?.trim()) {
+        payload.password = editForm.password.trim();   // NEW
+      }
+      await accountManagementApi.updateAccount(editForm.id, payload);
+      setShowEditModal(false);
+      toast('success', 'Reader updated successfully.');
+      loadData();
+    } catch (e) {
+      console.error(e);
+      toast('danger', 'Update failed. Check username and password and try again.');
+    } finally {
+      setEditing(false);
+    }
   };
 
-  const handleView = (readerId) => {
-    console.log('View reader:', readerId);
-  };
 
-  const handleEdit = (readerId) => {
-    console.log('Edit reader:', readerId);
-  };
-
-  const handleDelete = (reader) => {
-    setReaderToDelete(reader);
+  const openDelete = (u) => {
+    setDeleteTarget(u);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setReaders(prev => prev.filter(reader => reader.id !== readerToDelete.id));
-    setShowDeleteModal(false);
-    setReaderToDelete(null);
-    showAlertMessage(`Reader "${readerToDelete.firstName} ${readerToDelete.lastName}" has been deleted successfully.`);
+  const confirmDelete = async () => {
+    if (!deleteTarget?.id) return;
+    setDeleting(true);
+    try {
+      await accountManagementApi.deleteAccount(deleteTarget.id);
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
+      toast('success', 'Reader deleted successfully.');
+      // Nếu trang hiện tại rỗng sau khi xóa, lùi 1 trang rồi reload
+      if (rows.length === 1 && currentPage > 1) {
+        setCurrentPage((p) => Math.max(1, p - 1));
+        // loadData sẽ tự chạy vì currentPage thay đổi
+      } else {
+        loadData();
+      }
+    } catch (e) {
+      console.error(e);
+      toast('danger', 'Delete failed. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  const handleAddNew = () => {
-    console.log('Add new reader');
-  };
-
-  const handleExport = () => {
-    console.log('Export readers data');
-    showAlertMessage('Readers data exported successfully!');
-  };
-
-  const showAlertMessage = (message) => {
+  const toast = (variant, message) => {
+    setAlertVariant(variant);
     setAlertMessage(message);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+    setTimeout(() => setShowAlert(false), 2500);
   };
-
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredReaders.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredReaders.length / itemsPerPage);
 
   return (
     <div className={styles.readersManagementPage}>
@@ -235,200 +168,154 @@ const ReadersManagementPage = () => {
                 Readers Management
               </h1>
               <p className={styles.pageSubtitle}>
-                Manage library members, memberships, and account status
+                Manage reader accounts and status
               </p>
-            </div>
-            <div className={styles.headerActions}>
-              <Button variant="outline-primary" onClick={handleExport} className="me-2">
-                <Download className="me-1" />
-                Export
-              </Button>
-              <Button variant="primary" onClick={handleAddNew}>
-                <Plus className="me-1" />
-                Add New Reader
-              </Button>
             </div>
           </div>
         </Col>
       </Row>
 
       {showAlert && (
-        <Alert variant="success" className={styles.alert}>
+        <Alert variant={alertVariant} className={styles.alert}>
           {alertMessage}
         </Alert>
       )}
 
-      {/* Filters */}
+      {/* Filters (search fullName + status với ALL) */}
       <Row className="mb-4">
-        <Col lg={4} className="mb-3">
-          <InputGroup size="lg">
-            <Form.Control
-              type="text"
-              placeholder="Search by name, email, or member ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
-            <Button variant="primary">
-              <Search />
-            </Button>
-          </InputGroup>
+        <Col lg={6} className="mb-3">
+          <Form onSubmit={onSearch}>
+            <InputGroup size="lg">
+              <Form.Control
+                type="text"
+                placeholder="Search by full name…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={styles.searchInput}
+              />
+              <Button variant="primary" type="submit">
+                <Search />
+              </Button>
+            </InputGroup>
+          </Form>
         </Col>
-        <Col lg={2} className="mb-3">
+        <Col lg={3} className="mb-3">
           <Form.Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             size="lg"
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="expired">Expired</option>
+            <option value="ALL">All Status</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="DELETED">DELETED</option>
           </Form.Select>
-        </Col>
-        <Col lg={2} className="mb-3">
-          <Form.Select
-            value={membershipFilter}
-            onChange={(e) => setMembershipFilter(e.target.value)}
-            size="lg"
-          >
-            <option value="all">All Memberships</option>
-            <option value="Premium">Premium</option>
-            <option value="Standard">Standard</option>
-            <option value="Student">Student</option>
-          </Form.Select>
-        </Col>
-        <Col lg={4} className="mb-3">
-          <div className={styles.resultsInfo}>
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredReaders.length)} of {filteredReaders.length} readers
-          </div>
         </Col>
       </Row>
 
       {/* Readers Table */}
       <Card className={`custom-card ${styles.readersCard}`}>
         <Card.Body className={styles.readersCardBody}>
-          <div className={styles.tableContainer}>
-            <Table responsive className={styles.readersTable}>
-              <thead>
-                <tr>
-                  <th>Reader</th>
-                  <th>Contact</th>
-                  <th>Membership</th>
-                  <th>Status</th>
-                  <th>Borrows</th>
-                  <th>Fines</th>
-                  <th>Expiry Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentItems.map(reader => (
-                  <tr key={reader.id} className={styles.readerRow}>
-                    <td className={styles.readerCell}>
-                      <div className={styles.readerInfo}>
-                        <img
-                          src={reader.photo}
-                          alt={`${reader.firstName} ${reader.lastName}`}
-                          className={styles.readerPhoto}
-                        />
-                        <div className={styles.readerDetails}>
-                          <div className={styles.readerName}>
-                            {reader.firstName} {reader.lastName}
-                          </div>
-                          <div className={styles.memberId}>
-                            ID: {reader.memberId}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.contactCell}>
-                      <div className={styles.contactInfo}>
-                        <div className={styles.contactItem}>
-                          <Envelope className={styles.contactIcon} />
-                          <span className={styles.contactText}>{reader.email}</span>
-                        </div>
-                        <div className={styles.contactItem}>
-                          <Telephone className={styles.contactIcon} />
-                          <span className={styles.contactText}>{reader.phone}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.membershipCell}>
-                      {getMembershipBadge(reader.membershipType)}
-                    </td>
-                    <td className={styles.statusCell}>
-                      {getStatusBadge(reader.status)}
-                    </td>
-                    <td className={styles.borrowsCell}>
-                      <div className={styles.borrowsInfo}>
-                        <div className={styles.currentBorrows}>
-                          <BookFill className={styles.borrowsIcon} />
-                          <span className={styles.borrowsNumber}>{reader.currentBorrows}</span>
-                          <span className={styles.borrowsLabel}>current</span>
-                        </div>
-                        <div className={styles.totalBorrows}>
-                          {reader.totalBorrows} total
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.finesCell}>
-                      {reader.fines > 0 ? (
-                        <div className={styles.finesAmount}>
-                          <CashCoin className={styles.finesIcon} />
-                          <span className={styles.finesNumber}>${reader.fines.toFixed(2)}</span>
-                        </div>
-                      ) : (
-                        <Badge bg="success">No Fines</Badge>
-                      )}
-                    </td>
-                    <td className={styles.expiryCell}>
-                      <div className={styles.expiryInfo}>
-                        <span className={styles.expiryDate}>
-                          {formatDate(reader.expiryDate)}
-                        </span>
-                        {isExpiringSoon(reader.expiryDate) && (
-                          <Badge bg="warning" className={styles.expiryWarning}>
-                            Expiring Soon
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className={styles.actionsCell}>
-                      <div className={styles.actionButtons}>
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={() => handleView(reader.id)}
-                          className={styles.actionButton}
-                        >
-                          <Eye />
-                        </Button>
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          onClick={() => handleEdit(reader.id)}
-                          className={styles.actionButton}
-                        >
-                          <Pencil />
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDelete(reader)}
-                          className={styles.actionButton}
-                        >
-                          <Trash />
-                        </Button>
-                      </div>
-                    </td>
+          {loading ? (
+            <div className="d-flex align-items-center gap-2">
+              <Spinner animation="border" size="sm" />
+              <span>Loading…</span>
+            </div>
+          ) : err ? (
+            <div className="text-danger">{err}</div>
+          ) : (
+            <div className={styles.tableContainer}>
+              <Table responsive className={styles.readersTable}>
+                <thead>
+                  <tr>
+                    <th style={{ width: 70 }}>#</th>
+                    <th style={{ minWidth: 140 }}>Username</th>
+                    <th style={{ minWidth: 180 }}>Full name</th>
+                    <th style={{ minWidth: 220 }}>Email</th>
+                    <th style={{ minWidth: 150 }}>Phone</th>
+                    <th style={{ minWidth: 140 }}>Status</th>
+                    <th style={{ width: 140 }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-4">No data</td>
+                    </tr>
+                  ) : (
+                    rows.map((u, idx) => (
+                      <tr key={u.id ?? idx} className={styles.readerRow}>
+                        <td>{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
 
-          {/* Pagination */}
+                        <td>{u.username ?? '—'}</td>
+
+                        <td>{u.fullName ?? '—'}</td>
+
+                        <td>
+                          <div className="d-flex align-items-center gap-2">
+                            <Envelope /> <span>{u.email ?? '—'}</span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="d-flex align-items-center gap-2">
+                            <Telephone /> <span>{u.phone ?? '—'}</span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <span
+                            className={[
+                              styles.statusPill,
+                              (u.status === 'ACTIVE' && styles.statusActive) ||
+                              (u.status === 'INACTIVE' && styles.statusInactive) ||
+                              styles.statusDeleted
+                            ].filter(Boolean).join(' ')}
+                          >
+                            {u.status ?? '—'}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="d-flex gap-2">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              title="View"
+                              onClick={() => console.log('view', u.id)}
+                            >
+                              <Eye />
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              title="Edit"
+                              onClick={() => openEdit(u)}
+                            >
+                              <Pencil />
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              title="Delete"
+                              onClick={() => openDelete(u)}
+                            >
+                              <Trash />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </div>
+          )}
+
+          {/* Pagination (server-side) */}
           {totalPages > 1 && (
             <div className={styles.paginationContainer}>
               <Pagination>
@@ -437,20 +324,23 @@ const ReadersManagementPage = () => {
                   disabled={currentPage === 1}
                 />
                 <Pagination.Prev
-                  onClick={() => setCurrentPage(currentPage - 1)}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 />
-                {[...Array(totalPages)].map((_, index) => (
-                  <Pagination.Item
-                    key={index + 1}
-                    active={index + 1 === currentPage}
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </Pagination.Item>
-                ))}
+                {[...Array(totalPages)].map((_, i) => {
+                  const n = i + 1;
+                  return (
+                    <Pagination.Item
+                      key={n}
+                      active={n === currentPage}
+                      onClick={() => setCurrentPage(n)}
+                    >
+                      {n}
+                    </Pagination.Item>
+                  );
+                })}
                 <Pagination.Next
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 />
                 <Pagination.Last
@@ -463,6 +353,86 @@ const ReadersManagementPage = () => {
         </Card.Body>
       </Card>
 
+      {/* Edit Modal */}
+      {/* Edit Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Reader</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row className="g-3">
+              <Col md={6}>
+                <Form.Label>Username</Form.Label>
+                <Form.Control
+                  value={editForm.username}
+                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                  placeholder="reader01"
+                />
+              </Col>
+              <Col md={6}>
+                <Form.Label>Full name</Form.Label>
+                <Form.Control
+                  value={editForm.fullName}
+                  onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                  placeholder="Nguyen Van A"
+                />
+              </Col>
+              <Col md={6}>
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  placeholder="reader@library.com"
+                />
+              </Col>
+              <Col md={6}>
+                <Form.Label>Phone</Form.Label>
+                <Form.Control
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  placeholder="0900000000"
+                />
+              </Col>
+
+              {/* NEW: Password */}
+              <Col md={6}>
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={editForm.password}
+                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                  placeholder="New Password"
+                />
+                <Form.Text muted>Let empty if not change</Form.Text>
+              </Col>
+
+              <Col md={6}>
+                <Form.Label>Status</Form.Label>
+                <Form.Select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                  <option value="DELETED">DELETED</option>
+                </Form.Select>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editing}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={submitEdit} disabled={editing}>
+            {editing ? 'Saving…' : 'Save changes'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
@@ -472,27 +442,27 @@ const ReadersManagementPage = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {readerToDelete && (
-            <div>
+          {deleteTarget && (
+            <>
               <p>Are you sure you want to delete this reader?</p>
               <div className={styles.deleteReaderInfo}>
-                <strong>Name:</strong> {readerToDelete.firstName} {readerToDelete.lastName}<br />
-                <strong>Member ID:</strong> {readerToDelete.memberId}<br />
-                <strong>Email:</strong> {readerToDelete.email}<br />
-                <strong>Current Borrows:</strong> {readerToDelete.currentBorrows} books
+                <strong>Username:</strong> {deleteTarget.username}<br />
+                <strong>Full name:</strong> {deleteTarget.fullName}<br />
+                <strong>Email:</strong> {deleteTarget.email}<br />
+                <strong>Phone:</strong> {deleteTarget.phone}
               </div>
-              <p className="text-danger mt-3">
-                <small>This action cannot be undone and will affect all borrowing history.</small>
+              <p className="text-danger mt-2">
+                <small>This action cannot be undone.</small>
               </p>
-            </div>
+            </>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
-            Delete Reader
+          <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </Modal.Footer>
       </Modal>
