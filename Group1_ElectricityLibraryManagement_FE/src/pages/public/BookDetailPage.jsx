@@ -3,16 +3,32 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Badge, Nav, Tab, Card, ProgressBar } from 'react-bootstrap';
 import { Heart, HeartFill, Star, StarFill, Share, BookmarkPlus, ArrowLeft } from 'react-bootstrap-icons';
 import styles from './BookDetailPage.module.css';
-
+import bookApi from '../../api/book';
 const BookDetailPage = () => {
   const { id: bookId } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
+  const [contents, setContents] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   // Mock data - replace with API call
   useEffect(() => {
+    const fetchBookDetail = async () => {
+      try{
+        const bookRes = await bookApi.findBookUserById(bookId);
+        console.log(bookRes.data)
+        const contentsRes = await bookApi.findBookContentsById(bookId);
+        const reviewsRes = await bookApi.findReviewsByBookId(bookId);
+
+        setBook(bookRes.data);
+        setContents(contentsRes.data);
+        setReviews(reviewsRes.data);
+      } catch (error) {
+        console.error("Error fetching book details:", error);
+      }
+    }
     const mockBook = {
       id: 1,
       title: "The Great Gatsby",
@@ -124,7 +140,7 @@ const BookDetailPage = () => {
         }
       ]
     };
-    setBook(mockBook);
+    fetchBookDetail();
   }, [bookId]);
 
   const handleWishlistToggle = () => {
@@ -206,7 +222,11 @@ const BookDetailPage = () => {
           <Col lg={4}>
             <div className={styles.bookCoverContainer}>
               <img
-                src={book.coverImage}
+                src={
+                book.image
+                  ? `http://localhost:8080${book.image}`
+                  : "https://via.placeholder.com/300x400?text=No+Cover"
+              }
                 alt={`${book.title} cover`}
                 className={styles.bookCover}
               />
@@ -217,27 +237,26 @@ const BookDetailPage = () => {
               <h1 className={styles.bookTitle}>{book.title}</h1>
               <h2 className={styles.bookAuthor}>by {book.author}</h2>
               
-              <div className={styles.ratingSection}>
+              {/* <div className={styles.ratingSection}>
                 <div className={styles.stars}>
-                  {renderStars(book.rating)}
+                  {renderStars(reviews.rating)}
                 </div>
                 <span className={styles.ratingText}>
                   {book.rating.toFixed(1)} ({book.totalRatings} reviews)
                 </span>
-              </div>
+              </div> */}
 
               <div className={styles.genreSection}>
-                {book.genres.map((genre, index) => (
-                  <Badge key={index} bg="light" text="dark" className={styles.genreBadge}>
-                    {genre}
+                
+                  <Badge bg="light" text="dark" className={styles.genreBadge}>
+                    {book.category}
                   </Badge>
-                ))}
               </div>
 
               
 
               <div className={styles.actionButtons}>
-                <Button
+                {/* <Button
                   variant="primary"
                   size="lg"
                   className="me-3"
@@ -245,6 +264,15 @@ const BookDetailPage = () => {
                   onClick={book.copiesAvailable > 0 ? handleBorrow : handleReserve}
                 >
                   {book.copiesAvailable > 0 ? 'Borrow Now' : 'Join Waitlist'}
+                </Button> */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="me-3"
+                  
+                  onClick={ handleBorrow }
+                >
+                   Borrow Now
                 </Button>
                 <Button
                   variant="outline-primary"
@@ -284,13 +312,13 @@ const BookDetailPage = () => {
                   <Nav.Link eventKey="overview">Overview</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="contents">Contents ({book.contents.length} chapters)</Nav.Link>
+                  <Nav.Link eventKey="contents">Contents ({contents.length} chapters)</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="details">Details</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="reviews">Reviews ({book.reviews.length})</Nav.Link>
+                  <Nav.Link eventKey="reviews">Reviews ({reviews.length})</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="related">Related Books</Nav.Link>
@@ -309,7 +337,7 @@ const BookDetailPage = () => {
                   <div className={styles.contents}>
                     <h3>Table of Contents</h3>
                     <div className={styles.chapterList}>
-                      {book.contents.map(chapter => (
+                      {contents.map(chapter => (
                         <div key={chapter.id} className={styles.chapterItem}>
                           <Link
                             to={`/book-reader/${bookId}/${chapter.id}`}
@@ -322,9 +350,9 @@ const BookDetailPage = () => {
                               <div className={styles.chapterTitle}>
                                 {chapter.title}
                               </div>
-                              <div className={styles.chapterPages}>
+                              {/* <div className={styles.chapterPages}>
                                 Pages {chapter.pages}
-                              </div>
+                              </div> */}
                             </div>
                           </Link>
                         </div>
@@ -336,29 +364,15 @@ const BookDetailPage = () => {
                 <Tab.Pane eventKey="details">
                   <div className={styles.details}>
                     <Row>
-                      <Col md={6}>
-                        <div className={styles.detailItem}>
-                          <strong>ISBN:</strong> {book.isbn}
-                        </div>
-                        <div className={styles.detailItem}>
-                          <strong>Pages:</strong> {book.pages}
-                        </div>
-                        <div className={styles.detailItem}>
-                          <strong>Language:</strong> {book.language}
-                        </div>
-                      </Col>
-                      <Col md={6}>
+                      <Col >
                         <div className={styles.detailItem}>
                           <strong>Publisher:</strong> {book.publisher}
                         </div>
                         <div className={styles.detailItem}>
-                          <strong>Publication Year:</strong> {book.publishYear}
+                          <strong>Publication Year:</strong> {book.publishedDate}
                         </div>
                         <div className={styles.detailItem}>
-                          <strong>Imported Date:</strong> {new Date(book.imported_date).toLocaleDateString()}
-                        </div>
-                        <div className={styles.detailItem}>
-                          <strong>Category:</strong> {book.categoryname}
+                          <strong>Imported Date:</strong> {new Date(book.importedDate).toLocaleDateString()}
                         </div>
                         <div className={styles.detailItem}>
                           <strong>Category:</strong> {book.category}
@@ -370,18 +384,18 @@ const BookDetailPage = () => {
 
                 <Tab.Pane eventKey="reviews">
                   <div className={styles.reviews}>
-                    {book.reviews.map(review => (
+                    {reviews.map(review => (
                       <Card key={review.id} className={styles.reviewCard}>
                         <Card.Body>
                           <div className={styles.reviewHeader}>
                             <div>
-                              <strong>{review.user}</strong>
-                              <small className="text-muted ms-2">(ID: {review.reviewer_id})</small>
+                              <strong>{review.reviewerName}</strong>
+                              <small className="text-muted ms-2">(ID: {review.id})</small>
                               <div className={styles.reviewStars}>
-                                {renderStars(review.rating)}
+                                {renderStars(review.rate)}
                               </div>
                             </div>
-                            <small className="text-muted">{review.date}</small>
+                            <small className="text-muted">{review.createdDate}</small>
                           </div>
                           <p className={styles.reviewComment}>{review.note}</p>
                         </Card.Body>
@@ -390,7 +404,7 @@ const BookDetailPage = () => {
                   </div>
                 </Tab.Pane>
 
-                <Tab.Pane eventKey="related">
+                {/* <Tab.Pane eventKey="related">
                   <div className={styles.relatedBooks}>
                     <Row>
                       {book.relatedBooks.map(relatedBook => (
@@ -410,7 +424,7 @@ const BookDetailPage = () => {
                       ))}
                     </Row>
                   </div>
-                </Tab.Pane>
+                </Tab.Pane> */}
               </Tab.Content>
             </Tab.Container>
           </Col>
