@@ -33,6 +33,17 @@ const accountManagementApi = {
   deleteAccount: async (id) => {
     return await axiosClient.delete(`/api/v1/admin/accounts/delete/${id}`);
   },
+  // === VIEW DETAIL READER (ReaderDetailDto) ===
+  // id la accountId
+  getReaderDetail: async (accountId) => {
+    return await axiosClient.get(`/api/v1/admin/accounts/reader/${accountId}`);
+  },
+  // === VIEW DETAIL STAFF (StaffDetailDto) ===
+  // id la accountId 
+  getStaffDetail: async (accountId) => {
+    return await axiosClient.get(`/api/v1/admin/accounts/staff/${accountId}`);
+  },
+
 };
 
 export default accountManagementApi;

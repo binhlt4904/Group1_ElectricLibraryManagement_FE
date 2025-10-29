@@ -24,7 +24,7 @@ import BooksManagementPage from './pages/admin/book/BooksManagementPage';
 import AuthorsManagementPage from './pages/admin/AuthorsManagementPage';
 import ReadersManagementPage from './pages/admin/ReadersManagementPage';
 import ReportsPage from './pages/admin/ReportsPage';
-import SystemUsersPage from './pages/admin/SystemUsersPage';
+import StaffManagementPage from './pages/admin/SystemUsersPage';
 import PublishersManagementPage from './pages/admin/PublishersManagementPage';
 import BorrowalsManagementPage from './pages/admin/BorrowalsManagementPage';
 import EventManagementPage from './pages/admin/EventManagementPage';
@@ -85,7 +85,7 @@ const AppContent = () => {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="user-reports" element={<ReportManagementPage />} />
             <Route path="documents" element={<DocumentManagementPage />} />
-            <Route path="system-users" element={<SystemUsersPage />} />
+            <Route path="system-users" element={<StaffManagementPage />} />
             {/* Default redirect to dashboard */}
             <Route index element={<DashboardPage />} />
           </Route>

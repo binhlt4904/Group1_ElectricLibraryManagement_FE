@@ -10,6 +10,54 @@ import styles from './ReadersManagementPage.module.css';
 
 const PAGE_SIZE = 10;
 
+/** Chuẩn hoá nhiều định dạng lỗi BE về { field: message } */
+function parseFieldErrors(err) {
+  const map = {};
+  const data = err?.response?.data ?? err?.data ?? err;
+
+  // 1) { errors: { username: "exists", email: "invalid", ... } }
+  if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) {
+    Object.entries(data.errors).forEach(([k, v]) => {
+      map[k] = Array.isArray(v) ? v[0] : String(v);
+    });
+  }
+
+  // 2) { fieldErrors: [{ field: "email", message: "invalid" }, ...] }
+  if (Array.isArray(data?.fieldErrors)) {
+    data.fieldErrors.forEach(e => {
+      if (e?.field) map[e.field] = e?.message || 'Invalid';
+    });
+  }
+
+  // 3) { violations: [{ fieldName: "email", message: "..." }]}
+  if (Array.isArray(data?.violations)) {
+    data.violations.forEach(v => {
+      if (v?.fieldName) map[v.fieldName] = v?.message || 'Invalid';
+    });
+  }
+
+  // 4) { details: [{ propertyPath: "email", message: "..." }]}
+  if (Array.isArray(data?.details)) {
+    data.details.forEach(d => {
+      const key = d?.field || d?.propertyPath;
+      if (key) map[key] = d?.message || 'Invalid';
+    });
+  }
+
+  // 5) { message: "..." } lỗi chung
+  if (!Object.keys(map).length && data?.message) {
+    map._common = String(data.message);
+  }
+
+  // Alias tên field (nếu BE dùng snake_case)
+  if (map['full_name'] && !map['fullName']) map['fullName'] = map['full_name'];
+
+  return map;
+}
+
+/** Helper: kiểm tra status DELETED (case-insensitive) */
+const isDeletedStatus = (s) => String(s || '').toUpperCase() === 'DELETED';
+
 const ReadersManagementPage = () => {
   // filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,13 +87,20 @@ const ReadersManagementPage = () => {
     email: '',
     phone: '',
     status: 'ACTIVE',
-    password: '',            // NEW
+    password: '',
   });
+  const [editErrors, setEditErrors] = useState({});
 
   // delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  // ===== Detail modal (VIEW) =====
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+  const [detail, setDetail] = useState(null); // { email, fullName, username, phone, status, readerCode }
 
   const loadData = async () => {
     setLoading(true);
@@ -82,14 +137,16 @@ const ReadersManagementPage = () => {
   };
 
   const openEdit = (u) => {
+    if (isDeletedStatus(u?.status)) return; // guard nếu record đã DELETED
+    setEditErrors({});
     setEditForm({
-      id: u.id,
+      id: u.id,                // accountId
       username: u.username ?? '',
       fullName: u.fullName ?? '',
       email: u.email ?? '',
       phone: u.phone ?? '',
       status: u.status ?? 'ACTIVE',
-      password: '',            // NEW: không fill mật khẩu cũ
+      password: '',
     });
     setShowEditModal(true);
   };
@@ -97,6 +154,7 @@ const ReadersManagementPage = () => {
   const submitEdit = async () => {
     if (!editForm.id) return;
     setEditing(true);
+    setEditErrors({});
     try {
       const payload = {
         username: editForm.username?.trim(),
@@ -106,7 +164,7 @@ const ReadersManagementPage = () => {
         status: editForm.status,
       };
       if (editForm.password?.trim()) {
-        payload.password = editForm.password.trim();   // NEW
+        payload.password = editForm.password.trim();
       }
       await accountManagementApi.updateAccount(editForm.id, payload);
       setShowEditModal(false);
@@ -114,14 +172,20 @@ const ReadersManagementPage = () => {
       loadData();
     } catch (e) {
       console.error(e);
-      toast('danger', 'Update failed. Check username and password and try again.');
+      const fieldMap = parseFieldErrors(e);
+      if (Object.keys(fieldMap).length) {
+        setEditErrors(fieldMap);
+        if (fieldMap._common) toast('danger', fieldMap._common);
+      } else {
+        toast('danger', 'Update failed. Check fields and try again.');
+      }
     } finally {
       setEditing(false);
     }
   };
 
-
   const openDelete = (u) => {
+    if (isDeletedStatus(u?.status)) return; // guard nếu record đã DELETED
     setDeleteTarget(u);
     setShowDeleteModal(true);
   };
@@ -134,10 +198,8 @@ const ReadersManagementPage = () => {
       setShowDeleteModal(false);
       setDeleteTarget(null);
       toast('success', 'Reader deleted successfully.');
-      // Nếu trang hiện tại rỗng sau khi xóa, lùi 1 trang rồi reload
       if (rows.length === 1 && currentPage > 1) {
         setCurrentPage((p) => Math.max(1, p - 1));
-        // loadData sẽ tự chạy vì currentPage thay đổi
       } else {
         loadData();
       }
@@ -146,6 +208,24 @@ const ReadersManagementPage = () => {
       toast('danger', 'Delete failed. Please try again.');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  // ====== OPEN VIEW DETAIL ======
+  const openDetail = async (accountId) => {
+    if (!accountId) return;
+    setShowDetailModal(true);
+    setDetail(null);
+    setDetailError('');
+    setDetailLoading(true);
+    try {
+      const res = await accountManagementApi.getReaderDetail(accountId);
+      setDetail(res?.data ?? null);
+    } catch (e) {
+      console.error(e);
+      setDetailError('Không tải được chi tiết độc giả.');
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -246,69 +326,74 @@ const ReadersManagementPage = () => {
                       <td colSpan={7} className="text-center py-4">No data</td>
                     </tr>
                   ) : (
-                    rows.map((u, idx) => (
-                      <tr key={u.id ?? idx} className={styles.readerRow}>
-                        <td>{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
+                    rows.map((u, idx) => {
+                      const isDel = isDeletedStatus(u.status);
+                      return (
+                        <tr key={u.id ?? idx} className={styles.readerRow}>
+                          <td>{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
 
-                        <td>{u.username ?? '—'}</td>
+                          <td>{u.username ?? '—'}</td>
 
-                        <td>{u.fullName ?? '—'}</td>
+                          <td>{u.fullName ?? '—'}</td>
 
-                        <td>
-                          <div className="d-flex align-items-center gap-2">
-                            <Envelope /> <span>{u.email ?? '—'}</span>
-                          </div>
-                        </td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <Envelope /> <span>{u.email ?? '—'}</span>
+                            </div>
+                          </td>
 
-                        <td>
-                          <div className="d-flex align-items-center gap-2">
-                            <Telephone /> <span>{u.phone ?? '—'}</span>
-                          </div>
-                        </td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <Telephone /> <span>{u.phone ?? '—'}</span>
+                            </div>
+                          </td>
 
-                        <td>
-                          <span
-                            className={[
-                              styles.statusPill,
-                              (u.status === 'ACTIVE' && styles.statusActive) ||
-                              (u.status === 'INACTIVE' && styles.statusInactive) ||
-                              styles.statusDeleted
-                            ].filter(Boolean).join(' ')}
-                          >
-                            {u.status ?? '—'}
-                          </span>
-                        </td>
-
-                        <td>
-                          <div className="d-flex gap-2">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              title="View"
-                              onClick={() => console.log('view', u.id)}
+                          <td>
+                            <span
+                              className={[
+                                styles.statusPill,
+                                (u.status === 'ACTIVE' && styles.statusActive) ||
+                                (u.status === 'INACTIVE' && styles.statusInactive) ||
+                                styles.statusDeleted
+                              ].filter(Boolean).join(' ')}
                             >
-                              <Eye />
-                            </Button>
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              title="Edit"
-                              onClick={() => openEdit(u)}
-                            >
-                              <Pencil />
-                            </Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              title="Delete"
-                              onClick={() => openDelete(u)}
-                            >
-                              <Trash />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {u.status ?? '—'}
+                            </span>
+                          </td>
+
+                          <td>
+                            <div className="d-flex gap-2">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                title="View"
+                                onClick={() => openDetail(u.id)} // vẫn cho View
+                              >
+                                <Eye />
+                              </Button>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                title={isDel ? 'Cannot edit a deleted account' : 'Edit'}
+                                disabled={isDel}
+                                onClick={() => !isDel && openEdit(u)}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                title={isDel ? 'Already deleted' : 'Delete'}
+                                disabled={isDel}
+                                onClick={() => !isDel && openDelete(u)}
+                              >
+                                <Trash />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </Table>
@@ -353,58 +438,118 @@ const ReadersManagementPage = () => {
         </Card.Body>
       </Card>
 
-      {/* Edit Modal */}
+      {/* ===== Detail Modal (VIEW) ===== */}
+      <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Reader detail</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {detailLoading && (
+            <div className="d-flex align-items-center gap-2">
+              <Spinner animation="border" size="sm" />
+              <span>Loading…</span>
+            </div>
+          )}
+          {!detailLoading && detailError && (
+            <div className="text-danger">{detailError}</div>
+          )}
+          {!detailLoading && !detailError && detail && (
+            <div className="vstack gap-2">
+              <div><span className="fw-semibold">Full name: </span>{detail.fullName}</div>
+              <div><span className="fw-semibold">Email: </span>{detail.email}</div>
+              <div><span className="fw-semibold">Username: </span>{detail.username}</div>
+              <div><span className="fw-semibold">Phone: </span>{detail.phone}</div>
+              <div>
+                <span className="fw-semibold">Status: </span>
+                <span
+                  className={[
+                    styles.statusPill,
+                    (detail.status === 'ACTIVE' && styles.statusActive) ||
+                    (detail.status === 'INACTIVE' && styles.statusInactive) ||
+                    styles.statusDeleted
+                  ].filter(Boolean).join(' ')}
+                >
+                  {detail.status}
+                </span>
+              </div>
+              <div><span className="fw-semibold">Reader code: </span>{detail.readerCode}</div>
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
+
       {/* Edit Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit Reader</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {editErrors._common && <Alert variant="danger">{editErrors._common}</Alert>}
           <Form>
             <Row className="g-3">
               <Col md={6}>
                 <Form.Label>Username</Form.Label>
                 <Form.Control
                   value={editForm.username}
+                  isInvalid={!!editErrors.username}
                   onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
                   placeholder="reader01"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.username}
+                </Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Label>Full name</Form.Label>
                 <Form.Control
                   value={editForm.fullName}
+                  isInvalid={!!editErrors.fullName}
                   onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
                   placeholder="Nguyen Van A"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.fullName}
+                </Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
                   value={editForm.email}
+                  isInvalid={!!editErrors.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                   placeholder="reader@library.com"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.email}
+                </Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Label>Phone</Form.Label>
                 <Form.Control
                   value={editForm.phone}
+                  isInvalid={!!editErrors.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   placeholder="0900000000"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.phone}
+                </Form.Control.Feedback>
               </Col>
 
-              {/* NEW: Password */}
+              {/* Password mới (tùy chọn) */}
               <Col md={6}>
                 <Form.Label>Password</Form.Label>
                 <Form.Control
                   type="password"
                   value={editForm.password}
+                  isInvalid={!!editErrors.password}
                   onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
                   placeholder="New Password"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.password}
+                </Form.Control.Feedback>
                 <Form.Text muted>Let empty if not change</Form.Text>
               </Col>
 
@@ -412,12 +557,15 @@ const ReadersManagementPage = () => {
                 <Form.Label>Status</Form.Label>
                 <Form.Select
                   value={editForm.status}
+                  isInvalid={!!editErrors.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                 >
                   <option value="ACTIVE">ACTIVE</option>
                   <option value="INACTIVE">INACTIVE</option>
-                  <option value="DELETED">DELETED</option>
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.status}
+                </Form.Control.Feedback>
               </Col>
             </Row>
           </Form>
@@ -431,7 +579,6 @@ const ReadersManagementPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
