@@ -20,6 +20,10 @@ const bookApi = {
     },
     findReviewsByBookId: async (id) => {
         return await axiosClient.get(`/api/v1/public/books/${id}/reviews`);
+    },
+
+    getBookContentUserById: async(bookId) =>{
+        return await axiosClient.get(`/api/v1/public/books/${bookId}/contents/user`)
     }
 };
 
