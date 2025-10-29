@@ -406,3 +406,47 @@
     min-width: 100px;
   }
 }
+ /* === Status pill styles === */
+.statusPill {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+  background: var(--light-gray);
+  color: var(--dark-charcoal);
+}
+
+/* Base pill */
+.statusPill {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+  background: #f1f3f5;      /* fallback xám nhạt */
+  color: #495057;           /* fallback chữ xám đậm */
+}
+
+/* Tăng specificity: .statusPill.statusActive (thay vì chỉ .statusActive) */
+.statusPill.statusActive {
+  background: rgba(46, 204, 113, 0.12);  /* xanh lá nhạt */
+  color: #2ecc71;                        /* chữ xanh lá */
+  border-color: rgba(46, 204, 113, 0.35);
+}
+
+.statusPill.statusInactive {
+  background: rgba(108, 117, 125, 0.12);
+  color: #6c757d;
+  border-color: rgba(108, 117, 125, 0.35);
+}
+
+.statusPill.statusDeleted {
+  background: rgba(220, 53, 69, 0.12);
+  color: #dc3545;
+  border-color: rgba(220, 53, 69, 0.35);
+}

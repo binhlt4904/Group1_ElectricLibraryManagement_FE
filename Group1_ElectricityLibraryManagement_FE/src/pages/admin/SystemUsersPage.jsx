@@ -1,243 +1,319 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Badge, Form, InputGroup, Pagination, Modal, Alert } from 'react-bootstrap';
-import { 
-  Plus, Search, Eye, Pencil, Trash, Download, Gear, 
-  ExclamationTriangleFill, PersonFill, Shield, ShieldCheck,
-  Envelope, Calendar, Clock
+import React, { useEffect, useState } from 'react';
+import {
+  Row, Col, Card, Button, Table, Form, InputGroup, Pagination, Spinner, Modal, Alert, InputGroup as BsInputGroup
+} from 'react-bootstrap';
+import {
+  People, Search, Eye, Pencil, Trash, Envelope, Telephone, ExclamationTriangleFill, Plus
 } from 'react-bootstrap-icons';
+import accountManagementApi from '../../api/admin/accountManagementApi';
 import styles from './SystemUsersPage.module.css';
 
-const SystemUsersPage = () => {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+const PAGE_SIZE = 10;
+
+/** Parse nhiều định dạng lỗi BE thành { field: message } */
+function parseFieldErrors(err) {
+  const map = {};
+  const data = err?.response?.data ?? err?.data ?? err;
+
+  if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) {
+    Object.entries(data.errors).forEach(([k, v]) => {
+      map[k] = Array.isArray(v) ? v[0] : String(v);
+    });
+  }
+  if (Array.isArray(data?.fieldErrors)) {
+    data.fieldErrors.forEach(e => {
+      if (e?.field) map[e.field] = e?.message || 'Invalid';
+    });
+  }
+  if (Array.isArray(data?.violations)) {
+    data.violations.forEach(v => {
+      if (v?.fieldName) map[v.fieldName] = v?.message || 'Invalid';
+    });
+  }
+  if (Array.isArray(data?.details)) {
+    data.details.forEach(d => {
+      const key = d?.field || d?.propertyPath;
+      if (key) map[key] = d?.message || 'Invalid';
+    });
+  }
+  if (!Object.keys(map).length && data?.message) {
+    map._common = String(data.message);
+  }
+  return map;
+}
+
+const formatDT = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString();
+};
+
+/** Helper: kiểm tra status DELETED (case-insensitive) */
+const isDeletedStatus = (s) => String(s || '').toUpperCase() === 'DELETED';
+
+const StaffManagementPage = () => {
+  // filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('ALL'); // ALL | ACTIVE | INACTIVE | DELETED
+
+  // paging
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // data
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+
+  // notifications
   const [showAlert, setShowAlert] = useState(false);
+  const [alertVariant, setAlertVariant] = useState('success');
   const [alertMessage, setAlertMessage] = useState('');
 
-  // Mock system users data
+  // ===== Detail modal (VIEW) =====
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+  const [detail, setDetail] = useState(null); // { username, email, fullName, phone, status, position, joinDate, hireDate }
+
+  // ===== Edit modal =====
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    id: null,
+    username: '',
+    fullName: '',
+    email: '',
+    phone: '',
+    status: 'ACTIVE',
+    password: '',
+  });
+  const [editErrors, setEditErrors] = useState({});
+
+  // ===== Create modal =====
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    username: '',
+    email: '',
+    fullName: '',
+    phone: '',
+    password: '',
+    status: 'ACTIVE',   // ACTIVE/INACTIVE
+    position: '',
+    salary: '',
+  });
+  const [createErrors, setCreateErrors] = useState({});
+
+  // ===== Delete modal =====
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const toast = (variant, message) => {
+    setAlertVariant(variant);
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 2500);
+  };
+
+  const loadData = async () => {
+    setLoading(true);
+    setErr('');
+    try {
+      const res = await accountManagementApi.findStaff({
+        full_name: searchTerm,
+        status: statusFilter === 'ALL' ? '' : statusFilter,
+        page: currentPage - 1,
+        size: PAGE_SIZE,
+      });
+      const pageData = res?.data ?? { content: [], totalPages: 0 };
+      setRows(pageData.content || []);
+      setTotalPages(pageData.totalPages || 0);
+    } catch (e) {
+      console.error(e);
+      setErr('Failed to load staff. Please try again.');
+      setRows([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const mockUsers = [
-      {
-        id: 1,
-        username: 'admin',
-        firstName: 'System',
-        lastName: 'Administrator',
-        email: 'admin@library.com',
-        role: 'Super Admin',
-        status: 'active',
-        lastLogin: '2024-01-20T14:30:00Z',
-        createdDate: '2023-01-15T10:00:00Z',
-        permissions: ['all'],
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 2,
-        username: 'librarian1',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        email: 'sarah.johnson@library.com',
-        role: 'Librarian',
-        status: 'active',
-        lastLogin: '2024-01-20T13:15:00Z',
-        createdDate: '2023-03-20T09:30:00Z',
-        permissions: ['books', 'authors', 'borrowals', 'readers'],
-        photo: 'https://images.unsplash.com/photo-1494790108755-2616c6d4e6e8?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 3,
-        username: 'librarian2',
-        firstName: 'Michael',
-        lastName: 'Brown',
-        email: 'michael.brown@library.com',
-        role: 'Librarian',
-        status: 'active',
-        lastLogin: '2024-01-19T16:45:00Z',
-        createdDate: '2023-05-10T11:15:00Z',
-        permissions: ['books', 'authors', 'borrowals', 'readers'],
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 4,
-        username: 'assistant1',
-        firstName: 'Emily',
-        lastName: 'Davis',
-        email: 'emily.davis@library.com',
-        role: 'Assistant',
-        status: 'active',
-        lastLogin: '2024-01-20T12:00:00Z',
-        createdDate: '2023-08-15T14:20:00Z',
-        permissions: ['borrowals', 'readers'],
-        photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face'
-      },
-      {
-        id: 5,
-        username: 'manager1',
-        firstName: 'David',
-        lastName: 'Wilson',
-        email: 'david.wilson@library.com',
-        role: 'Manager',
-        status: 'inactive',
-        lastLogin: '2024-01-10T09:30:00Z',
-        createdDate: '2023-02-01T08:00:00Z',
-        permissions: ['books', 'authors', 'borrowals', 'readers', 'reports'],
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face'
-      }
-    ];
-    setUsers(mockUsers);
-    setFilteredUsers(mockUsers);
-  }, []);
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, statusFilter]);
 
-  // Filter and search logic
-  useEffect(() => {
-    let filtered = users;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(user =>
-        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.username.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Role filter
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(user => user.role === roleFilter);
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(user => user.status === statusFilter);
-    }
-
-    setFilteredUsers(filtered);
+  const onSearch = (e) => {
+    e?.preventDefault?.();
     setCurrentPage(1);
-  }, [users, searchTerm, roleFilter, statusFilter]);
+    loadData();
+  };
 
-  const getRoleBadge = (role) => {
-    switch (role) {
-      case 'Super Admin':
-        return <Badge bg="danger"><Shield className="me-1" />Super Admin</Badge>;
-      case 'Manager':
-        return <Badge bg="primary"><ShieldCheck className="me-1" />Manager</Badge>;
-      case 'Librarian':
-        return <Badge bg="success"><PersonFill className="me-1" />Librarian</Badge>;
-      case 'Assistant':
-        return <Badge bg="info"><PersonFill className="me-1" />Assistant</Badge>;
-      default:
-        return <Badge bg="secondary">Unknown</Badge>;
+  // ===== View Detail =====
+  const openDetail = async (accountId) => {
+    if (!accountId) return;
+    setShowDetailModal(true);
+    setDetail(null);
+    setDetailError('');
+    setDetailLoading(true);
+    try {
+      const res = await accountManagementApi.getStaffDetail(accountId);
+      setDetail(res?.data ?? null);
+    } catch (e) {
+      console.error(e);
+      setDetailError('Không tải được chi tiết staff.');
+    } finally {
+      setDetailLoading(false);
     }
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'active':
-        return <Badge bg="success">Active</Badge>;
-      case 'inactive':
-        return <Badge bg="secondary">Inactive</Badge>;
-      case 'suspended':
-        return <Badge bg="warning">Suspended</Badge>;
-      default:
-        return <Badge bg="secondary">Unknown</Badge>;
+  // ===== Edit =====
+  const openEdit = (u) => {
+    if (isDeletedStatus(u?.status)) return; // guard: không cho sửa khi đã DELETED
+    setEditErrors({});
+    setEditForm({
+      id: u.id,
+      username: u.username ?? '',
+      fullName: u.fullName ?? '',
+      email: u.email ?? '',
+      phone: u.phone ?? '',
+      status: u.status ?? 'ACTIVE',
+      password: '',
+    });
+    setShowEditModal(true);
+  };
+
+  const submitEdit = async () => {
+    if (!editForm.id) return;
+    setEditing(true);
+    setEditErrors({});
+    try {
+      const payload = {
+        username: editForm.username?.trim(),
+        fullName: editForm.fullName?.trim(),
+        email: editForm.email?.trim(),
+        phone: editForm.phone?.trim(),
+        status: editForm.status,
+      };
+      if (editForm.password?.trim()) payload.password = editForm.password.trim();
+
+      await accountManagementApi.updateAccount(editForm.id, payload);
+      setShowEditModal(false);
+      toast('success', 'Staff updated successfully.');
+      loadData();
+    } catch (e) {
+      console.error(e);
+      const fieldMap = parseFieldErrors(e);
+      if (Object.keys(fieldMap).length) {
+        setEditErrors(fieldMap);
+        if (fieldMap._common) toast('danger', fieldMap._common);
+      } else {
+        toast('danger', 'Update failed. Please try again.');
+      }
+    } finally {
+      setEditing(false);
     }
   };
 
-  const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  // ===== Create =====
+  const openCreate = () => {
+    setCreateErrors({});
+    setCreateForm({
+      username: '',
+      email: '',
+      fullName: '',
+      phone: '',
+      password: '',
+      status: 'ACTIVE',
+      position: '',
+      salary: '',
     });
+    setShowCreateModal(true);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  const submitCreate = async () => {
+    setCreating(true);
+    setCreateErrors({});
+    try {
+      const payload = {
+        username: createForm.username?.trim(),
+        email: createForm.email?.trim(),
+        fullName: createForm.fullName?.trim(),
+        phone: createForm.phone?.trim(),
+        password: createForm.password?.trim(),
+        status: createForm.status,
+        position: createForm.position?.trim(),
+        salary: createForm.salary === '' ? 0 : parseFloat(createForm.salary),
+      };
+
+      await accountManagementApi.createStaff(payload);
+      setShowCreateModal(false);
+      toast('success', 'Staff created successfully.');
+      setCurrentPage(1);
+      loadData();
+    } catch (e) {
+      console.error(e);
+      const fieldMap = parseFieldErrors(e);
+      if (Object.keys(fieldMap).length) {
+        setCreateErrors(fieldMap);
+        if (fieldMap._common) toast('danger', fieldMap._common);
+      } else {
+        toast('danger', 'Create failed. Please check input and try again.');
+      }
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const getPermissionCount = (permissions) => {
-    if (permissions.includes('all')) return 'All Permissions';
-    return `${permissions.length} Permission${permissions.length !== 1 ? 's' : ''}`;
-  };
-
-  const handleView = (userId) => {
-    console.log('View user:', userId);
-  };
-
-  const handleEdit = (userId) => {
-    console.log('Edit user:', userId);
-  };
-
-  const handleDelete = (user) => {
-    setUserToDelete(user);
+  // ===== Delete =====
+  const openDelete = (u) => {
+    if (isDeletedStatus(u?.status)) return; // guard: không cho xóa khi đã DELETED
+    setDeleteTarget(u);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setUsers(prev => prev.filter(user => user.id !== userToDelete.id));
-    setShowDeleteModal(false);
-    setUserToDelete(null);
-    showAlertMessage(`User "${userToDelete.firstName} ${userToDelete.lastName}" has been deleted successfully.`);
+  const confirmDelete = async () => {
+    if (!deleteTarget?.id) return;
+    setDeleting(true);
+    try {
+      await accountManagementApi.deleteAccount(deleteTarget.id);
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
+      toast('success', 'Staff deleted successfully.');
+      if (rows.length === 1 && currentPage > 1) {
+        setCurrentPage((p) => Math.max(1, p - 1));
+      } else {
+        loadData();
+      }
+    } catch (e) {
+      console.error(e);
+      toast('danger', 'Delete failed. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
-
-  const handleAddNew = () => {
-    console.log('Add new user');
-  };
-
-  const handleExport = () => {
-    console.log('Export users data');
-    showAlertMessage('System users data exported successfully!');
-  };
-
-  const showAlertMessage = (message) => {
-    setAlertMessage(message);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-  };
-
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-
-  const roles = [...new Set(users.map(user => user.role))];
 
   return (
-    <div className={styles.systemUsersPage}>
-      {/* Page Header */}
+    <div className={styles.page}>
+      {/* Header */}
       <Row className="mb-4">
         <Col>
           <div className={styles.pageHeader}>
             <div>
               <h1 className={styles.pageTitle}>
-                <Gear className="me-3" />
-                System Users
+                <People className="me-3" />
+                Staff Management
               </h1>
               <p className={styles.pageSubtitle}>
-                Manage admin users, roles, and system permissions
+                Manage staff accounts and status
               </p>
             </div>
             <div className={styles.headerActions}>
-              <Button variant="outline-primary" onClick={handleExport} className="me-2">
-                <Download className="me-1" />
-                Export
-              </Button>
-              <Button variant="primary" onClick={handleAddNew}>
+              <Button variant="primary" onClick={openCreate}>
                 <Plus className="me-1" />
-                Add New User
+                Create Staff
               </Button>
             </div>
           </div>
@@ -245,164 +321,144 @@ const SystemUsersPage = () => {
       </Row>
 
       {showAlert && (
-        <Alert variant="success" className={styles.alert}>
+        <Alert variant={alertVariant} className={styles.alert}>
           {alertMessage}
         </Alert>
       )}
 
       {/* Filters */}
       <Row className="mb-4">
-        <Col lg={4} className="mb-3">
-          <InputGroup size="lg">
-            <Form.Control
-              type="text"
-              placeholder="Search by name, email, or username..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
-            <Button variant="primary">
-              <Search />
-            </Button>
-          </InputGroup>
+        <Col lg={6} className="mb-3">
+          <Form onSubmit={onSearch}>
+            <InputGroup size="lg">
+              <Form.Control
+                type="text"
+                placeholder="Search by full name…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={styles.searchInput}
+              />
+              <Button variant="primary" type="submit">
+                <Search />
+              </Button>
+            </InputGroup>
+          </Form>
         </Col>
-        <Col lg={2} className="mb-3">
-          <Form.Select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            size="lg"
-          >
-            <option value="all">All Roles</option>
-            {roles.map(role => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </Form.Select>
-        </Col>
-        <Col lg={2} className="mb-3">
+        <Col lg={3} className="mb-3">
           <Form.Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             size="lg"
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="suspended">Suspended</option>
+            <option value="ALL">All Status</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="DELETED">DELETED</option>
           </Form.Select>
-        </Col>
-        <Col lg={4} className="mb-3">
-          <div className={styles.resultsInfo}>
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} users
-          </div>
         </Col>
       </Row>
 
-      {/* Users Table */}
-      <Card className={`custom-card ${styles.usersCard}`}>
-        <Card.Body className={styles.usersCardBody}>
-          <div className={styles.tableContainer}>
-            <Table responsive className={styles.usersTable}>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Contact</th>
-                  <th>Role</th>
-                  <th>Permissions</th>
-                  <th>Status</th>
-                  <th>Last Login</th>
-                  <th>Created Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentItems.map(user => (
-                  <tr key={user.id} className={styles.userRow}>
-                    <td className={styles.userCell}>
-                      <div className={styles.userInfo}>
-                        <img
-                          src={user.photo}
-                          alt={`${user.firstName} ${user.lastName}`}
-                          className={styles.userPhoto}
-                        />
-                        <div className={styles.userDetails}>
-                          <div className={styles.userName}>
-                            {user.firstName} {user.lastName}
-                          </div>
-                          <div className={styles.username}>
-                            @{user.username}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.contactCell}>
-                      <div className={styles.contactInfo}>
-                        <div className={styles.contactItem}>
-                          <Envelope className={styles.contactIcon} />
-                          <span className={styles.contactText}>{user.email}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.roleCell}>
-                      {getRoleBadge(user.role)}
-                    </td>
-                    <td className={styles.permissionsCell}>
-                      <span className={styles.permissionsText}>
-                        {getPermissionCount(user.permissions)}
-                      </span>
-                    </td>
-                    <td className={styles.statusCell}>
-                      {getStatusBadge(user.status)}
-                    </td>
-                    <td className={styles.lastLoginCell}>
-                      <div className={styles.lastLoginInfo}>
-                        <Clock className={styles.timeIcon} />
-                        <span className={styles.lastLoginText}>
-                          {formatDateTime(user.lastLogin)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className={styles.dateCell}>
-                      <div className={styles.createdInfo}>
-                        <Calendar className={styles.dateIcon} />
-                        <span className={styles.createdText}>
-                          {formatDate(user.createdDate)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className={styles.actionsCell}>
-                      <div className={styles.actionButtons}>
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={() => handleView(user.id)}
-                          className={styles.actionButton}
-                        >
-                          <Eye />
-                        </Button>
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          onClick={() => handleEdit(user.id)}
-                          className={styles.actionButton}
-                        >
-                          <Pencil />
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDelete(user)}
-                          className={styles.actionButton}
-                          disabled={user.role === 'Super Admin'}
-                        >
-                          <Trash />
-                        </Button>
-                      </div>
-                    </td>
+      {/* Table */}
+      <Card className={`custom-card ${styles.card}`}>
+        <Card.Body className={styles.cardBody}>
+          {loading ? (
+            <div className="d-flex align-items-center gap-2">
+              <Spinner animation="border" size="sm" />
+              <span>Loading…</span>
+            </div>
+          ) : err ? (
+            <div className="text-danger">{err}</div>
+          ) : (
+            <div className={styles.tableContainer}>
+              <Table responsive className={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={{ width: 70 }}>#</th>
+                    <th style={{ minWidth: 140 }}>Username</th>
+                    <th style={{ minWidth: 180 }}>Full name</th>
+                    <th style={{ minWidth: 220 }}>Email</th>
+                    <th style={{ minWidth: 150 }}>Phone</th>
+                    <th style={{ minWidth: 140 }}>Status</th>
+                    <th style={{ width: 160 }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-4">No data</td>
+                    </tr>
+                  ) : (
+                    rows.map((u, idx) => {
+                      const isDel = isDeletedStatus(u.status);
+                      return (
+                        <tr key={u.id ?? idx} className={styles.row}>
+                          <td>{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
+                          <td>{u.username ?? '—'}</td>
+                          <td>{u.fullName ?? '—'}</td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <Envelope /> <span>{u.email ?? '—'}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <Telephone /> <span>{u.phone ?? '—'}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span
+                              className={[
+                                styles.statusPill,
+                                (u.status === 'ACTIVE'   && styles.statusActive) ||
+                                (u.status === 'INACTIVE' && styles.statusInactive) ||
+                                styles.statusDeleted
+                              ].filter(Boolean).join(' ')}
+                            >
+                              {u.status ?? '—'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="d-flex gap-2">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                title={isDel ? 'This account is deleted' : 'View'}
+                                onClick={() => openDetail(u.id)} 
+                                disabled={false}
+                              >
+                                <Eye />
+                              </Button>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                title={isDel ? 'Cannot edit a deleted account' : 'Edit'}
+                                disabled={isDel}
+                                onClick={() => !isDel && openEdit(u)}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                title={isDel ? 'Already deleted' : 'Delete'}
+                                disabled={isDel}
+                                onClick={() => !isDel && openDelete(u)}
+                              >
+                                <Trash />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </Table>
+            </div>
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -413,20 +469,23 @@ const SystemUsersPage = () => {
                   disabled={currentPage === 1}
                 />
                 <Pagination.Prev
-                  onClick={() => setCurrentPage(currentPage - 1)}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 />
-                {[...Array(totalPages)].map((_, index) => (
-                  <Pagination.Item
-                    key={index + 1}
-                    active={index + 1 === currentPage}
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </Pagination.Item>
-                ))}
+                {[...Array(totalPages)].map((_, i) => {
+                  const n = i + 1;
+                  return (
+                    <Pagination.Item
+                      key={n}
+                      active={n === currentPage}
+                      onClick={() => setCurrentPage(n)}
+                    >
+                      {n}
+                    </Pagination.Item>
+                  );
+                })}
                 <Pagination.Next
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 />
                 <Pagination.Last
@@ -439,6 +498,271 @@ const SystemUsersPage = () => {
         </Card.Body>
       </Card>
 
+      {/* ===== Staff Detail Modal ===== */}
+      <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Staff detail</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {detailLoading && (
+            <div className="d-flex align-items-center gap-2">
+              <Spinner animation="border" size="sm" />
+              <span>Loading…</span>
+            </div>
+          )}
+          {!detailLoading && detailError && (
+            <div className="text-danger">{detailError}</div>
+          )}
+          {!detailLoading && !detailError && detail && (
+            <div className="vstack gap-2">
+              <div><span className="fw-semibold">Username: </span>{detail.username ?? '—'}</div>
+              <div><span className="fw-semibold">Full name: </span>{detail.fullName ?? '—'}</div>
+              <div><span className="fw-semibold">Email: </span>{detail.email ?? '—'}</div>
+              <div><span className="fw-semibold">Phone: </span>{detail.phone ?? '—'}</div>
+              <div>
+                <span className="fw-semibold">Status: </span>
+                <span
+                  className={[
+                    styles.statusPill,
+                    (detail.status === 'ACTIVE' && styles.statusActive) ||
+                    (detail.status === 'INACTIVE' && styles.statusInactive) ||
+                    styles.statusDeleted
+                  ].filter(Boolean).join(' ')}
+                >
+                  {detail.status ?? '—'}
+                </span>
+              </div>
+              <hr />
+              <div><span className="fw-semibold">Position: </span>{detail.position ?? '—'}</div>
+              <div><span className="fw-semibold">Join date: </span>{formatDT(detail.joinDate)}</div>
+              <div><span className="fw-semibold">Hire date: </span>{formatDT(detail.hireDate)}</div>
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
+
+      {/* Create Staff Modal */}
+      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Create Staff</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {createErrors._common && <Alert variant="danger">{createErrors._common}</Alert>}
+          <Form>
+            <Row className="g-3">
+              <Col md={6}>
+                <Form.Label>Username *</Form.Label>
+                <Form.Control
+                  value={createForm.username}
+                  isInvalid={!!createErrors.username}
+                  onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
+                  placeholder="staff01"
+                />
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.username}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Full name *</Form.Label>
+                <Form.Control
+                  value={createForm.fullName}
+                  isInvalid={!!createErrors.fullName}
+                  onChange={(e) => setCreateForm({ ...createForm, fullName: e.target.value })}
+                  placeholder="Nguyen Van A"
+                />
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.fullName}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Email *</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={createForm.email}
+                  isInvalid={!!createErrors.email}
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  placeholder="staff@library.com"
+                />
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.email}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Phone</Form.Label>
+                <Form.Control
+                  value={createForm.phone}
+                  isInvalid={!!createErrors.phone}
+                  onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                  placeholder="0900000000"
+                />
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.phone}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Password *</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={createForm.password}
+                  isInvalid={!!createErrors.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  placeholder="At least 6 characters"
+                />
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.password}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Status</Form.Label>
+                <Form.Select
+                  value={createForm.status}
+                  isInvalid={!!createErrors.status}
+                  onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.status}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Position *</Form.Label>
+                <Form.Control
+                  value={createForm.position}
+                  isInvalid={!!createErrors.position}
+                  onChange={(e) => setCreateForm({ ...createForm, position: e.target.value })}
+                  placeholder="Librarian / Manager / ..."
+                />
+                <Form.Control.Feedback type="invalid">
+                  {createErrors.position}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Salary *</Form.Label>
+                <BsInputGroup hasValidation>
+                  <BsInputGroup.Text>₫</BsInputGroup.Text>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={createForm.salary}
+                    isInvalid={!!createErrors.salary}
+                    onChange={(e) => setCreateForm({ ...createForm, salary: e.target.value })}
+                    placeholder="0.00"
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {createErrors.salary}
+                  </Form.Control.Feedback>
+                </BsInputGroup>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCreateModal(false)} disabled={creating}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={submitCreate} disabled={creating}>
+            {creating ? 'Creating…' : 'Create'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Staff</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editErrors._common && <Alert variant="danger">{editErrors._common}</Alert>}
+          <Form>
+            <Row className="g-3">
+              <Col md={6}>
+                <Form.Label>Username</Form.Label>
+                <Form.Control
+                  value={editForm.username}
+                  isInvalid={!!editErrors.username}
+                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.username}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Full name</Form.Label>
+                <Form.Control
+                  value={editForm.fullName}
+                  isInvalid={!!editErrors.fullName}
+                  onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.fullName}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={editForm.email}
+                  isInvalid={!!editErrors.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.email}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Phone</Form.Label>
+                <Form.Control
+                  value={editForm.phone}
+                  isInvalid={!!editErrors.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.phone}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>New Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={editForm.password}
+                  isInvalid={!!editErrors.password}
+                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                  placeholder="New Password"
+                />
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.password}
+                </Form.Control.Feedback>
+              </Col>
+              <Col md={6}>
+                <Form.Label>Status</Form.Label>
+                <Form.Select
+                  value={editForm.status}
+                  isInvalid={!!editErrors.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {editErrors.status}
+                </Form.Control.Feedback>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editing}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={submitEdit} disabled={editing}>
+            {editing ? 'Saving…' : 'Save changes'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
@@ -448,27 +772,27 @@ const SystemUsersPage = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {userToDelete && (
-            <div>
-              <p>Are you sure you want to delete this system user?</p>
-              <div className={styles.deleteUserInfo}>
-                <strong>Name:</strong> {userToDelete.firstName} {userToDelete.lastName}<br />
-                <strong>Username:</strong> @{userToDelete.username}<br />
-                <strong>Email:</strong> {userToDelete.email}<br />
-                <strong>Role:</strong> {userToDelete.role}
+          {deleteTarget && (
+            <>
+              <p>Are you sure you want to delete this staff account?</p>
+              <div className={styles.deleteInfo}>
+                <strong>Username:</strong> {deleteTarget.username}<br />
+                <strong>Full name:</strong> {deleteTarget.fullName}<br />
+                <strong>Email:</strong> {deleteTarget.email}<br />
+                <strong>Phone:</strong> {deleteTarget.phone}
               </div>
-              <p className="text-danger mt-3">
-                <small>This action cannot be undone and will revoke all system access.</small>
+              <p className="text-danger mt-2">
+                <small>This action cannot be undone.</small>
               </p>
-            </div>
+            </>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
-            Delete User
+          <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -476,4 +800,4 @@ const SystemUsersPage = () => {
   );
 };
 
-export default SystemUsersPage;
+export default StaffManagementPage;

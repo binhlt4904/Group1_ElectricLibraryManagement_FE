@@ -25,7 +25,7 @@ import BooksManagementPage from './pages/admin/book/BooksManagementPage';
 import AuthorsManagementPage from './pages/admin/AuthorsManagementPage';
 import ReadersManagementPage from './pages/admin/ReadersManagementPage';
 import ReportsPage from './pages/admin/ReportsPage';
-import SystemUsersPage from './pages/admin/SystemUsersPage';
+import StaffManagementPage from './pages/admin/SystemUsersPage';
 import PublishersManagementPage from './pages/admin/PublishersManagementPage';
 import BorrowalsManagementPage from './pages/admin/BorrowalsManagementPage';
 import EventManagementPage from './pages/admin/EventManagementPage';
@@ -33,6 +33,7 @@ import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 import AddBookPage from './pages/admin/book/AddBookPage';
 import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
+import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 const AppContent = () => {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -75,6 +76,7 @@ const AppContent = () => {
             {/* Admin Pages */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<DashboardPage />} />
+<Route path="categories" element={<CategoryManagementPage />} />
               <Route path="books" element={<BooksManagementPage />} />
               <Route path="books/:id" element={<AdminBookDetailPage />} />
               <Route path="books/add" element={<AddBookPage />} />
@@ -86,7 +88,7 @@ const AppContent = () => {
               <Route path="reports" element={<ReportsPage />} />
               <Route path="user-reports" element={<ReportManagementPage />} />
               <Route path="documents" element={<DocumentManagementPage />} />
-              <Route path="system-users" element={<SystemUsersPage />} />
+              <Route path="system-users" element={<StaffManagementPage />} />
               {/* Default redirect to dashboard */}
               <Route index element={<DashboardPage />} />
             </Route>

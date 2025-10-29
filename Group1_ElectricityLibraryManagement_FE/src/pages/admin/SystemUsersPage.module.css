@@ -285,12 +285,12 @@
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .headerActions {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .resultsInfo {
     text-align: center;
     justify-content: center;
@@ -301,52 +301,52 @@
   .pageTitle {
     font-size: 2rem;
   }
-  
+
   .pageSubtitle {
     font-size: 1rem;
   }
-  
+
   .headerActions {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .usersTable {
     font-size: 0.8rem;
   }
-  
+
   .usersTable th,
   .usersTable td {
     padding: 0.75rem 0.5rem;
   }
-  
+
   .userInfo {
     gap: 0.5rem;
   }
-  
+
   .userPhoto {
     width: 40px;
     height: 40px;
   }
-  
+
   .contactInfo {
     gap: 0.125rem;
   }
-  
+
   .contactItem {
     font-size: 0.7rem;
   }
-  
+
   .lastLoginInfo,
   .createdInfo {
     font-size: 0.7rem;
   }
-  
+
   .actionButtons {
     flex-direction: column;
     gap: 0.25rem;
   }
-  
+
   .actionButton {
     width: 28px;
     height: 28px;
@@ -360,36 +360,66 @@
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .userCell {
     min-width: 200px;
   }
-  
+
   .contactCell {
     min-width: 150px;
   }
-  
+
   .roleCell {
     min-width: 120px;
   }
-  
+
   .permissionsCell {
     min-width: 100px;
   }
-  
+
   .statusCell {
     min-width: 80px;
   }
-  
+
   .lastLoginCell {
     min-width: 120px;
   }
-  
+
   .dateCell {
     min-width: 100px;
   }
-  
+
   .actionsCell {
     min-width: 100px;
   }
+}
+
+.table td .statusPill {
+  display: inline-block;
+  padding: .25rem .5rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+  border: 1px solid transparent;
+  background: #f1f3f5;
+  color: #495057;
+}
+
+.table td .statusPill.statusActive {
+  background: rgba(46, 204, 113, .12);
+  color: #2ecc71;
+  border-color: rgba(46, 204, 113, .35);
+}
+
+.table td .statusPill.statusInactive {
+  background: rgba(108, 117, 125, .12);
+  color: #6c757d;
+  border-color: rgba(108, 117, 125, .35);
+}
+
+.table td .statusPill.statusDeleted {
+  background: rgba(220, 53, 69, .12);
+  color: #dc3545;
+  border-color: rgba(220, 53, 69, .35);
 }
