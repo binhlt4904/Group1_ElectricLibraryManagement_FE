@@ -1,0 +1,134 @@
+/* ==== TestPDF.css ==== */
+
+.testPDFPage {
+  background-color: var(--light-gray, #f8f9fa);
+  min-height: 100vh;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.testPDFContainer {
+  background-color: #fff;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: var(--border-radius-md, 12px);
+  box-shadow: var(--card-shadow, 0 4px 12px rgba(0, 0, 0, 0.05));
+  width: 90%;
+  max-width: 900px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.testPDFTitle {
+  font-family: var(--font-heading, "Poppins", sans-serif);
+  font-weight: var(--weight-bold, 700);
+  font-size: 2rem;
+  color: var(--dark-charcoal, #333);
+  margin-bottom: 1.5rem;
+}
+
+.pdfViewer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  padding: 1rem;
+}
+
+/* Hiệu ứng bóng trang PDF */
+.pdfPage {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pdfPage canvas {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  border-radius: 10px;
+}
+
+/* 🌟 Bóng mờ viền giống trang sách */
+.pdfPage::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -2px;
+  right: -2px;
+  bottom: 0;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15),
+              0 5px 10px rgba(0, 0, 0, 0.08) inset;
+  pointer-events: none;
+}
+
+/* Hiệu ứng khi hover — tạo cảm giác lật trang */
+.pdfPage:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.pdfControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.pdfButton {
+  background-color: var(--light-gray, #e9ecef);
+  border: none;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm, 6px);
+  cursor: pointer;
+  font-weight: var(--weight-medium, 500);
+  transition: background-color 0.2s ease;
+}
+
+.pdfButton:hover:not(:disabled) {
+  background-color: var(--primary-blue, #0d6efd);
+  color: white;
+}
+
+.pdfButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-weight: 500;
+  color: var(--medium-gray, #666);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .testPDFContainer {
+    width: 95%;
+    padding: 1rem;
+  }
+
+  .testPDFTitle {
+    font-size: 1.5rem;
+  }
+
+  .pdfButton {
+    padding: 0.4rem 0.8rem;
+  }
+
+  .pdfPage {
+    border-radius: 6px;
+  }
+
+  .pdfPage::before {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12),
+                0 3px 6px rgba(0, 0, 0, 0.06) inset;
+  }
+}

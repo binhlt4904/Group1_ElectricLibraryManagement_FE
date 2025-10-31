@@ -4,9 +4,10 @@ import { Container, Row, Col, Button, Badge, Nav, Tab, Card, ProgressBar } from 
 import { Heart, HeartFill, Star, StarFill, Share, BookmarkPlus, ArrowLeft } from 'react-bootstrap-icons';
 import styles from './BookDetailPage.module.css';
 import bookApi from '../../api/book';
+import BookHeader from '../../components/commons/books/BookHeader';
+import TabSection from '../../components/commons/books/TabSection';
 const BookDetailPage = () => {
   const { id: bookId } = useParams();
-  const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [contents, setContents] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -16,7 +17,7 @@ const BookDetailPage = () => {
   // Mock data - replace with API call
   useEffect(() => {
     const fetchBookDetail = async () => {
-      try{
+      try {
         const bookRes = await bookApi.findBookUserById(bookId);
         console.log(bookRes.data)
         const contentsRes = await bookApi.findBookContentsById(bookId);
@@ -29,117 +30,7 @@ const BookDetailPage = () => {
         console.error("Error fetching book details:", error);
       }
     }
-    const mockBook = {
-      id: 1,
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-      rating: 4.2,
-      totalRatings: 1250,
-      availability: "available",
-      category: "Classic Literature",
-      categoryname: "Classic Literature", // ERD attribute
-      publishYear: 1925,
-      isbn: "978-0-7432-7356-5",
-      pages: 180,
-      language: "English",
-      publisher: "Scribner",
-      imported_date: "2024-01-01", // ERD attribute
-      description: "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald. Set in the Jazz Age on prosperous Long Island and in New York City, the novel tells the first-person story of Nick Carraway, a young Yale graduate and World War I veteran from the Midwest who moves to Long Island in 1922, intending to work in the bond business.",
-      genres: ["Classic Literature", "American Literature", "Fiction", "Romance"],
-      copiesTotal: 5,
-      copiesAvailable: 2,
-      contents: [ // BookContent chapters
-        {
-          id: 1,
-          chapter: 1,
-          title: "In My Younger and More Vulnerable Years",
-          pages: "1-15"
-        },
-        {
-          id: 2,
-          chapter: 2,
-          title: "The Eyes of Doctor T. J. Eckleburg",
-          pages: "16-35"
-        },
-        {
-          id: 3,
-          chapter: 3,
-          title: "Gatsby's Party",
-          pages: "36-60"
-        },
-        {
-          id: 4,
-          chapter: 4,
-          title: "The Green Light",
-          pages: "61-85"
-        },
-        {
-          id: 5,
-          chapter: 5,
-          title: "Daisy and Gatsby Reunited",
-          pages: "86-110"
-        },
-        {
-          id: 6,
-          chapter: 6,
-          title: "The Past Repeated",
-          pages: "111-135"
-        },
-        {
-          id: 7,
-          chapter: 7,
-          title: "The Confrontation",
-          pages: "136-160"
-        },
-        {
-          id: 8,
-          chapter: 8,
-          title: "The Death of Gatsby",
-          pages: "161-175"
-        },
-        {
-          id: 9,
-          chapter: 9,
-          title: "The Funeral",
-          pages: "176-180"
-        }
-      ],
-      reviews: [
-        {
-          id: 1,
-          reviewer_id: "user_123", // ERD attribute
-          user: "BookLover123",
-          rating: 5,
-          note: "A timeless classic that captures the essence of the American Dream. Fitzgerald's prose is absolutely beautiful.", // ERD attribute
-          comment: "A timeless classic that captures the essence of the American Dream. Fitzgerald's prose is absolutely beautiful.",
-          date: "2024-01-15"
-        },
-        {
-          id: 2,
-          reviewer_id: "user_456", // ERD attribute
-          user: "LiteratureStudent",
-          rating: 4,
-          note: "Great character development and symbolism. Required reading for understanding American literature.", // ERD attribute
-          comment: "Great character development and symbolism. Required reading for understanding American literature.",
-          date: "2024-01-10"
-        }
-      ],
-      relatedBooks: [
-        {
-          id: 2,
-          title: "To Kill a Mockingbird",
-          author: "Harper Lee",
-          coverImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=300&fit=crop"
-        },
-        {
-          id: 3,
-          title: "1984",
-          author: "George Orwell",
-          coverImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=300&fit=crop"
-        }
-      ]
-    };
+    
     fetchBookDetail();
   }, [bookId]);
 
@@ -150,11 +41,6 @@ const BookDetailPage = () => {
   const handleBorrow = () => {
     console.log('Borrow book:', book.id);
     // Handle borrow logic
-  };
-
-  const handleReserve = () => {
-    console.log('Reserve book:', book.id);
-    // Handle reserve logic
   };
 
   const handleReportIssue = () => {
@@ -180,29 +66,9 @@ const BookDetailPage = () => {
     return stars;
   };
 
-  const getAvailabilityInfo = () => {
-    if (!book) return null;
-    
-    const availabilityPercentage = (book.copiesAvailable / book.copiesTotal) * 100;
-    let variant = 'success';
-    let text = 'Available';
-    
-    if (book.copiesAvailable === 0) {
-      variant = 'danger';
-      text = 'All copies borrowed';
-    } else if (availabilityPercentage < 50) {
-      variant = 'warning';
-      text = 'Limited availability';
-    }
-    
-    return { variant, text, percentage: availabilityPercentage };
-  };
-
   if (!book) {
     return <div className={styles.loading}>Loading...</div>;
   }
-
-  const availabilityInfo = getAvailabilityInfo();
 
   return (
     <div className={styles.bookDetailPage}>
@@ -218,217 +84,9 @@ const BookDetailPage = () => {
         </Row>
 
         {/* Book Header */}
-        <Row className="mb-4">
-          <Col lg={4}>
-            <div className={styles.bookCoverContainer}>
-              <img
-                src={
-                book.image
-                  ? `http://localhost:8080${book.image}`
-                  : "https://via.placeholder.com/300x400?text=No+Cover"
-              }
-                alt={`${book.title} cover`}
-                className={styles.bookCover}
-              />
-            </div>
-          </Col>
-          <Col lg={8}>
-            <div className={styles.bookInfo}>
-              <h1 className={styles.bookTitle}>{book.title}</h1>
-              <h2 className={styles.bookAuthor}>by {book.author}</h2>
-              
-              {/* <div className={styles.ratingSection}>
-                <div className={styles.stars}>
-                  {renderStars(reviews.rating)}
-                </div>
-                <span className={styles.ratingText}>
-                  {book.rating.toFixed(1)} ({book.totalRatings} reviews)
-                </span>
-              </div> */}
-
-              <div className={styles.genreSection}>
-                
-                  <Badge bg="light" text="dark" className={styles.genreBadge}>
-                    {book.category}
-                  </Badge>
-              </div>
-
-              
-
-              <div className={styles.actionButtons}>
-                {/* <Button
-                  variant="primary"
-                  size="lg"
-                  className="me-3"
-                  disabled={book.copiesAvailable === 0}
-                  onClick={book.copiesAvailable > 0 ? handleBorrow : handleReserve}
-                >
-                  {book.copiesAvailable > 0 ? 'Borrow Now' : 'Join Waitlist'}
-                </Button> */}
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="me-3"
-                  
-                  onClick={ handleBorrow }
-                >
-                   Borrow Now
-                </Button>
-                <Button
-                  variant="outline-primary"
-                  size="lg"
-                  className="me-3"
-                  onClick={handleWishlistToggle}
-                >
-                  {isInWishlist ? <HeartFill className="me-2" /> : <Heart className="me-2" />}
-                  {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
-                </Button>
-                <Button variant="outline-secondary" size="lg" className="me-3">
-                  <BookmarkPlus className="me-2" />
-                  Save
-                </Button>
-                <Button variant="outline-secondary" size="lg" className="me-3">
-                  <Share className="me-2" />
-                  Share
-                </Button>
-                <Button
-                  variant="outline-warning"
-                  size="lg"
-                  onClick={handleReportIssue}
-                >
-                  Report Issue
-                </Button>
-              </div>
-            </div>
-          </Col>
-        </Row>
-
+        <BookHeader book={book} handleBorrow={handleBorrow} handleWishlistToggle={handleWishlistToggle} isInWishlist={isInWishlist} handleReportIssue={handleReportIssue} />
         {/* Tabs Section */}
-        <Row>
-          <Col>
-            <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
-              <Nav variant="tabs" className={styles.customTabs}>
-                <Nav.Item>
-                  <Nav.Link eventKey="overview">Overview</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="contents">Contents ({contents.length} chapters)</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="details">Details</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="reviews">Reviews ({reviews.length})</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="related">Related Books</Nav.Link>
-                </Nav.Item>
-              </Nav>
-
-              <Tab.Content className={styles.tabContent}>
-                <Tab.Pane eventKey="overview">
-                  <div className={styles.overview}>
-                    <h3>About this book</h3>
-                    <p>{book.description}</p>
-                  </div>
-                </Tab.Pane>
-
-                <Tab.Pane eventKey="contents">
-                  <div className={styles.contents}>
-                    <h3>Table of Contents</h3>
-                    <div className={styles.chapterList}>
-                      {contents.map(chapter => (
-                        <div key={chapter.id} className={styles.chapterItem}>
-                          <Link
-                            to={`/book-reader/${bookId}/${chapter.id}`}
-                            className={styles.chapterLink}
-                          >
-                            <div className={styles.chapterInfo}>
-                              <div className={styles.chapterNumber}>
-                                Chapter {chapter.chapter}
-                              </div>
-                              <div className={styles.chapterTitle}>
-                                {chapter.title}
-                              </div>
-                              {/* <div className={styles.chapterPages}>
-                                Pages {chapter.pages}
-                              </div> */}
-                            </div>
-                          </Link>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </Tab.Pane>
-
-                <Tab.Pane eventKey="details">
-                  <div className={styles.details}>
-                    <Row>
-                      <Col >
-                        <div className={styles.detailItem}>
-                          <strong>Publisher:</strong> {book.publisher}
-                        </div>
-                        <div className={styles.detailItem}>
-                          <strong>Publication Year:</strong> {book.publishedDate}
-                        </div>
-                        <div className={styles.detailItem}>
-                          <strong>Imported Date:</strong> {new Date(book.importedDate).toLocaleDateString()}
-                        </div>
-                        <div className={styles.detailItem}>
-                          <strong>Category:</strong> {book.category}
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Tab.Pane>
-
-                <Tab.Pane eventKey="reviews">
-                  <div className={styles.reviews}>
-                    {reviews.map(review => (
-                      <Card key={review.id} className={styles.reviewCard}>
-                        <Card.Body>
-                          <div className={styles.reviewHeader}>
-                            <div>
-                              <strong>{review.reviewerName}</strong>
-                              <small className="text-muted ms-2">(ID: {review.id})</small>
-                              <div className={styles.reviewStars}>
-                                {renderStars(review.rate)}
-                              </div>
-                            </div>
-                            <small className="text-muted">{review.createdDate}</small>
-                          </div>
-                          <p className={styles.reviewComment}>{review.note}</p>
-                        </Card.Body>
-                      </Card>
-                    ))}
-                  </div>
-                </Tab.Pane>
-
-                {/* <Tab.Pane eventKey="related">
-                  <div className={styles.relatedBooks}>
-                    <Row>
-                      {book.relatedBooks.map(relatedBook => (
-                        <Col key={relatedBook.id} md={6} lg={4} className="mb-3">
-                          <Card className={styles.relatedBookCard}>
-                            <Card.Img variant="top" src={relatedBook.coverImage} />
-                            <Card.Body>
-                              <Card.Title className={styles.relatedBookTitle}>
-                                {relatedBook.title}
-                              </Card.Title>
-                              <Card.Text className={styles.relatedBookAuthor}>
-                                by {relatedBook.author}
-                              </Card.Text>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  </div>
-                </Tab.Pane> */}
-              </Tab.Content>
-            </Tab.Container>
-          </Col>
-        </Row>
+        <TabSection activeTab={activeTab} setActiveTab={setActiveTab} contents={contents} reviews={reviews} book={book} renderStars={renderStars} />
       </Container>
     </div>
   );

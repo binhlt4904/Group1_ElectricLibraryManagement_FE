@@ -1,8 +1,8 @@
 import axiosClient from "./axiosClient";
 
 const bookApi = {
-    findAll: async () => {
-        return await axiosClient.get("/api/v1/public/books/");
+    findAll: async (params) => {
+        return await axiosClient.get("/api/v1/public/books/",{params});
     },
     findAllAdmin: async (params) => {
         return await axiosClient.get("/api/v1/public/admin/books/",{params});
@@ -11,6 +11,9 @@ const bookApi = {
         return await axiosClient.post("/api/v1/public/admin/books/", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+    },
+    findBookAdminById: async (id) => {
+        return await axiosClient.get(`/api/v1/public/admin/books/${id}`);
     },
     findBookUserById: async (id) => {
         return await axiosClient.get(`/api/v1/public/books/${id}`);

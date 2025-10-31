@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "./AdminBookDetailPage.module.css";
 import { Button } from "react-bootstrap";
 import { Eye, Pencil, Trash } from "react-bootstrap-icons";
+import bookApi from "../../../api/book";
+
 
 const AdminBookDetailPage = () => {
   const { id } = useParams();
   const [book, setBook] = useState(null);
   const [contents, setContents] = useState([]);
   const [viewContent, setViewContent] = useState(null); // lưu object thay vì id
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [bookRes, contentRes] = await Promise.all([
-          axios.get(`http://localhost:8080/api/v1/public/admin/books/${id}`),
-          axios.get(`http://localhost:8080/api/v1/public/admin/books/${id}/contents`),
-        ]);
+        const bookRes = await bookApi.findBookAdminById(id);
+        const contentRes = await bookApi.findBookContentsById(id);
         setBook(bookRes.data);
         setContents(contentRes.data);
       } catch (error) {
@@ -27,6 +28,11 @@ const AdminBookDetailPage = () => {
     };
     fetchData();
   }, [id]);
+
+  const handleNavigate = () => {
+    // Điều hướng đến trang chỉnh sửa sách
+    navigate(`/admin/books/${book.id}/add`);
+  }
 
   const handleToggleVisibility = async (contentId, isHidden) => {
     try {
@@ -73,7 +79,7 @@ const AdminBookDetailPage = () => {
       <div className={styles.contentsCard}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>Book Contents</h3>
-          <button className={styles.addButton}>+ Add Chapter</button>
+          <button className={styles.addButton} onClick={handleNavigate}>+ Add Chapter</button>
         </div>
 
         <div className={styles.tableContainer}>
