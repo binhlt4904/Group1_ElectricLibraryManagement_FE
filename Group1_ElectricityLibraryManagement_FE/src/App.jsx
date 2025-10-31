@@ -74,7 +74,7 @@ const AppContent = () => {
                         <Route path="/library-card" element={<LibraryCardPage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/wallet" element={<WalletPage />} />
-                        <Route path="/book-reader/:bookId/:chapterId" element={<BookReaderPage />} />
+                        <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
 
                         {/* Admin Pages */}
                         <Route path="/admin" element={<AdminLayout />}>
@@ -92,7 +92,7 @@ const AppContent = () => {
                             <Route path="user-reports" element={<ReportManagementPage />} />
                             <Route path="documents" element={<DocumentManagementPage />} />
                             <Route path="system-users" element={<StaffManagementPage />} />
-                            <Route path="books/:id/add" element={<AddBookContentPage />} />
+                            <Route path="books/add/:id" element={<AddBookContentPage />} />
                             {/* Default redirect to dashboard */}
                             <Route index element={<DashboardPage />} />
                         </Route>

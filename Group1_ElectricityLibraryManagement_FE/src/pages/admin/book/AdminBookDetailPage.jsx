@@ -31,7 +31,7 @@ const AdminBookDetailPage = () => {
 
   const handleNavigate = () => {
     // Điều hướng đến trang chỉnh sửa sách
-    navigate(`/admin/books/${book.id}/add`);
+    navigate(`/admin/books/add/${book.id}`);
   }
 
   const handleToggleVisibility = async (contentId, isHidden) => {

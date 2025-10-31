@@ -9,14 +9,14 @@ import TabSection from '../../components/commons/books/TabSection';
 const BookDetailPage = () => {
   const { id: bookId } = useParams();
   const [book, setBook] = useState(null);
+  const [relatedBooks, setRelatedBooks] = useState([]);
   const [contents, setContents] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   // Mock data - replace with API call
-  useEffect(() => {
-    const fetchBookDetail = async () => {
+  const fetchBookDetail = async () => {
       try {
         const bookRes = await bookApi.findBookUserById(bookId);
         console.log(bookRes.data)
@@ -29,10 +29,22 @@ const BookDetailPage = () => {
       } catch (error) {
         console.error("Error fetching book details:", error);
       }
-    }
-    
+    };
+    const fetchRelatedBooks = async () => {
+      try {
+        const relatedRes = await bookApi.getRelatedBooks(bookId);
+        setRelatedBooks(relatedRes.data);
+      } catch (error) {
+        console.error("Error fetching related books:", error);
+      }
+    };
+  useEffect(() => {
     fetchBookDetail();
+    fetchRelatedBooks();
+    
   }, [bookId]);
+
+
 
   const handleWishlistToggle = () => {
     setIsInWishlist(!isInWishlist);
@@ -86,7 +98,7 @@ const BookDetailPage = () => {
         {/* Book Header */}
         <BookHeader book={book} handleBorrow={handleBorrow} handleWishlistToggle={handleWishlistToggle} isInWishlist={isInWishlist} handleReportIssue={handleReportIssue} />
         {/* Tabs Section */}
-        <TabSection activeTab={activeTab} setActiveTab={setActiveTab} contents={contents} reviews={reviews} book={book} renderStars={renderStars} />
+        <TabSection activeTab={activeTab} setActiveTab={setActiveTab} contents={contents} reviews={reviews} book={book} renderStars={renderStars} relatedBooks={relatedBooks}/>
       </Container>
     </div>
   );

@@ -2,7 +2,7 @@ import React from 'react';
 import { Tab, Nav, Row, Col, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import styles from '../../../pages/public/BookDetailPage.module.css';
-const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStars}) => {
+const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStars,relatedBooks}) => {
     return (
         <div>
             <Row>
@@ -38,18 +38,18 @@ const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStar
                   <div className={styles.contents}>
                     <h3>Table of Contents</h3>
                     <div className={styles.chapterList}>
-                      {contents.map(chapter => (
-                        <div key={chapter.id} className={styles.chapterItem}>
+                      {contents.map(content => (
+                        <div key={content.id} className={styles.chapterItem}>
                           <Link
-                            to={`/book-reader/${book.id}/${chapter.id}`}
+                            to={`/book-reader/${book.id}/${content.chapter}`}
                             className={styles.chapterLink}
                           >
                             <div className={styles.chapterInfo}>
                               <div className={styles.chapterNumber}>
-                                Chapter {chapter.chapter}
+                                Chapter {content.chapter}
                               </div>
                               <div className={styles.chapterTitle}>
-                                {chapter.title}
+                                {content.title}
                               </div>
                               {/* <div className={styles.chapterPages}>
                                 Pages {chapter.pages}
@@ -105,13 +105,13 @@ const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStar
                   </div>
                 </Tab.Pane>
 
-                {/* <Tab.Pane eventKey="related">
+                <Tab.Pane eventKey="related">
                   <div className={styles.relatedBooks}>
                     <Row>
-                      {book.relatedBooks.map(relatedBook => (
+                      {relatedBooks.map(relatedBook => (
                         <Col key={relatedBook.id} md={6} lg={4} className="mb-3">
                           <Card className={styles.relatedBookCard}>
-                            <Card.Img variant="top" src={relatedBook.coverImage} />
+                            <Card.Img variant="top" src={`http://localhost:8080${relatedBook.image}`} />
                             <Card.Body>
                               <Card.Title className={styles.relatedBookTitle}>
                                 {relatedBook.title}
@@ -125,7 +125,7 @@ const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStar
                       ))}
                     </Row>
                   </div>
-                </Tab.Pane> */}
+                </Tab.Pane>
               </Tab.Content>
             </Tab.Container>
           </Col>

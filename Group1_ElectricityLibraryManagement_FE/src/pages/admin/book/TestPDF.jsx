@@ -5,7 +5,7 @@ import styles from "./TestPDF.module.css"; // ✅ thêm dòng này
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const TestPDF = () => {
-    const [fileUrl] = useState("/BookchapterFull1.pdf");
+    const [fileUrl] = useState("http://localhost:8080/uploads/books/28/contents/1b238ba3-7887-45d6-a55c-07891554d2e7-Ch01_Introduction.pdf");
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
 

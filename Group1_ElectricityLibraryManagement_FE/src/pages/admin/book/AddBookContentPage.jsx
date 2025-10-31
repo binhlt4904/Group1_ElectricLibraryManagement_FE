@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Row, Col, Form, Button, Alert, ProgressBar, InputGroup } from 'react-bootstrap';
 import { FileEarmarkPdfFill, ArrowLeft, CloudUpload } from 'react-bootstrap-icons';
 import styles from './AddBookContentPage.module.css';
+import bookApi from '../../../api/book';
 
 /**
  * AddBookContentPage
@@ -18,7 +19,7 @@ const MAX_SIZE_MB = 50; // đổi nếu BE cho phép lớn hơn
 
 export default function AddBookContentPage() {
   const navigate = useNavigate();
-  const { bookId } = useParams();
+  const { id } = useParams();
 
   const [title, setTitle] = useState('');
   const [chapter, setChapter] = useState('');
@@ -80,11 +81,11 @@ export default function AddBookContentPage() {
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('chapter', String(chapter));
-      if (bookId) formData.append('bookId', bookId);
+      if (id) formData.append('bookId', id);
       formData.append('file', file); // đổi key theo BE nếu cần (vd: 'content')
 
       // 👉 Thay bằng layer API thực tế: bookContentApi.create(formData, { onUploadProgress })
-      const response = await window.bookContentApi.create(formData, {
+      const response = await bookApi.createBookContent(formData, {
         onUploadProgress: (evt) => {
           if (!evt.total) return;
           const percent = Math.round((evt.loaded * 100) / evt.total);
