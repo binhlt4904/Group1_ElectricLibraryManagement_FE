@@ -34,7 +34,13 @@ const PDFViewer = ({ fileUrl, fileName = 'Document' }) => {
   // Handle PDF load error
   const onDocumentLoadError = (error) => {
     console.error('Error loading PDF:', error);
-    setError('Failed to load PDF. Please try again.');
+    console.error('PDF URL:', fileUrl);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
+    setError('Failed to load PDF. The file may be corrupted or inaccessible. Please try downloading it instead.');
     setIsLoading(false);
   };
 

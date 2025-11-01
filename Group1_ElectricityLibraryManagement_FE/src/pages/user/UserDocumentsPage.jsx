@@ -100,13 +100,22 @@ const UserDocumentsPage = () => {
   const totalPages = Math.ceil(filteredDocuments.length / documentsPerPage);
 
   const handleViewDocument = (document) => {
+    // Convert file path to HTTP URL
+    // If filePath is a local path like "uploads/documents/uuid_filename.pdf"
+    // Convert it to "http://localhost:8080/uploads/documents/uuid_filename.pdf"
+    let fileUrl = document.filePath;
+    if (fileUrl && !fileUrl.startsWith('http')) {
+      fileUrl = `http://localhost:8080/${fileUrl}`;
+    }
+
     const viewerDocument = {
       id: document.id,
       title: document.title,
-      fileUrl: document.filePath || `https://example.com/documents/${document.fileName}`,
+      fileUrl: fileUrl,
       fileType: document.fileName?.split('.').pop() || 'pdf',
       fileName: document.fileName
     };
+    console.log('Document Viewer - File URL:', fileUrl);
     setSelectedDocument(viewerDocument);
     setShowViewerModal(true);
   };
