@@ -17,7 +17,7 @@ const BookListPage = () => {
   const [booksPerPage] = useState(4);
   const [wishlist, setWishlist] = useState(new Set());
 
-  // Mock data - replace with API call
+
   useEffect(() => {
 
     const fetchBooks = async () => {
@@ -26,6 +26,7 @@ const BookListPage = () => {
         console.log(response.data)
         setBooks(response.data);
         setFilteredBooks(response.data);
+        localStorage.setItem("books", JSON.stringify(response.data));
       }
       catch (error) {
         console.error("Error fetching books:", error);

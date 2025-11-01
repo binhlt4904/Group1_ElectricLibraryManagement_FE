@@ -1,142 +1,144 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Button, Badge } from 'react-bootstrap';
-import { Heart, HeartFill, Star, StarFill } from 'react-bootstrap-icons';
-import styles from './BookCard.module.css';
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import { Card, Button, Badge } from "react-bootstrap";
+import { Heart, HeartFill, Star, StarFill } from "react-bootstrap-icons";
+import styles from "./BookCard.module.css";
+
+import UserContext from "../../contexts/UserContext";
 
 const BookCard = ({
   book,
-  onWishlistToggle,
-  isInWishlist = false,
+  onWishlistToggle, // optional callback
   showRating = true,
-  showAvailability = true
+  showAvailability = true,
 }) => {
-  const {
-    id,
-    title,
-    author,
-    image,
-    isDeleted,
-    category,
-    publishedDate
-  } = book;
+  const { user } = useContext(UserContext);
+  const { id, title, author, image, isDeleted, category, publishedDate } = book;
 
-  console.log(book)
+  /** ❤️ Kiểm tra sách có trong localStorage không */
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    setIsInWishlist(saved.includes(id));
+  }, [id]);
 
+  /** 🩷 Toggle yêu thích (lưu trong localStorage) */
   const handleWishlistClick = (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (onWishlistToggle) {
-      onWishlistToggle(book);
+
+    if (!user) {
+      alert("⚠️ Please login to use favorites!");
+      return;
     }
+
+    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    let updated;
+
+    if (saved.includes(id)) {
+      updated = saved.filter((bid) => bid !== id);
+      setIsInWishlist(false);
+    } else {
+      updated = [...saved, id];
+      setIsInWishlist(true);
+    }
+
+    localStorage.setItem("favorites", JSON.stringify(updated));
+
+    // Gọi callback ngoài (nếu có)
+    onWishlistToggle?.(book);
   };
 
-  const renderStars = (rating) => {
+  /** ⭐ Hiển thị rating giả */
+  const renderStars = (rating = 4.2) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-
     for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<StarFill key={i} className={styles.starFilled} />);
-      } else if (i === fullStars && hasHalfStar) {
+      if (i < fullStars) stars.push(<StarFill key={i} className={styles.starFilled} />);
+      else if (i === fullStars && hasHalfStar)
         stars.push(<Star key={i} className={styles.starHalf} />);
-      } else {
-        stars.push(<Star key={i} className={styles.starEmpty} />);
-      }
+      else stars.push(<Star key={i} className={styles.starEmpty} />);
     }
     return stars;
   };
 
-  // const getAvailabilityBadge = () => {
-  //   switch (isDeleted) {
-  //     case 'available':
-  //       return <Badge bg="success" className={styles.availabilityBadge}>Available</Badge>;
-  //     case 'borrowed':
-  //       return <Badge bg="warning" className={styles.availabilityBadge}>Borrowed</Badge>;
-  //     case 'reserved':
-  //       return <Badge bg="info" className={styles.availabilityBadge}>Reserved</Badge>;
-  //     case 'unavailable':
-  //       return <Badge bg="danger" className={styles.availabilityBadge}>Unavailable</Badge>;
-  //     default:
-  //       return null;
-  //   }
-  // };
-
   return (
-    <Link to={`/books/${book.id}`} className={styles.bookCardLink}>
+    <Link to={`/books/${id}`} className={styles.bookCardLink}>
       <Card className={`custom-card ${styles.bookCard}`}>
+        {/* 🖼️ Hình ảnh & nút tim */}
         <div className={styles.imageContainer}>
-        <Card.Img 
-          variant="top" 
-          src={`http://localhost:8080${book.image}`|| 'https://via.placeholder.com/300x400?text=No+Cover'} 
-          alt={`${title} cover`}
-          className={styles.bookCover}
-        />
-        <Button
-          variant="link"
-          className={styles.wishlistButton}
-          onClick={handleWishlistClick}
-          aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-        >
-          {isInWishlist ? (
-            <HeartFill className={styles.heartFilled} />
-          ) : (
-            <Heart className={styles.heartEmpty} />
-          )}
-        </Button>
-        {/* {showAvailability && (
-          <div className={styles.availabilityContainer}>
-            {getAvailabilityBadge()}
-          </div>
-        )} */}
-      </div>
-      
-      <Card.Body className={styles.cardBody}>
-        <Card.Title className={styles.bookTitle} title={title}>
-          {title}
-        </Card.Title>
-        
-        <Card.Subtitle className={styles.bookAuthor} title={author}>
-          by {author}
-        </Card.Subtitle>
-        
-        {/* {showRating && rating > 0 && (
-          <div className={styles.ratingContainer}>
-            <div className={styles.stars}>
-              {renderStars(rating)}
-            </div>
-            <span className={styles.ratingText}>
-              {rating.toFixed(1)} ({totalRatings} reviews)
-            </span>
-          </div>
-        )} */}
-        
-        <div className={styles.bookMeta}>
-          {category && (
-            <Badge bg="light" text="dark" className={styles.categoryBadge}>
-              {category}
-            </Badge>
-          )}
-          {publishedDate && (
-            <span className={styles.publishYear}>{publishedDate}</span>
-          )}
-        </div>
-        
-        <div className={styles.cardActions}>
-          <Button 
-            variant="primary" 
-            size="sm" 
-            className={styles.actionButton}
-            disabled={isDeleted === 'unavailable'}
+          <Card.Img
+            variant="top"
+            src={
+              image
+                ? `http://localhost:8080${image}`
+                : "https://via.placeholder.com/300x400?text=No+Cover"
+            }
+            alt={`${title} cover`}
+            className={styles.bookCover}
+          />
+          <Button
+            variant="link"
+            className={styles.wishlistButton}
+            onClick={handleWishlistClick}
+            aria-label={isInWishlist ? "Remove from favorites" : "Add to favorites"}
           >
-            {isDeleted === false ? 'Out' : 'View Details'}
+            {isInWishlist ? (
+              <HeartFill className={styles.heartFilled} />
+            ) : (
+              <Heart className={styles.heartEmpty} />
+            )}
           </Button>
         </div>
-      </Card.Body>
+
+        {/* 📘 Thông tin sách */}
+        <Card.Body className={styles.cardBody}>
+          <Card.Title className={styles.bookTitle} title={title}>
+            {title}
+          </Card.Title>
+
+          <Card.Subtitle className={styles.bookAuthor} title={author}>
+            by {author}
+          </Card.Subtitle>
+
+          {/* ⭐ Rating */}
+          {showRating && (
+            <div className={styles.ratingContainer}>
+              <div className={styles.stars}>{renderStars()}</div>
+              <span className={styles.ratingText}>4.2 (123 reviews)</span>
+            </div>
+          )}
+
+          {/* 🏷️ Category & năm xuất bản */}
+          <div className={styles.bookMeta}>
+            {category && (
+              <Badge bg="light" text="dark" className={styles.categoryBadge}>
+                {category}
+              </Badge>
+            )}
+            {publishedDate && (
+              <span className={styles.publishYear}>{publishedDate}</span>
+            )}
+          </div>
+
+          {/* 🔘 Nút hành động */}
+          <div className={styles.cardActions}>
+            <Button
+              variant="primary"
+              size="sm"
+              className={styles.actionButton}
+              disabled={isDeleted === "unavailable"}
+            >
+              {isDeleted === false ? "Out" : "View Details"}
+            </Button>
+          </div>
+        </Card.Body>
       </Card>
     </Link>
   );
 };
 
 export default BookCard;
+  

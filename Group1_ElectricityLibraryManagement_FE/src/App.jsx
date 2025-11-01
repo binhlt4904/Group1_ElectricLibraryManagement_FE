@@ -13,6 +13,7 @@ import BorrowHistoryPage from './pages/user/BorrowHistoryPage';
 import LibraryCardPage from './pages/user/LibraryCardPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import WalletPage from './pages/user/WalletPage';
+import WishlistPage from "./pages/user/WishlistPage";
 import BookReaderPage from './pages/user/BookReaderPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
@@ -33,6 +34,7 @@ import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 import AddBookPage from './pages/admin/book/AddBookPage';
 import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
+
 const AppContent = () => {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -62,6 +64,7 @@ const AppContent = () => {
               <Route path="library-card" element={<LibraryCardPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="wallet" element={<WalletPage />} />
+                <Route path="/user/wishlist" element={<WishlistPage />} />
             </Route>
 
             {/* Individual User Pages (outside layout) */}

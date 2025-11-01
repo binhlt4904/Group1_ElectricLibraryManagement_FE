@@ -5,6 +5,8 @@ import { Search, PersonFill, BoxArrowRight, PersonCircle, CreditCard, ClockHisto
 import styles from './Header.module.css';
 import auth from "../../api/auth"
 import UserContext from "../contexts/UserContext";
+import { Heart } from "react-bootstrap-icons";
+
 const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -98,10 +100,15 @@ const Header = () => {
                                             <PersonCircle className="me-2" />
                                             My Profile
                                         </Dropdown.Item>
+                                        <Dropdown.Item as={Link} to="/user/wishlist">
+                                            <Heart className="me-2 " />
+                                            My Wishlist
+                                        </Dropdown.Item>
                                         <Dropdown.Item as={Link} to="/user/borrow-history">
                                             <ClockHistory className="me-2" />
                                             Borrowing History
                                         </Dropdown.Item>
+
                                         <Dropdown.Item as={Link} to="/user/library-card">
                                             <CreditCard className="me-2" />
                                             Library Card

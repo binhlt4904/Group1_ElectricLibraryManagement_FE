@@ -56,6 +56,7 @@ const LoginPage = () => {
         username: decodedToken.sub,
         role: decodedToken.role,
         accountId: decodedToken.accountId,
+        readerId: decodedToken.readerId, 
       };
       console.log("User extracted in UserContext: ", userExtracted);
       setUserContext(userExtracted);
