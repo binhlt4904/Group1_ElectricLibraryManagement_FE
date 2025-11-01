@@ -1,0 +1,122 @@
+.addBookContentPage {
+  padding: var(--section-padding);
+  min-height: 80vh;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2.5rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.25rem;
+}
+
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: var(--medium-gray);
+  margin-bottom: 0;
+}
+
+.formCard {
+  background-color: var(--white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formLabel {
+  font-weight: var(--weight-medium);
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+}
+
+.fileInput {
+  border-radius: var(--border-radius-sm);
+  padding: var(--form-padding);
+  font-size: 1rem;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+  margin-top: 0.5rem;
+}
+
+.progressBar {
+  height: 1rem;
+  border-radius: var(--border-radius-sm);
+  margin-top: 0.5rem;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.btnPrimary {
+  background-color: var(--primary-blue);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: var(--weight-medium);
+  transition: background-color 0.2s ease;
+}
+
+.btnPrimary:hover {
+  background-color: var(--primary-blue-dark);
+}
+
+.btnSecondary {
+  background-color: transparent;
+  color: var(--dark-charcoal);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.btnSecondary:hover {
+  background-color: var(--light-gray);
+}
+
+.alertMessage {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .pageTitle { font-size: 2rem; }
+  .pageSubtitle { font-size: 1rem; }
+}
+
+@media (max-width: 768px) {
+  .addBookContentPage { padding: 2rem 0; }
+  .pageTitle { font-size: 1.75rem; }
+  .formCard { padding: 1.5rem; }
+}
+
+@media (max-width: 576px) {
+  .pageTitle { font-size: 1.5rem; }
+  .pageSubtitle { font-size: 0.9rem; }
+  .actionButtons { flex-direction: column; }
+  .btnPrimary, .btnSecondary { width: 100%; }
+}
