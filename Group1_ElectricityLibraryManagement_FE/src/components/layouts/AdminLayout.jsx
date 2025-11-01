@@ -4,7 +4,7 @@ import {
   Container, Row, Col, Nav, Navbar, Offcanvas, Button, Dropdown, Badge
 } from 'react-bootstrap';
 import {
-  List, X, House, BookFill, PersonFill, Building, People,
+  List, X, House, BookFill, PersonFill, Building, People, Tags,
   ClipboardData, CalendarEvent, BarChart, ExclamationTriangle, FileEarmark,
   Gear, BoxArrowRight, PersonCircle
 } from 'react-bootstrap-icons';
@@ -30,6 +30,12 @@ const AdminLayout = () => {
       label: 'Dashboard',
       badge: null
     },
+     {
+      path: '/admin/categories',
+      icon: Tags,                // icon mới
+      label: 'Category Management',
+      badge: null
+    },
     {
       path: '/admin/books',
       icon: BookFill,
@@ -53,6 +59,12 @@ const AdminLayout = () => {
       icon: People,
       label: 'Readers Management',
       badge: '1,234'
+    },
+    {
+      path: '/admin/system-users',
+      icon: People,
+      label: 'Staff Management',
+      badge: null
     },
     {
       path: '/admin/borrowals',
@@ -84,12 +96,6 @@ const AdminLayout = () => {
       label: 'Documents',
       badge: null
     },
-    {
-      path: '/admin/system-users',
-      icon: Gear,
-      label: 'System Users',
-      badge: null
-    }
   ];
 
   const handleNavigation = (path) => {
@@ -128,7 +134,7 @@ const AdminLayout = () => {
         {navigationItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = isActiveRoute(item.path);
-          
+
           return (
             <Nav.Link
               key={item.path}
@@ -203,7 +209,7 @@ const AdminLayout = () => {
                   System Settings
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item 
+                <Dropdown.Item
                   className={`${styles.userMenuItem} ${styles.logoutItem}`}
                   onClick={handleLogout}
                 >

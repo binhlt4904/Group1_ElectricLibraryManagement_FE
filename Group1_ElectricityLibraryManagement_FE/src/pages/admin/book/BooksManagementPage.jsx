@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 const BooksManagementPage = () => {
   const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -30,6 +31,7 @@ const BooksManagementPage = () => {
         size: itemsPerPage,
       };
 
+
       if (searchTerm.trim() !== '') params.search = searchTerm.trim();
       if (categoryFilter !== 'all') params.category = categoryFilter;
       if (statusFilter !== 'all') params.status = statusFilter;
@@ -39,6 +41,11 @@ const BooksManagementPage = () => {
       const response = await bookApi.findAllAdmin(params);
       const data = response.data;
       console.log(data)
+
+      if(searchTerm.trim() === '' && categoryFilter === 'all' && statusFilter === 'all'){
+        const uniqueCategories = [...new Set(data.content.map((book) => book.category))];
+        setCategories(uniqueCategories);
+      }
 
       setBooks(data.content);
       setTotalPages(data.totalPages);
@@ -102,8 +109,6 @@ const BooksManagementPage = () => {
     });
   };
 
-  // 🔹 Categories dynamic (nếu backend không trả riêng)
-  const categories = [...new Set(books.map((book) => book.category))];
 
   console.log(books)
 
