@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Container, Row, Col, Nav, Navbar, Offcanvas, Button, Dropdown, Badge 
+import {
+  Container, Row, Col, Nav, Navbar, Offcanvas, Button, Dropdown, Badge
 } from 'react-bootstrap';
 import {
   List, X, House, BookFill, PersonFill, Building, People,
   ClipboardData, CalendarEvent, BarChart, ExclamationTriangle, FileEarmark,
-  Gear, BoxArrowRight, Bell, PersonCircle
+  Gear, BoxArrowRight, PersonCircle
 } from 'react-bootstrap-icons';
 import styles from './AdminLayout.module.css';
+import NotificationBell from '../commons/NotificationBell';
 
 const AdminLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -172,10 +173,7 @@ const AdminLayout = () => {
 
           <div className={styles.topNavRight}>
             {/* Notifications */}
-            <Button variant="outline-secondary" className={styles.notificationBtn}>
-              <Bell />
-              <Badge bg="danger" className={styles.notificationBadge}>3</Badge>
-            </Button>
+            <NotificationBell variant="outline-secondary" size="md" />
 
             {/* Admin User Dropdown */}
             <Dropdown align="end">

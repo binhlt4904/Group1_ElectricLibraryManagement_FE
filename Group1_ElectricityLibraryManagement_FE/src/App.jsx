@@ -1,5 +1,7 @@
 import './App.css'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { UserProvider } from './components/contexts/UserProvider';
 import HomePage from './pages/public/HomePage';
 import BookListPage from './pages/public/BookListPage';
@@ -14,6 +16,7 @@ import LibraryCardPage from './pages/user/LibraryCardPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import WalletPage from './pages/user/WalletPage';
 import BookReaderPage from './pages/user/BookReaderPage';
+import UserDocumentsPage from './pages/user/UserDocumentsPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
 
@@ -42,6 +45,18 @@ const AppContent = () => {
   return (
     <UserProvider>
       <div className="app-container">
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
         {!isAdminPage && <Header />}
         <main className="main-content">
 
@@ -62,6 +77,7 @@ const AppContent = () => {
               <Route path="library-card" element={<LibraryCardPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="wallet" element={<WalletPage />} />
+              <Route path="research" element={<UserDocumentsPage />} />
             </Route>
 
             {/* Individual User Pages (outside layout) */}

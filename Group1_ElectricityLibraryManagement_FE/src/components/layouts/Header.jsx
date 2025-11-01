@@ -1,196 +1,192 @@
 import React, { useState, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, Container, Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
-import { Search, PersonFill, BoxArrowRight, PersonCircle, CreditCard, ClockHistory, Wallet, Bell } from 'react-bootstrap-icons';
+import { Search, PersonFill, BoxArrowRight, PersonCircle, CreditCard, ClockHistory, Wallet } from 'react-bootstrap-icons';
 import styles from './Header.module.css';
 import auth from "../../api/auth"
 import UserContext from "../contexts/UserContext";
+import NotificationBell from '../commons/NotificationBell';
 const Header = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState('');
-
-    // Mock user authentication state - in real app this would come from context/redux
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const {user, setUserContext} = useContext(UserContext);
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchTerm.trim()) {
-            navigate(`/books?search=${encodeURIComponent(searchTerm.trim())}`);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await auth.logout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-        localStorage.removeItem('accessToken');
-        const test = localStorage.getItem("accessToken");
-        console.log("If have acsess token is false: ", test);
-        setUserContext(null);
-        navigate('/');
-    };
-
-    const isActivePage = (path) => {
-        return location.pathname === path || location.pathname.startsWith(path + '/');
-    };
-
-    return (
-        <>
-            {/* Top tier */}
-            <Navbar bg="white" className={`${styles.topTier} border-bottom`}>
-                <Container>
-                    <Navbar.Brand as={Link} to="/" className={styles.logo}>
-                        <div className={styles.logoGrid}>
-                            <div className={`${styles.logoPixel} ${styles.blue}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.green}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.blue}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.pink}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.green}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.blue}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.pink}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.green}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.pink}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.green}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.blue}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.pink}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.blue}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.pink}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.green}`}></div>
-                            <div className={`${styles.logoPixel} ${styles.blue}`}></div>
-                        </div>
-                        <div className={styles.logoText}>
-                            <div className={styles.logoTitle}>ELECTRICITY LIBRARY</div>
-                            <div className={styles.logoSubtitle}>Digital Knowledge Hub</div>
-                        </div>
-                    </Navbar.Brand>
-
-                    <Nav className="ms-auto">
-                        {!user ? (
-                            <>
-                                <Nav.Link as={Link} to="/register" className={styles.topNavLink}>Join</Nav.Link>
-                                <Nav.Link as={Link} to="/login" className={styles.topNavLink}>Login</Nav.Link>
-                                <Nav.Link href="#contact" className={styles.topNavLink}>Contact</Nav.Link>
-                            </>
-                        ) : (
-                            <>
-                                <Nav.Link as={Link} to="/notifications" className={styles.topNavLink}>
-                                    <Bell className="me-1" />
-                                    <span className={styles.notificationBadge}>3</span>
-                                </Nav.Link>
-                                <Dropdown align="end">
-                                    <Dropdown.Toggle variant="link" className={styles.userDropdown} id="user-dropdown">
-                                        <PersonCircle size={24} className="me-2" />
-                                        {user.username}
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu className={styles.userDropdownMenu}>
-                                        <Dropdown.Header>
-                                            <div className={styles.userInfo}>
-                                                <strong>{user.username}</strong>
-                                                <small className="text-muted d-block">{user.role}</small>
-                                            </div>
-                                        </Dropdown.Header>
-                                        <Dropdown.Divider />
-                                        <Dropdown.Item as={Link} to="/user/profile">
-                                            <PersonCircle className="me-2" />
-                                            My Profile
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/borrow-history">
-                                            <ClockHistory className="me-2" />
-                                            Borrowing History
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/library-card">
-                                            <CreditCard className="me-2" />
-                                            Library Card
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/wallet">
-                                            <Wallet className="me-2" />
-                                            My Wallet
-                                        </Dropdown.Item>
-                                        {user.role === 'admin' && (
-                                            <>
-                                                <Dropdown.Divider />
-                                                <Dropdown.Item as={Link} to="/admin">
-                                                    <PersonFill className="me-2" />
-                                                    Admin Panel
-                                                </Dropdown.Item>
-                                            </>
-                                        )}
-                                        <Dropdown.Divider />
-                                        <Dropdown.Item onClick={handleLogout}>
-                                            <BoxArrowRight className="me-2" />
-                                            Logout
-                                        </Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </>
-                        )}
-                    </Nav>
-                </Container>
-            </Navbar>
-
-            {/* Bottom tier */}
-            <Navbar bg="white" className={styles.bottomTier}>
-                <Container>
-                    <Nav className="justify-content-center w-100">
-                        <Nav.Link
-                            as={Link}
-                            to="/books"
-                            className={`${styles.navLink} ${isActivePage('/books') ? styles.active : ''}`}
-                        >
-                            Books & More
-                        </Nav.Link>
-                        <Nav.Link
-                            as={Link}
-                            to="/events"
-                            className={`${styles.navLink} ${isActivePage('/events') ? styles.active : ''}`}
-                        >
-                            Events & Classes
-                        </Nav.Link>
-                        <Nav.Link
-                            href="#research"
-                            className={styles.navLink}
-                        >
-                            Research
-                        </Nav.Link>
-                        {user && (
-                            <Nav.Link
-                                as={Link}
-                                to="/user/profile"
-                                className={`${styles.navLink} ${isActivePage('/user') ? styles.active : ''}`}
-                            >
-                                My Account
-                            </Nav.Link>
-                        )}
-                    </Nav>
-
-                    <div className={styles.searchSection}>
-                        <Form onSubmit={handleSearch}>
-                            <InputGroup className={styles.searchGroup}>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Search books, authors, topics..."
-                                    className={styles.searchInput}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                                <Button
-                                    variant="primary"
-                                    className={styles.searchButton}
-                                    type="submit"
-                                >
-                                    <Search />
-                                </Button>
-                            </InputGroup>
-                        </Form>
-                    </div>
-                </Container>
-            </Navbar>
-        </>
-    );
+const location = useLocation();
+const navigate = useNavigate();
+const [searchTerm, setSearchTerm] = useState('');
+// Mock user authentication state - in real app this would come from context/redux
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+const {user, setUserContext} = useContext(UserContext);
+const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+        navigate(`/books?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
 };
-
+const handleLogout = async () => {
+    try {
+        await auth.logout();
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+    localStorage.removeItem('accessToken');
+    const test = localStorage.getItem("accessToken");
+    console.log("If have acsess token is false: ", test);
+    setUserContext(null);
+    navigate('/');
+};
+const isActivePage = (path) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+};
+return (
+    <>
+        {/* Top tier */}
+        <Navbar bg="white" className={`${styles.topTier} border-bottom`}>
+            <Container>
+                <Navbar.Brand as={Link} to="/" className={styles.logo}>
+                    <div className={styles.logoGrid}>
+                        <div className={`${styles.logoPixel} ${styles.blue}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.green}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.blue}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.pink}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.green}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.blue}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.pink}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.green}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.pink}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.green}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.blue}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.pink}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.blue}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.pink}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.green}`}></div>
+                        <div className={`${styles.logoPixel} ${styles.blue}`}></div>
+                    </div>
+                    <div className={styles.logoText}>
+                        <div className={styles.logoTitle}>ELECTRICITY LIBRARY</div>
+                        <div className={styles.logoSubtitle}>Digital Knowledge Hub</div>
+                    </div>
+                </Navbar.Brand>
+                <Nav className="ms-auto">
+                    {!user ? (
+                        <>
+                            <Nav.Link as={Link} to="/register" className={styles.topNavLink}>Join</Nav.Link>
+                            <Nav.Link as={Link} to="/login" className={styles.topNavLink}>Login</Nav.Link>
+                            <Nav.Link href="#contact" className={styles.topNavLink}>Contact</Nav.Link>
+                        </>
+                    ) : (
+                        <>
+                            <div className={styles.notificationBellWrapper}>
+                                <NotificationBell variant="link" />
+                            </div>
+                            <Dropdown align="end">
+                                <Dropdown.Toggle variant="link" className={styles.userDropdown} id="user-dropdown">
+                                    <PersonCircle size={24} className="me-2" />
+                                    {user.username}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu className={styles.userDropdownMenu}>
+                                    <Dropdown.Header>
+                                        <div className={styles.userInfo}>
+                                            <strong>{user.username}</strong>
+                                            <small className="text-muted d-block">{user.role}</small>
+                                        </div>
+                                    </Dropdown.Header>
+                                    <Dropdown.Divider />
+                                    <Dropdown.Item as={Link} to="/user/profile">
+                                        <PersonCircle className="me-2" />
+                                        My Profile
+                                    </Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/user/borrow-history">
+                                        <ClockHistory className="me-2" />
+                                        Borrowing History
+                                    </Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/user/library-card">
+                                        <CreditCard className="me-2" />
+                                        Library Card
+                                    </Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/user/wallet">
+                                        <Wallet className="me-2" />
+                                        My Wallet
+                                    </Dropdown.Item>
+                                    {user.role === 'admin' && (
+                                        <>
+                                            <Dropdown.Divider />
+                                            <Dropdown.Item as={Link} to="/admin">
+                                                <PersonFill className="me-2" />
+                                                Admin Panel
+                                            </Dropdown.Item>
+                                        </>
+                                    )}
+                                    <Dropdown.Divider />
+                                    <Dropdown.Item onClick={handleLogout}>
+                                        <BoxArrowRight className="me-2" />
+                                        Logout
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </>
+                    )}
+                </Nav>
+                </Container>
+            </Navbar>
+        {/* Bottom tier */}
+        <Navbar bg="white" className={styles.bottomTier}>
+            <Container>
+                <Nav className="justify-content-center w-100">
+                    <Nav.Link
+                        as={Link}
+                        to="/books"
+                        className={`${styles.navLink} ${isActivePage('/books') ? styles.active : ''}`}
+                    >
+                        Books & More
+                    </Nav.Link>
+                    <Nav.Link
+                        as={Link}
+                        to="/events"
+                        className={`${styles.navLink} ${isActivePage('/events') ? styles.active : ''}`}
+                    >
+                        Events & Classes
+                    </Nav.Link>
+                    <Nav.Link
+                        as={Link}
+                        to="/user/research"
+                        className={`${styles.navLink} ${isActivePage('/user/research') ? styles.active : ''}`}
+                    >
+                        Research
+                    </Nav.Link>
+                    {user && (
+                        <Nav.Link
+                            as={Link}
+                            to="/user/profile"
+                            className={`${styles.navLink} ${isActivePage('/user') ? styles.active : ''}`}
+                        >
+                            My Account
+                        </Nav.Link>
+                    )}
+                </Nav>
+                <div className={styles.searchSection}>
+                    <Form onSubmit={handleSearch}>
+                        <InputGroup className={styles.searchGroup}>
+                            <Form.Control
+                                type="text"
+                                placeholder="Search books, authors, topics..."
+                                className={styles.searchInput}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <Button
+                                variant="primary"
+                                className={styles.searchButton}
+                                type="submit"
+                            >
+                                <Search />
+                            </Button>
+                        </InputGroup>
+                    </Form>
+                </div>
+            </Container>
+        </Navbar>
+    </>
+);
+};
 export default Header;
+
+
+
+

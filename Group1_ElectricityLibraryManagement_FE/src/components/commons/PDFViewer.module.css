@@ -1,0 +1,240 @@
+/* PDF Viewer Container */
+.pdfViewerContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* PDF Header */
+.pdfHeader {
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fileName {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #212529;
+  word-break: break-word;
+}
+
+/* Error Alert */
+.errorAlert {
+  margin: 12px;
+  border-radius: 6px;
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px 20px;
+  gap: 16px;
+}
+
+.spinner {
+  color: #0d6efd;
+  width: 48px;
+  height: 48px;
+}
+
+.loadingText {
+  margin: 0;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.loadingPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+/* Document Wrapper */
+.documentWrapper {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  background-color: #f8f9fa;
+}
+
+.page {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  background-color: white;
+}
+
+/* Controls Container */
+.controlsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-top: 1px solid #dee2e6;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Navigation Controls */
+.navigationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navButton {
+  padding: 6px 10px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover:not(:disabled) {
+  background-color: #e7f1ff;
+  border-color: #0d6efd;
+}
+
+.pageCounter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.pageInput {
+  width: 50px;
+  padding: 6px 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.pageInput:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.pageTotal {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Zoom Controls */
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoomButton {
+  padding: 6px 10px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoomButton:hover:not(:disabled) {
+  background-color: #e7f1ff;
+  border-color: #0d6efd;
+}
+
+.zoomLevel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #212529;
+  min-width: 45px;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pdfViewerContainer {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .controlsContainer {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .navigationControls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .zoomControls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .documentWrapper {
+    padding: 12px;
+  }
+
+  .fileName {
+    font-size: 14px;
+  }
+
+  .pdfHeader {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .documentWrapper {
+    padding: 8px;
+  }
+
+  .controlsContainer {
+    padding: 8px;
+  }
+
+  .navButton,
+  .zoomButton {
+    padding: 5px 8px;
+    min-width: 32px;
+  }
+
+  .pageInput {
+    width: 40px;
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .pageTotal {
+    font-size: 12px;
+  }
+
+  .zoomLevel {
+    font-size: 12px;
+    min-width: 40px;
+  }
+}
+

@@ -1,25 +1,26 @@
-import React, { useState } from 'react';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Table, 
-  Button, 
-  Form, 
-  InputGroup, 
-  Badge, 
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Button,
+  Form,
+  InputGroup,
+  Badge,
   Pagination,
   Modal,
-  Alert
+  Alert,
+  Spinner
 } from 'react-bootstrap';
-import { 
-  FileEarmark, 
-  Search, 
-  Plus, 
-  Eye, 
-  Download, 
-  PencilSquare, 
+import {
+  FileEarmark,
+  Search,
+  Plus,
+  Eye,
+  Download,
+  PencilSquare,
   Trash,
   Upload,
   PersonFill,
@@ -27,142 +28,154 @@ import {
   FileText,
   Shield
 } from 'react-bootstrap-icons';
+import DocumentViewer from '../../components/commons/DocumentViewer';
+import documentAPI from '../../api/document';
+import categoryAPI from '../../api/category';
 import styles from './DocumentManagementPage.module.css';
 
 const DocumentManagementPage = () => {
+  const [documents, setDocuments] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedAccessLevel, setSelectedAccessLevel] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showViewerModal, setShowViewerModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const [documentToDelete, setDocumentToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadCategory, setUploadCategory] = useState('');
+  const [uploadAccessLevel, setUploadAccessLevel] = useState('public');
   const documentsPerPage = 10;
-
-  // Mock documents data
-  const mockDocuments = [
-    {
-      id: 1,
-      title: "Library Policies and Procedures Manual",
-      category: "Policies",
-      description: "Comprehensive guide to library policies, procedures, and best practices.",
-      fileName: "library-policies-2024.pdf",
-      fileSize: "2.4 MB",
-      uploadedBy: {
-        id: 1,
-        name: "Sarah Johnson",
-        role: "Library Director"
-      },
-      uploadDate: "2024-01-15",
-      accessLevel: "staff-only",
-      status: "active",
-      downloadCount: 45,
-      version: "v2.1"
-    },
-    {
-      id: 2,
-      title: "Emergency Procedures Handbook",
-      category: "Procedures",
-      description: "Step-by-step emergency procedures for various scenarios.",
-      fileName: "emergency-procedures.pdf",
-      fileSize: "1.8 MB",
-      uploadedBy: {
-        id: 2,
-        name: "Michael Rodriguez",
-        role: "Safety Coordinator"
-      },
-      uploadDate: "2024-01-12",
-      accessLevel: "staff-only",
-      status: "active",
-      downloadCount: 23,
-      version: "v1.3"
-    },
-    {
-      id: 3,
-      title: "New Employee Orientation Checklist",
-      category: "Training Materials",
-      description: "Checklist for new employee onboarding and orientation process.",
-      fileName: "orientation-checklist.docx",
-      fileSize: "156 KB",
-      uploadedBy: {
-        id: 3,
-        name: "Emily Chen",
-        role: "HR Manager"
-      },
-      uploadDate: "2024-01-10",
-      accessLevel: "admin-only",
-      status: "active",
-      downloadCount: 12,
-      version: "v1.0"
-    },
-    {
-      id: 4,
-      title: "Library Card Application Form",
-      category: "Forms",
-      description: "Standard application form for new library card registration.",
-      fileName: "library-card-application.pdf",
-      fileSize: "245 KB",
-      uploadedBy: {
-        id: 4,
-        name: "David Kim",
-        role: "Circulation Manager"
-      },
-      uploadDate: "2024-01-08",
-      accessLevel: "public",
-      status: "active",
-      downloadCount: 156,
-      version: "v3.2"
-    },
-    {
-      id: 5,
-      title: "Monthly Usage Report Template",
-      category: "Reports",
-      description: "Template for generating monthly library usage and statistics reports.",
-      fileName: "monthly-report-template.xlsx",
-      fileSize: "89 KB",
-      uploadedBy: {
-        id: 5,
-        name: "Lisa Anderson",
-        role: "Data Analyst"
-      },
-      uploadDate: "2024-01-05",
-      accessLevel: "staff-only",
-      status: "active",
-      downloadCount: 34,
-      version: "v2.0"
-    },
-    {
-      id: 6,
-      title: "IT Security Guidelines",
-      category: "Policies",
-      description: "Information technology security policies and guidelines for staff.",
-      fileName: "it-security-guidelines.pdf",
-      fileSize: "1.2 MB",
-      uploadedBy: {
-        id: 6,
-        name: "Alex Thompson",
-        role: "IT Manager"
-      },
-      uploadDate: "2024-01-03",
-      accessLevel: "staff-only",
-      status: "archived",
-      downloadCount: 67,
-      version: "v1.5"
-    }
-  ];
-
-  const categories = ['all', 'Policies', 'Procedures', 'Forms', 'Reports', 'Training Materials'];
   const accessLevels = ['all', 'public', 'staff-only', 'admin-only'];
 
+  // Fetch documents and categories on component mount
+  useEffect(() => {
+    fetchCategories();
+    fetchDocuments();
+  }, []);
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryAPI.findAll();
+      console.log('Category API Response:', response);
+      const categoryList = response.data || [];
+      console.log('Category List:', categoryList);
+
+      // Extract category names from response
+      const categoryNames = categoryList.map(cat => cat.name || cat);
+      console.log('Mapped Category Names:', categoryNames);
+
+      // Add 'all' option at the beginning
+      const finalCategories = ['all', ...categoryNames];
+      console.log('Final Categories:', finalCategories);
+
+      setCategories(finalCategories);
+
+      // Set default upload category to first real category
+      if (categoryList.length > 0) {
+        const defaultCategory = categoryList[0].name || categoryList[0];
+        console.log('Setting default upload category to:', defaultCategory);
+        setUploadCategory(defaultCategory);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      // Fallback to empty array if API fails
+      setCategories(['all']);
+    }
+  };
+
+  // Fetch documents from API
+  const fetchDocuments = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await documentAPI.getAllDocuments({
+        page: 0,
+        size: 100
+      });
+      setDocuments(response.data.content || response.data || []);
+    } catch (err) {
+      console.error('Error fetching documents:', err);
+      setError('Failed to load documents. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle delete document
+  const handleDeleteDocument = async () => {
+    if (!documentToDelete) return;
+
+    try {
+      setIsLoading(true);
+      await documentAPI.deleteDocument(documentToDelete.id);
+      setShowDeleteModal(false);
+      setDocumentToDelete(null);
+      await fetchDocuments();
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      setError('Failed to delete document. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle upload document
+  const handleUploadDocument = async () => {
+    if (!uploadFile || !uploadTitle) {
+      setError('Please select a file and enter a title');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Upload file first
+      const uploadResponse = await documentAPI.uploadDocument(uploadFile);
+      const filePath = uploadResponse.data.filePath || uploadResponse.data;
+
+      // Create document with metadata
+      await documentAPI.createDocument({
+        title: uploadTitle,
+        description: uploadTitle,
+        categoryName: uploadCategory,
+        accessLevel: uploadAccessLevel,
+        filePath: filePath,
+        fileName: uploadFile.name
+      });
+
+      setShowUploadModal(false);
+      setUploadFile(null);
+      setUploadTitle('');
+      // Reset to first category from fetched list
+      if (categories.length > 1) {
+        setUploadCategory(categories[1]); // categories[0] is 'all'
+      }
+      setUploadAccessLevel('public');
+      await fetchDocuments();
+    } catch (err) {
+      console.error('Error uploading document:', err);
+      setError('Failed to upload document. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Filter documents
-  const filteredDocuments = mockDocuments.filter(document => {
-    const matchesSearch = document.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         document.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         document.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         document.uploadedBy.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || document.category === selectedCategory;
+  const filteredDocuments = documents.filter(document => {
+    const matchesSearch = document.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         document.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         document.fileName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || document.categoryName === selectedCategory;
     const matchesAccessLevel = selectedAccessLevel === 'all' || document.accessLevel === selectedAccessLevel;
-    
+
     return matchesSearch && matchesCategory && matchesAccessLevel;
   });
 
@@ -177,19 +190,21 @@ const DocumentManagementPage = () => {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
-    console.log('Deleting document:', documentToDelete);
-    setShowDeleteModal(false);
-    setDocumentToDelete(null);
-  };
-
   const handleUploadClick = () => {
     setShowUploadModal(true);
   };
 
-  const handleUploadConfirm = () => {
-    console.log('Uploading new document');
-    setShowUploadModal(false);
+  const handleViewDocument = (document) => {
+    // Create document object with necessary properties for DocumentViewer
+    const viewerDocument = {
+      id: document.id,
+      title: document.title,
+      fileUrl: document.filePath || `https://example.com/documents/${document.fileName}`,
+      fileType: document.fileName?.split('.').pop() || 'pdf',
+      fileName: document.fileName
+    };
+    setSelectedDocument(viewerDocument);
+    setShowViewerModal(true);
   };
 
   const getAccessLevelVariant = (accessLevel) => {
@@ -266,6 +281,13 @@ const DocumentManagementPage = () => {
         </Col>
       </Row>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="danger" className="mb-4" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
+
       {/* Statistics Cards */}
       <Row className="mb-4">
         <Col md={3} className="mb-3">
@@ -277,9 +299,9 @@ const DocumentManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockDocuments.filter(d => d.status === 'active').length}
+                    {documents.length}
                   </div>
-                  <div className={styles.statLabel}>Active Documents</div>
+                  <div className={styles.statLabel}>Total Documents</div>
                 </div>
               </div>
             </Card.Body>
@@ -294,9 +316,9 @@ const DocumentManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockDocuments.reduce((sum, d) => sum + d.downloadCount, 0)}
+                    {documents.filter(d => d.accessLevel === 'public').length}
                   </div>
-                  <div className={styles.statLabel}>Total Downloads</div>
+                  <div className={styles.statLabel}>Public Documents</div>
                 </div>
               </div>
             </Card.Body>
@@ -311,7 +333,7 @@ const DocumentManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockDocuments.filter(d => d.accessLevel === 'admin-only').length}
+                    {documents.filter(d => d.accessLevel === 'admin-only').length}
                   </div>
                   <div className={styles.statLabel}>Admin Only</div>
                 </div>
@@ -328,10 +350,10 @@ const DocumentManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockDocuments.filter(d => {
-                      const uploadDate = new Date(d.uploadDate);
+                    {documents.filter(d => {
+                      const uploadDate = new Date(d.createdAt || d.uploadDate);
                       const thisMonth = new Date();
-                      return uploadDate.getMonth() === thisMonth.getMonth() && 
+                      return uploadDate.getMonth() === thisMonth.getMonth() &&
                              uploadDate.getFullYear() === thisMonth.getFullYear();
                     }).length}
                   </div>
@@ -425,10 +447,10 @@ const DocumentManagementPage = () => {
                             <div className={styles.documentDetails}>
                               <div className={styles.documentTitle}>{document.title}</div>
                               <Badge 
-                                bg={getCategoryColor(document.category)} 
+                                bg={getCategoryColor(document.category || '')} 
                                 className={styles.categoryBadge}
                               >
-                                {document.category}
+                                {document.category || 'Uncategorized'}
                               </Badge>
                             </div>
                           </div>
@@ -446,8 +468,8 @@ const DocumentManagementPage = () => {
                           <div className={styles.uploaderInfo}>
                             <PersonFill className={styles.uploaderIcon} />
                             <div className={styles.uploaderDetails}>
-                              <div className={styles.uploaderName}>{document.uploadedBy.name}</div>
-                              <div className={styles.uploaderRole}>{document.uploadedBy.role}</div>
+                              <div className={styles.uploaderName}>{document.uploadedBy?.name}</div>
+                              <div className={styles.uploaderRole}>{document.uploadedBy?.role}</div>
                             </div>
                           </div>
                         </td>
@@ -471,8 +493,8 @@ const DocumentManagementPage = () => {
                           </div>
                         </td>
                         <td className={styles.statusCell}>
-                          <Badge bg={getStatusVariant(document.status)} className={styles.statusBadge}>
-                            {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
+                          <Badge bg={getStatusVariant(document.status || '')} className={styles.statusBadge}>
+                            {document.status ? document.status.charAt(0).toUpperCase() + document.status.slice(1) : 'No Status'}
                           </Badge>
                         </td>
                         <td className={styles.actionsCell}>
@@ -482,6 +504,7 @@ const DocumentManagementPage = () => {
                               size="sm"
                               className={styles.actionButton}
                               title="View Document"
+                              onClick={() => handleViewDocument(document)}
                             >
                               <Eye />
                             </Button>
@@ -572,14 +595,21 @@ const DocumentManagementPage = () => {
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Document Title</Form.Label>
-                  <Form.Control type="text" placeholder="Enter document title" />
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter document title"
+                    value={uploadTitle}
+                    onChange={(e) => setUploadTitle(e.target.value)}
+                  />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Category</Form.Label>
-                  <Form.Select>
-                    <option>Select category</option>
+                  <Form.Select
+                    value={uploadCategory}
+                    onChange={(e) => setUploadCategory(e.target.value)}
+                  >
                     {categories.slice(1).map(category => (
                       <option key={category} value={category}>{category}</option>
                     ))}
@@ -588,13 +618,11 @@ const DocumentManagementPage = () => {
               </Col>
             </Row>
             <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control as="textarea" rows={3} placeholder="Enter document description" />
-            </Form.Group>
-            <Form.Group className="mb-3">
               <Form.Label>Access Level</Form.Label>
-              <Form.Select>
-                <option>Select access level</option>
+              <Form.Select
+                value={uploadAccessLevel}
+                onChange={(e) => setUploadAccessLevel(e.target.value)}
+              >
                 {accessLevels.slice(1).map(level => (
                   <option key={level} value={level}>
                     {level === 'staff-only' ? 'Staff Only' :
@@ -606,7 +634,10 @@ const DocumentManagementPage = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>File</Form.Label>
-              <Form.Control type="file" />
+              <Form.Control
+                type="file"
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+              />
               <Form.Text className="text-muted">
                 Supported formats: PDF, DOC, DOCX, XLS, XLSX. Maximum file size: 10MB.
               </Form.Text>
@@ -617,8 +648,19 @@ const DocumentManagementPage = () => {
           <Button variant="secondary" onClick={() => setShowUploadModal(false)}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleUploadConfirm}>
-            Upload Document
+          <Button
+            variant="primary"
+            onClick={handleUploadDocument}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Uploading...
+              </>
+            ) : (
+              'Upload Document'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -650,11 +692,29 @@ const DocumentManagementPage = () => {
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={handleDeleteConfirm}>
-            Delete Document
+          <Button
+            variant="danger"
+            onClick={handleDeleteDocument}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Deleting...
+              </>
+            ) : (
+              'Delete Document'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Document Viewer Modal */}
+      <DocumentViewer
+        show={showViewerModal}
+        onHide={() => setShowViewerModal(false)}
+        document={selectedDocument}
+      />
     </Container>
   );
 };
