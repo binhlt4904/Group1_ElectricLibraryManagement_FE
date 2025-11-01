@@ -21,19 +21,23 @@ const reviewApi = {
 
 
   // 🔹 Sửa review (người viết hoặc staff)
-  update: async (id, data, userId, isStaff = false) => {
-    return await axiosClient.put(
-      `/api/v1/reviews/${id}?userId=${userId}&isStaff=${isStaff}`,
-      data
-    );
-  },
+  update: async (bookId, reviewId, data, userId, role) => {
+  return await axiosClient.put(
+    `/api/v1/public/books/${bookId}/reviews/${reviewId}?requesterId=${userId}&role=${role}`,
+    data
+  );
+},
+
+
+
 
   // 🔹 Xoá review (người viết hoặc staff)
-  remove: async (id, userId, isStaff = false) => {
-    return await axiosClient.delete(
-      `/api/v1/reviews/${id}?userId=${userId}&isStaff=${isStaff}`
-    );
-  },
+  remove: async (bookId, reviewId, userId, roleName = "USER") => {
+  return await axiosClient.delete(
+    `/api/v1/public/books/${bookId}/reviews/${reviewId}?requesterId=${userId}&role=${roleName}`
+  );
+},
+
 };
 
 export default reviewApi;

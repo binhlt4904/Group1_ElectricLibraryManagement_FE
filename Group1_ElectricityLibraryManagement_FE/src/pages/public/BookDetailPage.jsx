@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import UserContext from "../../components/contexts/UserContext";
+import { PencilSquare, Trash } from "react-bootstrap-icons";
 
 import {
   Container,
@@ -50,7 +51,10 @@ const BookDetailPage = () => {
       return;
     }
 
-    if (!user.readerId) {
+    if (
+      user.role.toLowerCase() !== "user" &&
+      user.role.toLowerCase() !== "reader"
+    ) {
       alert("❌ Only readers can write reviews.");
       return;
     }
@@ -58,7 +62,7 @@ const BookDetailPage = () => {
     try {
       const payload = {
         bookId: Number(bookId),
-        readerId: user.readerId,
+        readerId: user.accountId,
         note: newReview.note,
         rate: newReview.rate,
         roleName: String(user.role).toUpperCase(), // ép chuỗi in hoa
@@ -75,6 +79,48 @@ const BookDetailPage = () => {
       alert(
         "❌ Error adding review: " + (err.response?.data?.message || "Unknown")
       );
+    }
+  };
+
+  const [editingReview, setEditingReview] = useState(null);
+  const [editNote, setEditNote] = useState("");
+  const [editRate, setEditRate] = useState(5);
+
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setEditNote(review.note);
+    setEditRate(review.rate);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await reviewApi.update(
+        book.id,
+        editingReview.id,
+        { note: editNote, rate: editRate },
+        user.accountId,
+        user.role
+      );
+
+      alert("✅ Review updated!");
+      const res = await reviewApi.findByBookId(bookId);
+      setReviews(res.data);
+      setEditingReview(null);
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error updating review");
+    }
+  };
+
+  const handleDeleteReview = async (review) => {
+    if (!window.confirm("Delete this review?")) return;
+    try {
+      await reviewApi.remove(book.id, review.id, user.accountId, user.role);
+      alert("🗑️ Review deleted successfully");
+      setReviews(reviews.filter((r) => r.id !== review.id));
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error deleting review");
     }
   };
 
@@ -475,6 +521,7 @@ const BookDetailPage = () => {
 
                 <Tab.Pane eventKey="reviews">
                   <div className={styles.reviews}>
+                    {/* FORM VIẾT REVIEW */}
                     <div className="mb-4 p-3 border rounded bg-light">
                       <h5 className="fw-bold mb-2">Write a Review</h5>
                       <textarea
@@ -509,27 +556,113 @@ const BookDetailPage = () => {
                         Submit Review
                       </Button>
                     </div>
-                    {reviews.map((review) => (
-                      <Card key={review.id} className={styles.reviewCard}>
-                        <Card.Body>
-                          <div className={styles.reviewHeader}>
-                            <div>
-                              <strong>{review.reviewerName}</strong>
-                              <small className="text-muted ms-2">
-                                (ID: {review.id})
-                              </small>
-                              <div className={styles.reviewStars}>
-                                {renderStars(review.rate)}
+
+                    {/* DANH SÁCH REVIEW */}
+                    {reviews.map((review) => {
+                      console.log("🧾 Review:", review);
+                      console.log("👤 User:", user);
+
+                      const normalize = (s) =>
+                        s?.toLowerCase().replace(/\s+/g, ""); // chuẩn hóa: bỏ khoảng trắng & viết thường
+
+                      const canModify =
+                        user &&
+                        (normalize(review.reviewerName) ===
+                          normalize(user.username) ||
+                          ["STAFF", "ADMIN"].includes(
+                            user.role?.toUpperCase()
+                          ));
+                      const isEditing = editingReview?.id === review.id;
+
+                      return (
+                        <Card key={review.id} className={styles.reviewCard}>
+                          <Card.Body>
+                            <div className="d-flex justify-content-between align-items-start">
+                              <div>
+                                <strong>{review.reviewerName}</strong>
+                                <div className={styles.reviewStars}>
+                                  {renderStars(review.rate)}
+                                </div>
                               </div>
+
+                              {canModify && (
+                                <div>
+                                  <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    className="me-2"
+                                    onClick={() => handleEditReview(review)}
+                                  >
+                                    ✏️
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDeleteReview(review)}
+                                  >
+                                    🗑️
+                                  </Button>
+                                </div>
+                              )}
                             </div>
+
                             <small className="text-muted">
-                              {review.createdDate}
+                              {new Date(review.createdDate).toLocaleString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </small>
-                          </div>
-                          <p className={styles.reviewComment}>{review.note}</p>
-                        </Card.Body>
-                      </Card>
-                    ))}
+
+                            {isEditing ? (
+                              <div className="mt-3">
+                                <textarea
+                                  className="form-control mb-2"
+                                  rows={3}
+                                  value={editNote}
+                                  onChange={(e) => setEditNote(e.target.value)}
+                                />
+                                <select
+                                  className="form-select w-auto mb-2"
+                                  value={editRate}
+                                  onChange={(e) =>
+                                    setEditRate(Number(e.target.value))
+                                  }
+                                >
+                                  {[1, 2, 3, 4, 5].map((r) => (
+                                    <option key={r} value={r}>
+                                      {r} ★
+                                    </option>
+                                  ))}
+                                </select>
+                                <Button
+                                  size="sm"
+                                  variant="success"
+                                  onClick={handleSaveEdit}
+                                >
+                                  💾 Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="ms-2"
+                                  onClick={() => setEditingReview(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="mt-2">{review.note}</p>
+                            )}
+                          </Card.Body>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </Tab.Pane>
 
