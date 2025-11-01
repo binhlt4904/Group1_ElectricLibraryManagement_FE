@@ -1,6 +1,8 @@
 /* UserLayout Component Styles */
 
 .userLayout {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--light-gray);
 }
@@ -11,6 +13,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  display: none;
 }
 
 .sidebarToggle {
@@ -35,7 +38,8 @@
 
 .layoutContainer {
   display: flex;
-  min-height: calc(100vh - 80px);
+  flex: 1;
+  min-height: 100%;
 }
 
 /* Desktop Sidebar */
@@ -232,10 +236,23 @@
 
 /* Responsive Design */
 @media (max-width: 991.98px) {
-  .layoutContainer {
-    min-height: calc(100vh - 80px);
+  .userLayout {
+    flex-direction: column;
   }
-  
+
+  .mobileHeader {
+    display: block;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .layoutContainer {
+    flex-direction: column;
+    min-height: auto;
+  }
+
   .contentContainer {
     padding: 1.5rem;
   }

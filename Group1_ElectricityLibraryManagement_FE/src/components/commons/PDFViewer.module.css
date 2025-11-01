@@ -17,6 +17,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thumbnailToggle {
+  padding: 6px 12px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .fileName {
@@ -25,6 +38,18 @@
   font-weight: 600;
   color: #212529;
   word-break: break-word;
+  flex: 1;
+}
+
+.downloadButton {
+  padding: 6px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.downloadButton:hover {
+  background-color: #e7f1ff;
+  border-color: #0d6efd;
 }
 
 /* Error Alert */
@@ -63,6 +88,189 @@
   height: 400px;
   color: #6c757d;
   font-size: 14px;
+}
+
+/* Main Content Area */
+.mainContentArea {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+/* Thumbnails Pane */
+.thumbnailsPane {
+  width: 120px;
+  background-color: #ffffff;
+  border-right: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.thumbnailsHeader {
+  padding: 8px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8f9fa;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.navigationTabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.navTab {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #dee2e6;
+  background-color: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #495057;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.navTab:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.navTab.activeTab {
+  background-color: #0d6efd;
+  color: #ffffff;
+  border-color: #0d6efd;
+}
+
+.thumbnailsTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.pageCount {
+  font-size: 11px;
+  color: #495057;
+  background-color: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.thumbnailsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.thumbnail {
+  cursor: pointer;
+  border: 2px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.15);
+}
+
+.thumbnail.activeThumbnail {
+  border-color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.05);
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
+}
+
+.thumbnailPage {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pageNumber {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* Heading Navigation Styles */
+.headingItem {
+  padding: 8px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.headingItem:hover {
+  background-color: #f8f9fa;
+  border-left: 3px solid #0d6efd;
+  padding-left: 5px;
+}
+
+.headingItem.activeHeading {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-left: 3px solid #0d6efd;
+  padding-left: 5px;
+  font-weight: 600;
+  color: #0052cc;
+}
+
+.headingLevel {
+  color: #adb5bd;
+  font-size: 11px;
+  min-width: 20px;
+}
+
+.headingText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #212529;
+}
+
+.headingPage {
+  font-size: 11px;
+  color: #6c757d;
+  background-color: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.noHeadings {
+  padding: 16px 12px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 13px;
 }
 
 /* Document Wrapper */

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Row,
@@ -29,11 +29,15 @@ import {
   Shield
 } from 'react-bootstrap-icons';
 import DocumentViewer from '../../components/commons/DocumentViewer';
+import UserContext from '../../components/contexts/UserContext';
 import documentAPI from '../../api/document';
 import categoryAPI from '../../api/category';
 import styles from './DocumentManagementPage.module.css';
 
 const DocumentManagementPage = () => {
+  // Get current user from context
+  const { user: authUser } = useContext(UserContext) || {};
+
   const [documents, setDocuments] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,14 +47,17 @@ const DocumentManagementPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [documentToDelete, setDocumentToDelete] = useState(null);
+  const [editingDocument, setEditingDocument] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadCategory, setUploadCategory] = useState('');
   const [uploadAccessLevel, setUploadAccessLevel] = useState('public');
+  const [userCache, setUserCache] = useState({});  // Cache for user information
   const documentsPerPage = 10;
   const accessLevels = ['all', 'public', 'staff-only', 'admin-only'];
 
@@ -59,6 +66,22 @@ const DocumentManagementPage = () => {
     fetchCategories();
     fetchDocuments();
   }, []);
+
+  // Helper function to get username from user ID
+  const getUsernameFromId = (userId) => {
+    if (!userId) return 'Unknown';
+
+    // If it's already a username (string with letters), return it
+    if (isNaN(userId)) return userId;
+
+    // If it's a number, try to get from cache or return the ID
+    if (userCache[userId]) {
+      return userCache[userId];
+    }
+
+    // Return the ID as fallback
+    return `User ${userId}`;
+  };
 
   // Fetch categories from API
   const fetchCategories = async () => {
@@ -141,14 +164,15 @@ const DocumentManagementPage = () => {
       const uploadResponse = await documentAPI.uploadDocument(uploadFile);
       const filePath = uploadResponse.data.filePath || uploadResponse.data;
 
-      // Create document with metadata
+      // Create document with metadata including current user ID
       await documentAPI.createDocument({
         title: uploadTitle,
         description: uploadTitle,
         categoryName: uploadCategory,
         accessLevel: uploadAccessLevel,
         filePath: filePath,
-        fileName: uploadFile.name
+        fileName: uploadFile.name,
+        createdBy: authUser?.id || authUser?.userId || 'admin'  // Use current user ID
       });
 
       setShowUploadModal(false);
@@ -214,6 +238,61 @@ const DocumentManagementPage = () => {
     console.log('Document Viewer - File URL:', fileUrl);
     setSelectedDocument(viewerDocument);
     setShowViewerModal(true);
+  };
+
+  // Handle download document
+  const handleDownloadDocument = (document) => {
+    try {
+      // Convert file path to HTTP URL
+      let fileUrl = document.filePath;
+      if (fileUrl && !fileUrl.startsWith('http')) {
+        fileUrl = `http://localhost:8080/${fileUrl}`;
+      }
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = document.fileName || document.title || 'document';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      console.log('Document downloaded:', document.fileName);
+    } catch (err) {
+      console.error('Error downloading document:', err);
+      setError('Failed to download document. Please try again.');
+    }
+  };
+
+  // Handle edit document
+  const handleEditClick = (document) => {
+    setEditingDocument(document);
+    setShowEditModal(true);
+  };
+
+  // Handle save edited document
+  const handleSaveEditedDocument = async () => {
+    if (!editingDocument) return;
+
+    try {
+      setIsLoading(true);
+      await documentAPI.updateDocument(editingDocument.id, {
+        title: editingDocument.title,
+        description: editingDocument.description,
+        categoryName: editingDocument.categoryName,
+        accessLevel: editingDocument.accessLevel
+      });
+
+      setShowEditModal(false);
+      setEditingDocument(null);
+      await fetchDocuments();
+      console.log('Document updated successfully');
+    } catch (err) {
+      console.error('Error updating document:', err);
+      setError('Failed to update document. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getAccessLevelVariant = (accessLevel) => {
@@ -440,7 +519,7 @@ const DocumentManagementPage = () => {
                       <th>Uploaded By</th>
                       <th>Upload Date</th>
                       <th>Access Level</th>
-                      <th>Downloads</th>
+                       {/* <th>Downloads</th> */}
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
@@ -455,11 +534,11 @@ const DocumentManagementPage = () => {
                             </div>
                             <div className={styles.documentDetails}>
                               <div className={styles.documentTitle}>{document.title}</div>
-                              <Badge 
-                                bg={getCategoryColor(document.category || '')} 
+                              <Badge
+                                bg={getCategoryColor(document.categoryName || '')}
                                 className={styles.categoryBadge}
                               >
-                                {document.category || 'Uncategorized'}
+                                {document.categoryName || 'Uncategorized'}
                               </Badge>
                             </div>
                           </div>
@@ -477,15 +556,15 @@ const DocumentManagementPage = () => {
                           <div className={styles.uploaderInfo}>
                             <PersonFill className={styles.uploaderIcon} />
                             <div className={styles.uploaderDetails}>
-                              <div className={styles.uploaderName}>{document.uploadedBy?.name}</div>
-                              <div className={styles.uploaderRole}>{document.uploadedBy?.role}</div>
+                              <div className={styles.uploaderName}>{getUsernameFromId(document.createdBy)}</div>
+                              <div className={styles.uploaderRole}>Admin</div>
                             </div>
                           </div>
                         </td>
                         <td className={styles.dateCell}>
                           <div className={styles.dateInfo}>
                             <Calendar className={styles.dateIcon} />
-                            <span>{formatDate(document.uploadDate)}</span>
+                            <span>{formatDate(document.importedDate || document.createdDate || new Date().toISOString())}</span>
                           </div>
                         </td>
                         <td className={styles.accessCell}>
@@ -495,12 +574,12 @@ const DocumentManagementPage = () => {
                              document.accessLevel.charAt(0).toUpperCase() + document.accessLevel.slice(1)}
                           </Badge>
                         </td>
-                        <td className={styles.downloadsCell}>
+                        {/* <td className={styles.downloadsCell}>
                           <div className={styles.downloadsInfo}>
                             <Download className={styles.downloadsIcon} />
                             <span className={styles.downloadsCount}>{document.downloadCount}</span>
                           </div>
-                        </td>
+                        </td> */}
                         <td className={styles.statusCell}>
                           <Badge bg={getStatusVariant(document.status || '')} className={styles.statusBadge}>
                             {document.status ? document.status.charAt(0).toUpperCase() + document.status.slice(1) : 'No Status'}
@@ -517,19 +596,21 @@ const DocumentManagementPage = () => {
                             >
                               <Eye />
                             </Button>
-                            <Button
+                            {/* <Button
                               variant="outline-success"
                               size="sm"
                               className={styles.actionButton}
                               title="Download"
+                              onClick={() => handleDownloadDocument(document)}
                             >
                               <Download />
-                            </Button>
+                            </Button> */}
                             <Button
                               variant="outline-secondary"
                               size="sm"
                               className={styles.actionButton}
                               title="Edit Document"
+                              onClick={() => handleEditClick(document)}
                             >
                               <PencilSquare />
                             </Button>
@@ -713,6 +794,108 @@ const DocumentManagementPage = () => {
               </>
             ) : (
               'Delete Document'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Document Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Document</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editingDocument && (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Title</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={editingDocument.title || ''}
+                  onChange={(e) => setEditingDocument({
+                    ...editingDocument,
+                    title: e.target.value
+                  })}
+                  placeholder="Enter document title"
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={editingDocument.description || ''}
+                  onChange={(e) => setEditingDocument({
+                    ...editingDocument,
+                    description: e.target.value
+                  })}
+                  placeholder="Enter document description"
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Category</Form.Label>
+                <Form.Select
+                  value={editingDocument.categoryName || ''}
+                  onChange={(e) => setEditingDocument({
+                    ...editingDocument,
+                    categoryName: e.target.value
+                  })}
+                >
+                  <option value="">Select a category</option>
+                  {categories.filter(cat => cat !== 'all').map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Access Level</Form.Label>
+                <Form.Select
+                  value={editingDocument.accessLevel || 'public'}
+                  onChange={(e) => setEditingDocument({
+                    ...editingDocument,
+                    accessLevel: e.target.value
+                  })}
+                >
+                  <option value="public">Public</option>
+                  <option value="staff-only">Staff Only</option>
+                  <option value="admin-only">Admin Only</option>
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>File Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={editingDocument.fileName || ''}
+                  disabled
+                  placeholder="File name (read-only)"
+                />
+                <Form.Text className="text-muted">
+                  File name cannot be changed. To use a different file, delete this document and upload a new one.
+                </Form.Text>
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSaveEditedDocument}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
             )}
           </Button>
         </Modal.Footer>

@@ -63,16 +63,6 @@ const DocumentViewer = ({ show, onHide, document }) => {
           <Button
             variant="outline-secondary"
             size="sm"
-            onClick={handleDownload}
-            className={styles.downloadButton}
-            title="Download document"
-          >
-            <Download size={18} className="me-2" />
-            Download
-          </Button>
-          <Button
-            variant="outline-secondary"
-            size="sm"
             onClick={onHide}
             className={styles.closeButton}
             title="Close"

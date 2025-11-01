@@ -147,7 +147,7 @@ const LoginPage = () => {
                 <div className={styles.footer}>
                   <p>
                     Don't have an account?{' '}
-                    <Button variant="link" className={styles.signupLink}>
+                    <Button variant="link" className={styles.signupLink} href="/register">
                       Sign up here
                     </Button>
                   </p>
