@@ -42,7 +42,12 @@ const BookDetailPage = () => {
   const [newReview, setNewReview] = useState({ note: "", rate: 5 }); // ← đưa vào đây
 
   const { currentUser } = useContext(UserContext);
-  console.log(user);
+
+  /** ❤️ Kiểm tra sách có trong localStorage không */
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    setIsInWishlist(saved.includes(Number(bookId)));
+  }, [bookId]);
 
   const handleAddReview = async () => {
     if (!user) {
@@ -129,7 +134,7 @@ const BookDetailPage = () => {
     const fetchBookDetail = async () => {
       try {
         const bookRes = await bookApi.findBookUserById(bookId);
-        console.log(bookRes.data);
+
         const contentsRes = await bookApi.findBookContentsById(bookId);
         const reviewsRes = await bookApi.findReviewsByBookId(bookId);
 
@@ -266,17 +271,39 @@ const BookDetailPage = () => {
     fetchBookDetail();
   }, [bookId]);
 
-  const handleWishlistToggle = () => {
-    setIsInWishlist(!isInWishlist);
+  const handleWishlistToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      alert("⚠️ Please login to use wishlist!");
+      navigate("/login");
+      return;
+    }
+
+    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    let updated;
+
+    if (saved.includes(Number(bookId))) {
+      updated = saved.filter((id) => id !== Number(bookId));
+      setIsInWishlist(false);
+      // alert("🗑️ Removed from wishlist!");
+    } else {
+      updated = [...saved, Number(bookId)];
+      setIsInWishlist(true);
+      // alert("✅ Added to wishlist!");
+    }
+
+    localStorage.setItem("favorites", JSON.stringify(updated));
   };
 
   const handleBorrow = () => {
-    console.log("Borrow book:", book.id);
+    // console.log("Borrow book:", book.id);
     // Handle borrow logic
   };
 
   const handleReserve = () => {
-    console.log("Reserve book:", book.id);
+    // console.log("Reserve book:", book.id);
     // Handle reserve logic
   };
 
@@ -402,18 +429,19 @@ const BookDetailPage = () => {
                   Borrow Now
                 </Button>
                 <Button
-                  variant="outline-primary"
+                  variant={isInWishlist ? "primary" : "outline-primary"}
                   size="lg"
                   className="me-3"
                   onClick={handleWishlistToggle}
                 >
                   {isInWishlist ? (
-                    <HeartFill className="me-2" />
+                    <HeartFill className="me-2 text-danger" />
                   ) : (
                     <Heart className="me-2" />
                   )}
                   {isInWishlist ? "In Wishlist" : "Add to Wishlist"}
                 </Button>
+
                 <Button variant="outline-secondary" size="lg" className="me-3">
                   <BookmarkPlus className="me-2" />
                   Save
@@ -559,8 +587,8 @@ const BookDetailPage = () => {
 
                     {/* DANH SÁCH REVIEW */}
                     {reviews.map((review) => {
-                      console.log("🧾 Review:", review);
-                      console.log("👤 User:", user);
+                      // console.log("🧾 Review:", review);
+                      // console.log("👤 User:", user);
 
                       const normalize = (s) =>
                         s?.toLowerCase().replace(/\s+/g, ""); // chuẩn hóa: bỏ khoảng trắng & viết thường
