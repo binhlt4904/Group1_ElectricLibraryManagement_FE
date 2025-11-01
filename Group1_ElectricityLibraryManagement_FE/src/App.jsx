@@ -33,6 +33,7 @@ import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 import AddBookPage from './pages/admin/book/AddBookPage';
 import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
+import ImportExcel from "./pages/admin/ImportExcel";
 const AppContent = () => {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -47,6 +48,7 @@ const AppContent = () => {
 
           <Routes>
             {/* Public Pages */}
+            <Route path="/abc" element={<ImportExcel />} />
             <Route path="/" element={<HomePage />} />
             <Route path="/books" element={<BookListPage />} />
             <Route path="/books/:id" element={<BookDetailPage />} />
