@@ -1,13 +1,27 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./TestPDF.module.css"; // ✅ thêm dòng này
+import bookApi from "../../../api/book";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const TestPDF = () => {
-    const [fileUrl] = useState("http://localhost:8080/uploads/books/28/contents/1b238ba3-7887-45d6-a55c-07891554d2e7-Ch01_Introduction.pdf");
+    const {id} = useParams();
+    const [fileUrl,setFileUrl] = useState(null);
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
+
+     useEffect(() => {
+        const fetchPDF = async () => {
+            try {
+                const response = await bookApi.getBookContentUserById(id);
+                setFileUrl(response.data.content); // Giả sử API trả về URL của file PDF
+            } catch (error) {
+                console.error("Error fetching PDF:", error);
+            }
+        };
+        fetchPDF();
+  }, [contentId]);
 
     const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
     const goPrev = () => setPageNumber((prev) => Math.max(prev - 1, 1));

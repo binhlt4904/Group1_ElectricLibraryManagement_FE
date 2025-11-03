@@ -43,14 +43,14 @@ export default function AddBookContentPage() {
     const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
     if (!isPdf) {
       setFile(null);
-      setError('Vui lòng chọn file PDF (.pdf)');
+      setError('Please choose file pdf (.pdf)');
       return;
     }
 
     const sizeMb = f.size / (1024 * 1024);
     if (sizeMb > MAX_SIZE_MB) {
       setFile(null);
-      setError(`Kích thước file quá lớn (${sizeMb.toFixed(1)} MB). Tối đa ${MAX_SIZE_MB} MB`);
+      setError(`Size of file is overmax (${sizeMb.toFixed(1)} MB). Maximum ${MAX_SIZE_MB} MB`);
       return;
     }
 
@@ -62,15 +62,15 @@ export default function AddBookContentPage() {
     resetFeedback();
 
     if (!title.trim()) {
-      setError('Tiêu đề không được để trống');
+      setError('Title must be not empty');
       return;
     }
     if (!chapter || Number.isNaN(Number(chapter))) {
-      setError('Chapter phải là số');
+      setError('Chapter must be a valid number');
       return;
     }
     if (!file) {
-      setError('Vui lòng chọn file PDF');
+      setError('Please select a PDF file to upload');
       return;
     }
 
@@ -94,16 +94,16 @@ export default function AddBookContentPage() {
       });
 
       if (response?.status >= 200 && response?.status < 300) {
-        setSuccess('Tạo book content thành công!');
+        setSuccess('Create book content successfully!');
         setTimeout(() => {
           navigate(bookId ? `/admin/books/${bookId}` : '/admin/books');
         }, 800);
       } else {
-        throw new Error('Upload thất bại');
+        throw new Error('Upload failed');
       }
     } catch (err) {
       console.error(err);
-      const msg = err?.response?.data?.message || err?.message || 'Có lỗi xảy ra khi tải file';
+      const msg = err?.response?.data?.message || err?.message || 'Error while uploading';
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -115,15 +115,15 @@ export default function AddBookContentPage() {
       <Row className="mb-3">
         <Col>
           <button className="btn btn-link text-decoration-none p-0" onClick={() => navigate(-1)}>
-            <ArrowLeft className="me-2" /> Quay lại
+            <ArrowLeft className="me-2" /> Back
           </button>
         </Col>
       </Row>
 
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Thêm nội dung sách</h1>
-          <p className={styles.pageSubtitle}>bookContent gồm chapter, title và file PDF (content)</p>
+          <h1 className={styles.pageTitle}>Add Book Content</h1>
+          <p className={styles.pageSubtitle}>bookContent includes chapter, title and file PDF (content)</p>
         </div>
       </div>
 
@@ -144,11 +144,11 @@ export default function AddBookContentPage() {
             <Row>
               <Col md={6}>
                 <Form.Group controlId="title" className={styles.formGroup}>
-                  <Form.Label className={styles.formLabel}>Tiêu đề *</Form.Label>
+                  <Form.Label className={styles.formLabel}>Title *</Form.Label>
                   <Form.Control
                     type="text"
                     value={title}
-                    placeholder="VD: Chương 1 - Nhập môn..."
+                    placeholder="VD: Chapter 1 - Title..."
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={submitting}
                   />
@@ -199,10 +199,10 @@ export default function AddBookContentPage() {
               <Col md={12}>
                 <div className={styles.actionButtons}>
                   <Button type="submit" className={styles.btnPrimary} disabled={submitting}>
-                    <CloudUpload className="me-2" /> Lưu nội dung
+                    <CloudUpload className="me-2" /> Save content
                   </Button>
                   <Button type="button" className={styles.btnSecondary} onClick={() => navigate(-1)} disabled={submitting}>
-                    Hủy
+                    Cancel
                   </Button>
                 </div>
               </Col>

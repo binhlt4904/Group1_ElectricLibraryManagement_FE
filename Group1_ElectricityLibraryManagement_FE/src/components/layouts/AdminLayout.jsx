@@ -222,10 +222,6 @@ const AdminLayout = () => {
         </Container>
       </Navbar>
 
-      {/* Desktop Sidebar */}
-      <div className={`${styles.sidebar} d-none d-lg-block`}>
-        <SidebarContent />
-      </div>
 
       {/* Mobile Sidebar */}
       <Offcanvas
