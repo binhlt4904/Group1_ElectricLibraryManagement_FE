@@ -155,8 +155,8 @@ const Header = () => {
                         </Nav.Link>
                         <Nav.Link
                             as={Link}
-                            to="/user/research"
-                            className={`${styles.navLink} ${isActivePage('/user/research') ? styles.active : ''}`}
+                            to="/research"
+                            className={`${styles.navLink} ${isActivePage('/research') ? styles.active : ''}`}
                         >
                             Research
                         </Nav.Link>

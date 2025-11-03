@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Container, 
   Row, 
@@ -26,18 +26,46 @@ import {
   People,
   PersonFill
 } from 'react-bootstrap-icons';
+import eventAPI from '../../api/event';
 import styles from './EventManagementPage.module.css';
 
 const EventManagementPage = () => {
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [newEvent, setNewEvent] = useState({ title: '', description: '' });
   const eventsPerPage = 10;
 
-  // Mock events data
+  // Fetch events from API
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await eventAPI.getPublicEvents({ page: 0, size: 100 });
+      const eventsData = response.data.content || response.data || [];
+      setEvents(eventsData);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock events data for fallback
   const mockEvents = [
     {
       id: 1,
@@ -129,7 +157,7 @@ const EventManagementPage = () => {
   const statuses = ['all', 'upcoming', 'ongoing', 'completed', 'cancelled'];
 
   // Filter events
-  const filteredEvents = mockEvents.filter(event => {
+  const filteredEvents = (events.length > 0 ? events : mockEvents).filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.organizer.toLowerCase().includes(searchTerm.toLowerCase());
@@ -150,10 +178,69 @@ const EventManagementPage = () => {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
-    console.log('Deleting event:', eventToDelete);
-    setShowDeleteModal(false);
-    setEventToDelete(null);
+  const handleDeleteConfirm = async () => {
+    if (!eventToDelete) return;
+
+    try {
+      setIsLoading(true);
+      await eventAPI.deleteEvent(eventToDelete.id);
+      setShowDeleteModal(false);
+      setEventToDelete(null);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      setError('Failed to delete event. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    if (!newEvent.title || !newEvent.description) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await eventAPI.createEvent(newEvent);
+      setShowCreateModal(false);
+      setNewEvent({ title: '', description: '' });
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error creating event:', err);
+      setError('Failed to create event. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditClick = (event) => {
+    setEditingEvent({ ...event });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateEvent = async () => {
+    if (!editingEvent || !editingEvent.title || !editingEvent.description) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await eventAPI.updateEvent(editingEvent.id, {
+        title: editingEvent.title,
+        description: editingEvent.description
+      });
+      setShowEditModal(false);
+      setEditingEvent(null);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error updating event:', err);
+      setError('Failed to update event. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusVariant = (status) => {
@@ -191,6 +278,13 @@ const EventManagementPage = () => {
 
   return (
     <Container fluid className={styles.eventManagementPage}>
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="danger" className="mb-4" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
+
       {/* Page Header */}
       <Row className="mb-4">
         <Col>
@@ -205,7 +299,11 @@ const EventManagementPage = () => {
               </p>
             </div>
             <div className={styles.headerActions}>
-              <Button variant="primary" className={styles.addButton}>
+              <Button 
+                variant="primary" 
+                className={styles.addButton}
+                onClick={() => setShowCreateModal(true)}
+              >
                 <Plus className="me-2" />
                 Create Event
               </Button>
@@ -225,7 +323,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockEvents.filter(e => e.status === 'upcoming').length}
+                    {(events.length > 0 ? events : mockEvents).filter(e => e.status === 'upcoming').length}
                   </div>
                   <div className={styles.statLabel}>Upcoming Events</div>
                 </div>
@@ -242,7 +340,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockEvents.reduce((sum, e) => sum + e.registered, 0)}
+                    {(events.length > 0 ? events : mockEvents).reduce((sum, e) => sum + (e.registered || 0), 0)}
                   </div>
                   <div className={styles.statLabel}>Total Registrations</div>
                 </div>
@@ -259,7 +357,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockEvents.filter(e => e.status === 'ongoing').length}
+                    {(events.length > 0 ? events : mockEvents).filter(e => e.status === 'ongoing').length}
                   </div>
                   <div className={styles.statLabel}>Ongoing Events</div>
                 </div>
@@ -276,7 +374,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {Math.round(mockEvents.reduce((sum, e) => sum + (e.registered / e.capacity), 0) / mockEvents.length * 100)}%
+                    {(events.length > 0 ? events : mockEvents).length > 0 ? Math.round((events.length > 0 ? events : mockEvents).reduce((sum, e) => sum + ((e.registered || 0) / (e.capacity || 1)), 0) / (events.length > 0 ? events : mockEvents).length * 100) : 0}%
                   </div>
                   <div className={styles.statLabel}>Avg. Attendance</div>
                 </div>
@@ -431,6 +529,7 @@ const EventManagementPage = () => {
                               size="sm"
                               className={styles.actionButton}
                               title="Edit Event"
+                              onClick={() => handleEditClick(event)}
                             >
                               <PencilSquare />
                             </Button>
@@ -524,6 +623,88 @@ const EventManagementPage = () => {
           </Button>
           <Button variant="danger" onClick={handleDeleteConfirm}>
             Delete Event
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Create Event Modal */}
+      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Event</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Event Title *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter event title"
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Description *</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                placeholder="Enter event description"
+                value={newEvent.description}
+                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                required
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleCreateEvent} disabled={isLoading}>
+            {isLoading ? 'Creating...' : 'Create Event'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Event Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Event</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editingEvent && (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Event Title *</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter event title"
+                  value={editingEvent.title}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Description *</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  placeholder="Enter event description"
+                  value={editingEvent.description}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
+                  required
+                />
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleUpdateEvent} disabled={isLoading}>
+            {isLoading ? 'Updating...' : 'Update Event'}
           </Button>
         </Modal.Footer>
       </Modal>

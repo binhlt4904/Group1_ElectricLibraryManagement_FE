@@ -32,6 +32,7 @@ import DocumentViewer from '../../components/commons/DocumentViewer';
 import UserContext from '../../components/contexts/UserContext';
 import documentAPI from '../../api/document';
 import categoryAPI from '../../api/category';
+import accountManagementApi from '../../api/admin/accountManagementApi';
 import styles from './DocumentManagementPage.module.css';
 
 const DocumentManagementPage = () => {
@@ -58,6 +59,7 @@ const DocumentManagementPage = () => {
   const [uploadCategory, setUploadCategory] = useState('');
   const [uploadAccessLevel, setUploadAccessLevel] = useState('public');
   const [userCache, setUserCache] = useState({});  // Cache for user information
+  const [uploadDescription, setUploadDescription] = useState('');
   const documentsPerPage = 10;
   const accessLevels = ['all', 'public', 'staff-only', 'admin-only'];
 
@@ -66,6 +68,44 @@ const DocumentManagementPage = () => {
     fetchCategories();
     fetchDocuments();
   }, []);
+
+  // Fetch user details when documents change
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const uniqueUserIds = [...new Set(documents.map(d => d.createdBy).filter(id => id && !userCache[id]))];
+      
+      for (const userId of uniqueUserIds) {
+        try {
+          const response = await accountManagementApi.getStaffDetail(userId).catch(() => 
+            accountManagementApi.getReaderDetail(userId)
+          );
+          
+          if (response && response.data) {
+            setUserCache(prev => ({
+              ...prev,
+              [userId]: {
+                username: response.data.username || response.data.fullName || `User ${userId}`,
+                role: response.data.roleName || response.data.role || 'User'
+              }
+            }));
+          }
+        } catch (err) {
+          console.error(`Error fetching user ${userId}:`, err);
+          setUserCache(prev => ({
+            ...prev,
+            [userId]: {
+              username: `User ${userId}`,
+              role: 'Unknown'
+            }
+          }));
+        }
+      }
+    };
+
+    if (documents.length > 0) {
+      fetchUserDetails();
+    }
+  }, [documents]);
 
   // Helper function to get username from user ID
   const getUsernameFromId = (userId) => {
@@ -76,11 +116,22 @@ const DocumentManagementPage = () => {
 
     // If it's a number, try to get from cache or return the ID
     if (userCache[userId]) {
-      return userCache[userId];
+      return userCache[userId].username;
     }
 
     // Return the ID as fallback
     return `User ${userId}`;
+  };
+
+  // Helper function to get user role from user ID
+  const getUserRoleFromId = (userId) => {
+    if (!userId) return 'Unknown';
+
+    if (userCache[userId]) {
+      return userCache[userId].role;
+    }
+
+    return 'Loading...';
   };
 
   // Fetch categories from API
@@ -167,17 +218,18 @@ const DocumentManagementPage = () => {
       // Create document with metadata including current user ID
       await documentAPI.createDocument({
         title: uploadTitle,
-        description: uploadTitle,
+        description: uploadDescription || uploadTitle,
         categoryName: uploadCategory,
         accessLevel: uploadAccessLevel,
         filePath: filePath,
-        fileName: uploadFile.name,
-        createdBy: authUser?.id || authUser?.userId || 'admin'  // Use current user ID
+        fileName: uploadFile.name
+        // createdBy is handled by backend from JWT token
       });
 
       setShowUploadModal(false);
       setUploadFile(null);
       setUploadTitle('');
+      setUploadDescription('');
       // Reset to first category from fetched list
       if (categories.length > 1) {
         setUploadCategory(categories[1]); // categories[0] is 'all'
@@ -439,7 +491,8 @@ const DocumentManagementPage = () => {
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
                     {documents.filter(d => {
-                      const uploadDate = new Date(d.createdAt || d.uploadDate);
+                      if (!d.importedDate) return false;
+                      const uploadDate = new Date(d.importedDate);
                       const thisMonth = new Date();
                       return uploadDate.getMonth() === thisMonth.getMonth() &&
                              uploadDate.getFullYear() === thisMonth.getFullYear();
@@ -557,7 +610,7 @@ const DocumentManagementPage = () => {
                             <PersonFill className={styles.uploaderIcon} />
                             <div className={styles.uploaderDetails}>
                               <div className={styles.uploaderName}>{getUsernameFromId(document.createdBy)}</div>
-                              <div className={styles.uploaderRole}>Admin</div>
+                              <div className={styles.uploaderRole}>{getUserRoleFromId(document.createdBy)}</div>
                             </div>
                           </div>
                         </td>
@@ -682,23 +735,41 @@ const DocumentManagementPage = () => {
         <Modal.Body>
           <Form>
             <Row>
-              <Col md={6}>
+              <Col md={12}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Document Title</Form.Label>
+                  <Form.Label>Document Title *</Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="Enter document title"
                     value={uploadTitle}
                     onChange={(e) => setUploadTitle(e.target.value)}
+                    required
                   />
                 </Form.Group>
               </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    placeholder="Enter document description (optional)"
+                    value={uploadDescription}
+                    onChange={(e) => setUploadDescription(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Category</Form.Label>
+                  <Form.Label>Category *</Form.Label>
                   <Form.Select
                     value={uploadCategory}
                     onChange={(e) => setUploadCategory(e.target.value)}
+                    required
                   >
                     {categories.slice(1).map(category => (
                       <option key={category} value={category}>{category}</option>
@@ -706,22 +777,25 @@ const DocumentManagementPage = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Access Level *</Form.Label>
+                  <Form.Select
+                    value={uploadAccessLevel}
+                    onChange={(e) => setUploadAccessLevel(e.target.value)}
+                    required
+                  >
+                    {accessLevels.slice(1).map(level => (
+                      <option key={level} value={level}>
+                        {level === 'staff-only' ? 'Staff Only' :
+                         level === 'admin-only' ? 'Admin Only' :
+                         level.charAt(0).toUpperCase() + level.slice(1)}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
             </Row>
-            <Form.Group className="mb-3">
-              <Form.Label>Access Level</Form.Label>
-              <Form.Select
-                value={uploadAccessLevel}
-                onChange={(e) => setUploadAccessLevel(e.target.value)}
-              >
-                {accessLevels.slice(1).map(level => (
-                  <option key={level} value={level}>
-                    {level === 'staff-only' ? 'Staff Only' :
-                     level === 'admin-only' ? 'Admin Only' :
-                     level.charAt(0).toUpperCase() + level.slice(1)}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>File</Form.Label>
               <Form.Control

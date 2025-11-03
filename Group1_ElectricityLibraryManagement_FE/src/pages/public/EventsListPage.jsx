@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Form, InputGroup, Badge, Pagination } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Form, InputGroup, Badge, Pagination, Alert } from 'react-bootstrap';
 import { 
   Calendar, 
   Search, 
@@ -11,17 +11,43 @@ import {
   CalendarEvent,
   PersonFill
 } from 'react-bootstrap-icons';
+import { useNavigate } from 'react-router-dom';
+import eventAPI from '../../api/event';
 import styles from './EventsListPage.module.css';
 
 const EventsListPage = () => {
+  const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState('all');
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const eventsPerPage = 6;
 
-  // Mock events data
+  // Fetch events from API
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await eventAPI.getPublicEvents({ page: 0, size: 100 });
+      const eventsData = response.data.content || response.data || [];
+      setEvents(eventsData);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock events data for fallback
   const mockEvents = [
     {
       id: 1,
@@ -113,7 +139,7 @@ const EventsListPage = () => {
   const months = ['all', 'January', 'February', 'March', 'April', 'May', 'June'];
 
   // Filter events based on search and filters
-  const filteredEvents = mockEvents.filter(event => {
+  const filteredEvents = (events.length > 0 ? events : mockEvents).filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
@@ -141,6 +167,7 @@ const EventsListPage = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'Date TBD';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -148,6 +175,10 @@ const EventsListPage = () => {
       month: 'long', 
       day: 'numeric' 
     });
+  };
+
+  const handleViewDetails = (eventId) => {
+    navigate(`/events/${eventId}`);
   };
 
   const getAvailabilityStatus = (registered, capacity) => {
@@ -159,6 +190,12 @@ const EventsListPage = () => {
 
   return (
     <Container fluid className={styles.eventsListPage}>
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="danger" className="mb-4" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
       {/* Page Header */}
       <Container>
         <Row className="mb-4">
@@ -269,24 +306,32 @@ const EventsListPage = () => {
                   <div className={styles.eventDetails}>
                     <div className={styles.eventDetail}>
                       <Calendar className={styles.detailIcon} />
-                      <span>{formatDate(event.date)}</span>
+                      <span>{formatDate(event.date || event.createdDate)}</span>
                     </div>
-                    <div className={styles.eventDetail}>
-                      <Clock className={styles.detailIcon} />
-                      <span>{event.time}</span>
-                    </div>
-                    <div className={styles.eventDetail}>
-                      <GeoAlt className={styles.detailIcon} />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className={styles.eventDetail}>
-                      <People className={styles.detailIcon} />
-                      <span>{event.registered}/{event.capacity} registered</span>
-                    </div>
-                    <div className={styles.eventDetail}>
-                      <PersonFill className={styles.detailIcon} />
-                      <span>Organized by {event.organizer}</span>
-                    </div>
+                    {event.time && (
+                      <div className={styles.eventDetail}>
+                        <Clock className={styles.detailIcon} />
+                        <span>{event.time}</span>
+                      </div>
+                    )}
+                    {event.location && (
+                      <div className={styles.eventDetail}>
+                        <GeoAlt className={styles.detailIcon} />
+                        <span>{event.location}</span>
+                      </div>
+                    )}
+                    {(event.registered !== undefined && event.capacity) && (
+                      <div className={styles.eventDetail}>
+                        <People className={styles.detailIcon} />
+                        <span>{event.registered}/{event.capacity} registered</span>
+                      </div>
+                    )}
+                    {event.organizer && (
+                      <div className={styles.eventDetail}>
+                        <PersonFill className={styles.detailIcon} />
+                        <span>Organized by {event.organizer}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.eventActions}>
@@ -294,18 +339,21 @@ const EventsListPage = () => {
                       variant="outline-primary" 
                       size="sm"
                       className={styles.actionButton}
+                      onClick={() => handleViewDetails(event.id)}
                     >
                       View Details
                       <ChevronRight className="ms-1" />
                     </Button>
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      className={styles.actionButton}
-                      disabled={event.registered >= event.capacity}
-                    >
-                      {event.registered >= event.capacity ? 'Full' : 'Register'}
-                    </Button>
+                    {event.capacity && (
+                      <Button 
+                        variant="primary" 
+                        size="sm"
+                        className={styles.actionButton}
+                        disabled={event.registered >= event.capacity}
+                      >
+                        {event.registered >= event.capacity ? 'Full' : 'Register'}
+                      </Button>
+                    )}
                   </div>
                 </Card.Body>
               </Card>
