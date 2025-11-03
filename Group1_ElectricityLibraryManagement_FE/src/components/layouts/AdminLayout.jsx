@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Container, Row, Col, Nav, Navbar, Offcanvas, Button, Dropdown, Badge
@@ -9,18 +9,19 @@ import {
   Gear, BoxArrowRight, Bell, PersonCircle
 } from 'react-bootstrap-icons';
 import styles from './AdminLayout.module.css';
-
+import { useContext } from 'react';
+import UserContext from '../contexts/UserContext';
 const AdminLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading } = useContext(UserContext);
 
-  const adminUser = {
-    name: 'Admin User',
-    email: 'admin@electricitylibrary.org',
-    role: 'System Administrator',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
-  };
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
 
   const navigationItems = [
     {
@@ -190,14 +191,9 @@ const AdminLayout = () => {
                 className={styles.userDropdown}
                 id="admin-user-dropdown"
               >
-                <img
-                  src={adminUser.avatar}
-                  alt="Admin"
-                  className={styles.userAvatar}
-                />
                 <div className={styles.userInfo}>
-                  <div className={styles.userName}>{adminUser.name}</div>
-                  <div className={styles.userRole}>{adminUser.role}</div>
+                  <div className={styles.userName}>{user?.username || "Loading..."}</div>
+                  <div className={styles.userRole}>{user?.role || ""}</div>
                 </div>
               </Dropdown.Toggle>
 

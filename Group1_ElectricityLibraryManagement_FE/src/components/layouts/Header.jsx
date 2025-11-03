@@ -110,7 +110,7 @@ const Header = () => {
                                             <Wallet className="me-2" />
                                             My Wallet
                                         </Dropdown.Item>
-                                        {user.role === 'admin' && (
+                                        {user.role === '[ROLE_ADMIN]' && (
                                             <>
                                                 <Dropdown.Divider />
                                                 <Dropdown.Item as={Link} to="/admin">
