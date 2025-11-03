@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from "react";
-import BookCard from '../../components/commons/BookCard/BookCard';
+import BookCard from '../../components/commons/books/BookCard';
+import bookApi from '../../api/book';
 
 export default function WishlistPage() {
   const [wishlistBooks, setWishlistBooks] = useState([]);
   const [allBooks, setAllBooks] = useState([]);
 
-  
+  const fetchBooks = async () => {
+    const res = await bookApi.findAll();
+    console.log(res.data)
+    setAllBooks(res.data.content);
+  };
   useEffect(() => {
     
-    const books = JSON.parse(localStorage.getItem("books") || "[]");
-    setAllBooks(books);
+    fetchBooks();
   }, []);
 
  
   useEffect(() => {
     const favIds = JSON.parse(localStorage.getItem("favorites") || "[]");
+    console.log(favIds);
+    console.log(allBooks);
     const favBooks = allBooks.filter((b) => favIds.includes(b.id));
     setWishlistBooks(favBooks);
   }, [allBooks]);

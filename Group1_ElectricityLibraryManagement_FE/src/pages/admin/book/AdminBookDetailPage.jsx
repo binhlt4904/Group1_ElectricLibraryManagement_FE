@@ -6,6 +6,7 @@ import styles from "./AdminBookDetailPage.module.css";
 import { Button } from "react-bootstrap";
 import { Eye, Pencil, Trash } from "react-bootstrap-icons";
 import bookApi from "../../../api/book";
+import BookReaderModal from "../../../components/commons/books/BookReaderModal";
 
 
 const AdminBookDetailPage = () => {
@@ -48,6 +49,7 @@ const AdminBookDetailPage = () => {
   };
 
   if (!book) return <p>Loading...</p>;
+
 
   return (
     <div className={styles.bookDetailPage}>
@@ -129,7 +131,7 @@ const AdminBookDetailPage = () => {
                       </Button>
                     </div>
                   </td>
-                  
+
                 </tr>
               ))}
             </tbody>
@@ -137,29 +139,15 @@ const AdminBookDetailPage = () => {
         </div>
       </div>
 
-      {/* ===== POPUP VIEW CONTENT ===== */}
-      {viewContent && (
-        <div className={styles.modalOverlay} onClick={() => setViewContent(null)}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()} // tránh đóng khi click bên trong
-          >
-            <button
-              className={styles.closeButton}
-              onClick={() => setViewContent(null)}
-            >
-              ✖
-            </button>
-            <h3>{viewContent.chapter}: {viewContent.title}</h3>
-            <div
-              className={styles.modalBody}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(viewContent.content || ""),
-              }}
-            ></div>
-          </div>
-        </div>
-      )}
+      <BookReaderModal
+        show={!!viewContent}
+        onClose={() => setViewContent(null)}
+        title={viewContent ? `Chapter ${viewContent.chapter} - ${viewContent.title}` : ""}
+        fileUrl={viewContent ? `http://localhost:8080${viewContent.content}` : ""}
+      />
+
+
+
     </div>
   );
 };

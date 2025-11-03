@@ -1,8 +1,12 @@
 import React from 'react';
-import { Tab, Nav, Row, Col, Card } from 'react-bootstrap';
+import { Tab, Nav, Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import styles from '../../../pages/public/BookDetailPage.module.css';
-const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStars,relatedBooks}) => {
+const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStars,relatedBooks, newReview, setNewReview,
+  handleAddReview, user, editingReview, setEditingReview, editNote, setEditNote, editRate, setEditRate,
+  handleEditReview, handleDeleteReview, handleSaveEdit
+}) => {
+  console.log(user)
     return (
         <div>
             <Row>
@@ -85,23 +89,146 @@ const TabSection = ({activeTab, setActiveTab, contents, reviews, book,renderStar
 
                 <Tab.Pane eventKey="reviews">
                   <div className={styles.reviews}>
-                    {reviews.map(review => (
-                      <Card key={review.id} className={styles.reviewCard}>
-                        <Card.Body>
-                          <div className={styles.reviewHeader}>
-                            <div>
-                              <strong>{review.reviewerName}</strong>
-                              <small className="text-muted ms-2">(ID: {review.id})</small>
-                              <div className={styles.reviewStars}>
-                                {renderStars(review.rate)}
+                    {/* FORM VIẾT REVIEW */}
+                    <div className="mb-4 p-3 border rounded bg-light">
+                      <h5 className="fw-bold mb-2">Write a Review</h5>
+                      <textarea
+                        className="form-control mb-2"
+                        rows={3}
+                        placeholder="Share your thoughts about this book..."
+                        value={newReview.note}
+                        onChange={(e) =>
+                          setNewReview({ ...newReview, note: e.target.value })
+                        }
+                      />
+                      <div className="d-flex align-items-center mb-2">
+                        <label className="me-2 mb-0 fw-semibold">Rating:</label>
+                        <select
+                          className="form-select w-auto"
+                          value={newReview.rate}
+                          onChange={(e) =>
+                            setNewReview({
+                              ...newReview,
+                              rate: Number(e.target.value),
+                            })
+                          }
+                        >
+                          {[1, 2, 3, 4, 5].map((r) => (
+                            <option key={r} value={r}>
+                              {r} ★
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <Button variant="primary" onClick={handleAddReview}>
+                        Submit Review
+                      </Button>
+                    </div>
+
+                    {/* DANH SÁCH REVIEW */}
+                    {reviews.map((review) => {
+                      console.log("🧾 Review:", review);
+                      console.log("👤 User:", user);
+
+                      
+                     
+
+                      const canModify =
+                        user &&
+                        ((review.reviewerId) ===
+                          (user.accountId) 
+                          );
+                      const isEditing = editingReview?.id === review.id;
+
+                      return (
+                        <Card key={review.id} className={styles.reviewCard}>
+                          <Card.Body>
+                            <div className="d-flex justify-content-between align-items-start">
+                              <div>
+                                <strong>{review.reviewerName}</strong>
+                                <div className={styles.reviewStars}>
+                                  {renderStars(review.rate)}
+                                </div>
                               </div>
+
+                              {canModify && (
+                                <div>
+                                  <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    className="me-2"
+                                    onClick={() => handleEditReview(review)}
+                                  >
+                                   ✏️
+                                  </Button>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDeleteReview(review)}
+                                  >
+                                    🗑️
+                                  </Button>
+                                </div>
+                              )}
                             </div>
-                            <small className="text-muted">{review.createdDate}</small>
-                          </div>
-                          <p className={styles.reviewComment}>{review.note}</p>
-                        </Card.Body>
-                      </Card>
-                    ))}
+
+                            <small className="text-muted">
+                              {new Date(review.createdDate).toLocaleString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </small>
+
+                            {isEditing ? (
+                              <div className="mt-3">
+                                <textarea
+                                  className="form-control mb-2"
+                                  rows={3}
+                                  value={editNote}
+                                  onChange={(e) => setEditNote(e.target.value)}
+                                />
+                                <select
+                                  className="form-select w-auto mb-2"
+                                  value={editRate}
+                                  onChange={(e) =>
+                                    setEditRate(Number(e.target.value))
+                                  }
+                                >
+                                  {[1, 2, 3, 4, 5].map((r) => (
+                                    <option key={r} value={r}>
+                                      {r} ★
+                                    </option>
+                                  ))}
+                                </select>
+                                <Button
+                                  size="sm"
+                                  variant="success"
+                                  onClick={handleSaveEdit}
+                                >
+                                  💾 Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="ms-2"
+                                  onClick={() => setEditingReview(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="mt-2">{review.note}</p>
+                            )}
+                          </Card.Body>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </Tab.Pane>
 

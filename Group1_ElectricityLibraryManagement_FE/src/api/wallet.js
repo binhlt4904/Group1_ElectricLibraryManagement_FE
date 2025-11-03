@@ -2,7 +2,10 @@ import axiosClient from "./axiosClient";
 
 const walletApi = {
     getWalletByUserId: async (uid) => {
-        return await axiosClient.get(`/api/v1/public/wallets/user/${uid}`);
+        return await axiosClient.get(`/api/v1/public/wallets/${uid}`);
+    },
+    getAllTransactionsByUserId: async (uid,params) => {
+        return await axiosClient.get(`/api/v1/public/wallet-transactions/${uid}`,{params});
     },
     getPendingTransactions: async (uid) => {
         return await axiosClient.get(`/api/v1/public/wallet-transactions/${uid}/pending`);
