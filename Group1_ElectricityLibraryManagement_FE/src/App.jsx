@@ -36,6 +36,7 @@ import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
 import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import TestPDF from './pages/admin/book/TestPDF';
 import AddBookContentPage from './pages/admin/book/AddBookContentPage';
+import DepositPage from './pages/user/DepositPage';
 const AppContent = () => {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
@@ -66,6 +67,7 @@ const AppContent = () => {
                             <Route path="library-card" element={<LibraryCardPage />} />
                             <Route path="notifications" element={<NotificationsPage />} />
                             <Route path="wallet" element={<WalletPage />} />
+                            <Route path="deposit" element={<DepositPage />} />
                         </Route>
 
                         {/* Individual User Pages (outside layout) */}

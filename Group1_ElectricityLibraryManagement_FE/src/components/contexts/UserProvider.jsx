@@ -42,6 +42,8 @@ export const UserProvider = ({ children }) => {
         setUser(user);
     }
 
+console.log(user)
+
     const contextValue = {
         user,
         loading,

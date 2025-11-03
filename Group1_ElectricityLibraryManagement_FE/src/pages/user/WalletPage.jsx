@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Form, InputGroup, Modal, Alert } from 'react-bootstrap';
 import { 
   Wallet, CreditCard, Plus, Receipt, Filter, Calendar, 
   ExclamationTriangleFill, CheckCircleFill, CashCoin, Search 
 } from 'react-bootstrap-icons';
 import styles from './WalletPage.module.css';
+import DepositQrModal from '../../components/commons/wallet/DepositQrModal';
+import  UserContext  from '../../components/contexts/UserContext';
 
 const WalletPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -14,6 +16,10 @@ const WalletPage = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [showDeposit, setShowDeposit] = useState(false);
+  const {user} = useContext(UserContext);
+  console.log(user?.accountId)
+
 
   // Mock data
   const walletData = {
@@ -163,9 +169,7 @@ const WalletPage = () => {
   };
 
   const handleAddFunds = () => {
-    setAlertMessage('Add funds functionality would be implemented here');
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+       setShowDeposit(true);
   };
 
   return (
@@ -192,7 +196,7 @@ const WalletPage = () => {
 
         {/* Balance Cards */}
         <Row className="mb-4">
-          <Col md={4} className="mb-3">
+          <Col md={6} className="mb-3">
             <Card className={`custom-card ${styles.balanceCard} ${styles.balancePositive}`}>
               <Card.Body className={styles.balanceCardBody}>
                 <div className={styles.balanceIcon}>
@@ -214,29 +218,8 @@ const WalletPage = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col md={4} className="mb-3">
-            <Card className={`custom-card ${styles.balanceCard} ${styles.balanceNegative}`}>
-              <Card.Body className={styles.balanceCardBody}>
-                <div className={styles.balanceIcon}>
-                  <ExclamationTriangleFill />
-                </div>
-                <div className={styles.balanceInfo}>
-                  <div className={styles.balanceLabel}>Outstanding Fines</div>
-                  <div className={styles.balanceAmount}>${walletData.outstandingFines.toFixed(2)}</div>
-                </div>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={handlePayFines}
-                  disabled={walletData.outstandingFines === 0}
-                  className={styles.balanceAction}
-                >
-                  Pay Now
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4} className="mb-3">
+          
+          <Col md={6} className="mb-3">
             <Card className={`custom-card ${styles.balanceCard}`}>
               <Card.Body className={styles.balanceCardBody}>
                 <div className={styles.balanceIcon}>
@@ -373,50 +356,17 @@ const WalletPage = () => {
           </Col>
         </Row>
 
-        {/* Payment Methods */}
-        <Row>
-          <Col>
-            <Card className={`custom-card ${styles.paymentMethodsCard}`}>
-              <Card.Header className={styles.paymentMethodsHeader}>
-                <h4 className={styles.paymentMethodsTitle}>
-                  <CreditCard className="me-2" />
-                  Payment Methods
-                </h4>
-                <Button variant="outline-primary">
-                  <Plus className="me-1" />
-                  Add Method
-                </Button>
-              </Card.Header>
-              <Card.Body className={styles.paymentMethodsBody}>
-                {walletData.paymentMethods.map(method => (
-                  <div key={method.id} className={styles.paymentMethod}>
-                    <div className={styles.methodIcon}>
-                      <CreditCard />
-                    </div>
-                    <div className={styles.methodDetails}>
-                      <div className={styles.methodInfo}>
-                        <span className={styles.methodBrand}>{method.brand}</span>
-                        <span className={styles.methodNumber}>**** **** **** {method.last4}</span>
-                        {method.isDefault && (
-                          <Badge bg="primary" className={styles.defaultBadge}>Default</Badge>
-                        )}
-                      </div>
-                      <div className={styles.methodType}>
-                        {method.type === 'credit' ? 'Credit Card' : 'Debit Card'}
-                      </div>
-                    </div>
-                    <div className={styles.methodActions}>
-                      <Button variant="outline-secondary" size="sm">Edit</Button>
-                      <Button variant="outline-danger" size="sm" className="ms-2">Remove</Button>
-                    </div>
-                  </div>
-                ))}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
       </Container>
 
+<DepositQrModal
+        show={showDeposit}
+        onHide={() => setShowDeposit(false)}
+        userId={user?.accountId}
+        // Bạn có thể override thông tin ngân hàng ở đây nếu cần:
+        // bankCode="TPB"
+        // accountNumber="06159974001"
+        // accountName="Le Tien Binh"
+      />
       {/* Payment Modal */}
       <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)} centered>
         <Modal.Header closeButton>
