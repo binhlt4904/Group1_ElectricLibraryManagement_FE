@@ -13,6 +13,7 @@ import BorrowHistoryPage from './pages/user/BorrowHistoryPage';
 import LibraryCardPage from './pages/user/LibraryCardPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import WalletPage from './pages/user/WalletPage';
+import WishlistPage from "./pages/user/WishlistPage";
 import BookReaderPage from './pages/user/BookReaderPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
@@ -37,6 +38,7 @@ import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import TestPDF from './pages/admin/book/TestPDF';
 import AddBookContentPage from './pages/admin/book/AddBookContentPage';
 import DepositPage from './pages/user/DepositPage';
+
 const AppContent = () => {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
@@ -60,15 +62,7 @@ const AppContent = () => {
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/test" element={<TestPDF />} />
 
-                        {/* User Pages */}
-                        <Route path="/user" element={<UserLayout />}>
-                            <Route path="profile" element={<ProfilePage />} />
-                            <Route path="borrow-history" element={<BorrowHistoryPage />} />
-                            <Route path="library-card" element={<LibraryCardPage />} />
-                            <Route path="notifications" element={<NotificationsPage />} />
-                            <Route path="wallet" element={<WalletPage />} />
-                            <Route path="deposit" element={<DepositPage />} />
-                        </Route>
+           
 
                         {/* Individual User Pages (outside layout) */}
                         <Route path="/profile" element={<ProfilePage />} />
@@ -77,6 +71,7 @@ const AppContent = () => {
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/wallet" element={<WalletPage />} />
                         <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
+                        <Route path="/wishlist" element={<WishlistPage />} />
 
                         {/* Admin Pages */}
                         <Route path="/admin" element={<AdminLayout />}>
