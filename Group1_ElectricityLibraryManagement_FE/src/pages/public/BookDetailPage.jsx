@@ -4,6 +4,7 @@ import { Container, Row, Col, Button, Badge, Nav, Tab, Card, ProgressBar, Modal,
 import { Heart, HeartFill, Star, StarFill, Share, BookmarkPlus, ArrowLeft } from 'react-bootstrap-icons';
 import styles from './BookDetailPage.module.css';
 import bookApi from '../../api/book';
+import reportApi from '../../api/admin/reportApi';
 import BookHeader from '../../components/commons/books/BookHeader';
 import TabSection from '../../components/commons/books/TabSection';
 import borrowalReaderHistoryApi from '../../api/user/borrowReaderHistory';
@@ -20,11 +21,15 @@ const BookDetailPage = () => {
   const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [borrowError, setBorrowError] = useState('');
   const [borrowsuccess, setBorrowSuccess] = useState('');
-
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportType, setReportType] = useState(null);
+  const [reportDescription, setReportDescription] = useState(null);
+  // const [reportBook, setReportBook] = useState(null);
   const handleClose = () => setShowBorrowModal(false);
   // const handleShow = () => setShowBorrowModal(true);
 
-  // Mock data - replace with API call
+  const types = ['Content Issue', 'Access Issue', 'Other Issue'];
+
   const fetchBookDetail = async () => {
     try {
       const bookRes = await bookApi.findBookUserById(bookId);
@@ -103,16 +108,32 @@ const BookDetailPage = () => {
       setTimeout(() => setShowBorrowModal(false), 1200);
     } catch (err) {
       console.log("error is", err.message);
-      setBorrowError('Failed to borrow the book.'+ err.message);
+      setBorrowError('Failed to borrow the book.' + err.message);
     }
   };
 
   const handleReportIssue = () => {
     console.log('Report issue for book:', book.id);
+    setShowReportModal(true);
     // Handle report issue logic - could open modal or navigate to report form
-    alert('Report issue functionality - would open a form to report problems with this book');
   };
 
+  const handleReportConfirm = async (reportType, reportDescription) => {
+
+    const params = {
+      bookId: book.id,
+      reportType: reportType,
+      description: reportDescription,
+    };
+
+    try {
+      const response = await reportApi.createReport(params);
+      setShowReportModal(false);
+    } catch (error) {
+      alert('Error in reporting issue:', error.message);
+      console.error('Failed to report issue:', error);
+    }
+  }
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -177,6 +198,49 @@ const BookDetailPage = () => {
           </Button>
           <Button variant="primary" onClick={handleConfirmBorrow}>
             Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal for report */}
+      <Modal show={showReportModal} onHide={() => setShowReportModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Information for report</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Label>Description: </Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Brief note about issue of book"
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                autoFocus
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Label>Report Type: </Form.Label>
+              <Form.Select
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+                className={styles.filterSelect}
+              >
+                {types.map(status => (
+                  <option key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReportModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={() => handleReportConfirm(reportType, reportDescription)}>
+            Save Changes
           </Button>
         </Modal.Footer>
       </Modal>

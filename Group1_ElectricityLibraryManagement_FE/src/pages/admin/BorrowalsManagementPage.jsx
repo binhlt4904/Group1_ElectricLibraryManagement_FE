@@ -86,6 +86,10 @@ const BorrowalsManagementPage = () => {
     fetchBorrowals();
   }, [searchTerm, selectedStatus, fromDate, toDate, currentPage]);
 
+  useEffect(() => {
+      setCurrentPage(1);
+    }, [searchTerm, selectedStatus, fromDate, toDate]); // TODO: NOTICE BONUS
+
   useEffect(() => {  
     fetchStatistics();
   }, [fromDate, toDate]);

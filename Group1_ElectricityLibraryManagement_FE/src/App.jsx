@@ -37,6 +37,7 @@ import ImportExcel from "./pages/admin/ImportExcel";
 import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import TestPDF from './pages/admin/book/TestPDF';
 import AddBookContentPage from './pages/admin/book/AddBookContentPage';
+import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 const AppContent = () => {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
@@ -77,6 +78,7 @@ const AppContent = () => {
                         <Route path="/library-card" element={<LibraryCardPage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/wallet" element={<WalletPage />} />
+                        <Route path="/reader-report-history" element={<ReaderReportManagementPage />} />                       
                         <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
 
                         {/* Admin Pages */}
