@@ -15,6 +15,16 @@ import { useNavigate } from 'react-router-dom';
 import eventAPI from '../../api/event';
 import styles from './EventsListPage.module.css';
 
+// Backend base URL for image display
+const API_BASE_URL = 'http://localhost:8080';
+
+// Helper function to construct full image URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop';
+  if (imageUrl.startsWith('http')) return imageUrl; // Already a full URL
+  return `${API_BASE_URL}${imageUrl}`; // Prepend base URL for relative paths
+};
+
 const EventsListPage = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -273,18 +283,24 @@ const EventsListPage = () => {
             <Col key={event.id} lg={6} className="mb-4">
               <Card className={styles.eventCard}>
                 <div className={styles.eventImageContainer}>
-                  <Card.Img 
-                    variant="top" 
-                    src={event.image} 
+                  <Card.Img
+                    variant="top"
+                    src={getImageUrl(event.imageUrl || event.image)}
                     alt={event.title}
                     className={styles.eventImage}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop';
+                    }}
                   />
-                  <Badge 
-                    bg={getCategoryColor(event.category)} 
-                    className={styles.categoryBadge}
-                  >
-                    {event.category}
-                  </Badge>
+                  {event.category && (
+                    <Badge 
+                      bg={getCategoryColor(event.category)} 
+                      className={styles.categoryBadge}
+                    >
+                      {event.category}
+                    </Badge>
+                  )}
                 </div>
                 <Card.Body className={styles.eventCardBody}>
                   <div className={styles.eventHeader}>
@@ -306,12 +322,16 @@ const EventsListPage = () => {
                   <div className={styles.eventDetails}>
                     <div className={styles.eventDetail}>
                       <Calendar className={styles.detailIcon} />
-                      <span>{formatDate(event.date || event.createdDate)}</span>
+                      <span>{formatDate(event.eventDate || event.date || event.createdDate)}</span>
                     </div>
-                    {event.time && (
+                    {(event.startTime || event.endTime || event.time) && (
                       <div className={styles.eventDetail}>
                         <Clock className={styles.detailIcon} />
-                        <span>{event.time}</span>
+                        <span>
+                          {event.startTime && event.endTime 
+                            ? `${event.startTime} - ${event.endTime}`
+                            : event.time || 'TBA'}
+                        </span>
                       </div>
                     )}
                     {event.location && (
@@ -326,10 +346,10 @@ const EventsListPage = () => {
                         <span>{event.registered}/{event.capacity} registered</span>
                       </div>
                     )}
-                    {event.organizer && (
+                    {(event.organizerFullName || event.organizer) && (
                       <div className={styles.eventDetail}>
                         <PersonFill className={styles.detailIcon} />
-                        <span>Organized by {event.organizer}</span>
+                        <span>{event.organizerFullName || event.organizer}</span>
                       </div>
                     )}
                   </div>

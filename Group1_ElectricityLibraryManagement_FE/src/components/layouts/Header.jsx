@@ -93,23 +93,23 @@ const Header = () => {
                                             </div>
                                         </Dropdown.Header>
                                         <Dropdown.Divider />
-                                        <Dropdown.Item as={Link} to="/user/profile">
+                                        <Dropdown.Item as={Link} to="/profile">
                                             <PersonCircle className="me-2" />
                                             My Profile
                                         </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/wishlist">
+                                        <Dropdown.Item as={Link} to="/wishlist">
                                             <Heart className="me-2" />
                                             My Wishlist
                                         </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/borrow-history">
+                                        <Dropdown.Item as={Link} to="/borrow-history">
                                             <ClockHistory className="me-2" />
                                             Borrowing History
                                         </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/library-card">
+                                        <Dropdown.Item as={Link} to="/library-card">
                                             <CreditCard className="me-2" />
                                             Library Card
                                         </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/user/wallet">
+                                        <Dropdown.Item as={Link} to="/wallet">
                                             <Wallet className="me-2" />
                                             My Wallet
                                         </Dropdown.Item>

@@ -41,6 +41,7 @@ import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import TestPDF from './pages/admin/book/TestPDF';
 import AddBookContentPage from './pages/admin/book/AddBookContentPage';
 import DepositPage from './pages/user/DepositPage';
+import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
 
 const AppContent = () => {
     const location = useLocation();
@@ -105,6 +106,7 @@ const AppContent = () => {
                             <Route path="user-reports" element={<ReportManagementPage />} />
                             <Route path="documents" element={<DocumentManagementPage />} />
                             <Route path="system-users" element={<StaffManagementPage />} />
+                            <Route path="library-cards" element={<LibraryCardManagementPage />} />
                             <Route path="books/add/:id" element={<AddBookContentPage />} />
                             {/* Default redirect to dashboard */}
                             <Route index element={<DashboardPage />} />

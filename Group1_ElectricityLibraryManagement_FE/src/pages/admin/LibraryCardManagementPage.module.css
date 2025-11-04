@@ -1,0 +1,144 @@
+.libraryCardManagementPage {
+  padding: 2rem 0;
+  min-height: 100vh;
+  background-color: var(--background-color, #f8f9fa);
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-blue, #0066cc);
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.pageSubtitle {
+  color: var(--text-secondary, #6c757d);
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+}
+
+/* Statistics Cards */
+.statCard {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.statContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.statInfo {
+  flex: 1;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary, #212529);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6c757d);
+  font-weight: 500;
+}
+
+/* Table Card */
+.tableCard {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cardsTable {
+  margin-bottom: 0;
+}
+
+.cardsTable thead {
+  background-color: var(--light-gray, #f8f9fa);
+}
+
+.cardsTable thead th {
+  font-weight: 600;
+  color: var(--text-primary, #212529);
+  border-bottom: 2px solid var(--border-color, #dee2e6);
+  padding: 1rem;
+}
+
+.cardsTable tbody tr {
+  transition: background-color 0.2s;
+}
+
+.cardsTable tbody tr:hover {
+  background-color: var(--hover-bg, #f8f9fa);
+}
+
+.cardsTable tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .addButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .statCard {
+    margin-bottom: 1rem;
+  }
+}

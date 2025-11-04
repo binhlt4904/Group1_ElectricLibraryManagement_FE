@@ -58,23 +58,26 @@ const LibraryCardPage = () => {
     }
   };
 
-  // Mock user data for fallback
-  const userData = cardData || {
-    firstName: 'John',
-    lastName: 'Doe',
-    memberId: 'EL2024001234',
-    card_number: 'EL2024001234', // ERD attribute
-    membershipType: 'Premium',
-    issueDate: '2024-01-15',
-    issue_date: '2024-01-15', // ERD attribute
-    expirationDate: '2025-01-15',
-    expiry_date: '2025-01-15', // ERD attribute
-    status: 'Active', // ERD attribute
-    email: 'john.doe@email.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main Street, City, State 12345',
-    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
-  };
+  // Use real card data from API
+  const userData = cardData ? {
+    firstName: cardData.readerName?.split(' ')[0] || 'Member',
+    lastName: cardData.readerName?.split(' ').slice(1).join(' ') || '',
+    memberId: cardData.cardNumber,
+    card_number: cardData.cardNumber,
+    membershipType: 'Standard', // Can be enhanced based on backend data
+    issueDate: cardData.issueDate,
+    issue_date: cardData.issueDate,
+    expirationDate: cardData.expiryDate,
+    expiry_date: cardData.expiryDate,
+    status: cardData.status,
+    email: cardData.email || user?.email || '',
+    phone: cardData.phone || user?.phone || '',
+    address: cardData.address || user?.address || '',
+    photo: cardData.photo || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    daysUntilExpiry: cardData.daysUntilExpiry,
+    readerName: cardData.readerName,
+    readerCode: cardData.readerCode
+  } : null;
 
   const handleDownload = () => {
     // Simulate download functionality
@@ -107,6 +110,7 @@ const LibraryCardPage = () => {
   };
 
   const getStatusBadgeVariant = (status) => {
+    if (!status) return 'secondary';
     switch (status.toLowerCase()) {
       case 'active':
         return 'success';
@@ -123,6 +127,9 @@ const LibraryCardPage = () => {
 
   const isExpiringSoon = () => {
     if (!userData || !userData.expiryDate) return false;
+    if (cardData && cardData.daysUntilExpiry !== null && cardData.daysUntilExpiry !== undefined) {
+      return cardData.daysUntilExpiry <= 30 && cardData.daysUntilExpiry > 0;
+    }
     const expirationDate = new Date(userData.expiryDate || userData.expirationDate);
     const today = new Date();
     const daysUntilExpiration = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
@@ -131,6 +138,9 @@ const LibraryCardPage = () => {
 
   const getDaysUntilExpiry = () => {
     if (!userData || !userData.expiryDate) return null;
+    if (cardData && cardData.daysUntilExpiry !== null && cardData.daysUntilExpiry !== undefined) {
+      return cardData.daysUntilExpiry;
+    }
     const expirationDate = new Date(userData.expiryDate || userData.expirationDate);
     const today = new Date();
     return Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
@@ -197,6 +207,13 @@ const LibraryCardPage = () => {
         <Row className="justify-content-center">
           <Col lg={8} xl={6}>
             {/* Digital Library Card */}
+            {!userData ? (
+              <Alert variant="info" className="text-center">
+                <h4>No Library Card Found</h4>
+                <p>You don't have a library card yet. Please contact the library administration to get your card issued.</p>
+              </Alert>
+            ) : (
+            <>
             <div className={styles.cardContainer}>
               <div className={styles.libraryCard}>
                 {/* Card Front */}
@@ -215,10 +232,10 @@ const LibraryCardPage = () => {
                       </div>
                     </div>
                     <Badge 
-                      bg={getMembershipColor(userData.membershipType)}
+                      bg={getMembershipColor(userData?.membershipType)}
                       className={styles.membershipBadge}
                     >
-                      {userData.membershipType}
+                      {userData?.membershipType}
                     </Badge>
                   </div>
 
@@ -316,7 +333,7 @@ const LibraryCardPage = () => {
                 <Printer className="me-2" />
                 Print Card
               </Button>
-              {(isExpiringSoon() || (userData.isExpired)) && (
+              {(isExpiringSoon() || userData.status?.toLowerCase() === 'expired') && (
                 <Button
                   variant="warning"
                   size="lg"
@@ -374,15 +391,18 @@ const LibraryCardPage = () => {
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Status</label>
                       <div className={styles.infoValue}>
-                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status}</Badge>
+                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status || 'N/A'}</Badge>
                       </div>
                     </div>
                   </Col>
                 </Row>
               </Card.Body>
             </Card>
+            </>
+            )}
 
             {/* Digital Wallet Integration */}
+            {userData && (
             <Card className={`custom-card ${styles.walletCard} mt-4`}>
               <Card.Header className={styles.walletCardHeader}>
                 <h4 className={styles.walletCardTitle}>
@@ -404,6 +424,7 @@ const LibraryCardPage = () => {
                 </div>
               </Card.Body>
             </Card>
+            )}
           </Col>
         </Row>
 
@@ -427,7 +448,7 @@ const LibraryCardPage = () => {
                 />
               </Form.Group>
             </Form>
-            {userData.expiryDate && (
+            {userData?.expiryDate && (
               <Alert variant="info" className="mt-3 mb-0">
                 <small>
                   <strong>Current Expiry:</strong> {formatDate(userData.expiryDate)}<br />

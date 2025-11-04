@@ -6,7 +6,7 @@ import {
 import {
   List, X, House, BookFill, PersonFill, Building, People, Tags,
   ClipboardData, CalendarEvent, BarChart, ExclamationTriangle, FileEarmark,
-  Gear, BoxArrowRight, PersonCircle
+  Gear, BoxArrowRight, PersonCircle, CreditCard
 } from 'react-bootstrap-icons';
 import styles from './AdminLayout.module.css';
 import NotificationBell from '../commons/NotificationBell';
@@ -76,6 +76,12 @@ const AdminLayout = () => {
       path: '/admin/events',
       icon: CalendarEvent,
       label: 'Events Management',
+      badge: null
+    },
+    {
+      path: '/admin/library-cards',
+      icon: CreditCard,
+      label: 'Library Cards',
       badge: null
     },
     {
