@@ -23,6 +23,7 @@ import {
   Clock,
   PersonFill
 } from 'react-bootstrap-icons';
+import AsyncSelect from 'react-select/async';
 import libraryCardAPI from '../../api/libraryCard';
 import accountManagementApi from '../../api/admin/accountManagementApi';
 import styles from './LibraryCardManagementPage.module.css';
@@ -46,6 +47,7 @@ const LibraryCardManagementPage = () => {
     readerId: '',
     validityYears: 1
   });
+  const [selectedReader, setSelectedReader] = useState(null);
 
   useEffect(() => {
     fetchCards();
@@ -82,6 +84,23 @@ const LibraryCardManagementPage = () => {
     }
   };
 
+  // Load options for AsyncSelect
+  const loadReaderOptions = async (inputValue) => {
+    try {
+      const response = await accountManagementApi.searchReaders(inputValue, 0, 20);
+      const readers = response.data.content || [];
+      
+      return readers.map(reader => ({
+        value: reader.id || reader.accountId,
+        label: `${reader.fullName} (${reader.readerCode})`,
+        reader: reader
+      }));
+    } catch (error) {
+      console.error('Error loading readers:', error);
+      return [];
+    }
+  };
+
   const handleCreateCard = async () => {
     if (!createForm.readerId) {
       setError('Please select a reader');
@@ -97,6 +116,7 @@ const LibraryCardManagementPage = () => {
         setSuccess(response.data.message);
         setShowCreateModal(false);
         setCreateForm({ readerId: '', validityYears: 1 });
+        setSelectedReader(null);
         await fetchCards();
         await fetchReadersWithoutCards();
         setTimeout(() => setSuccess(null), 5000);
@@ -422,20 +442,31 @@ const LibraryCardManagementPage = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Select Reader *</Form.Label>
-              <Form.Select
-                value={createForm.readerId}
-                onChange={(e) => setCreateForm({ ...createForm, readerId: e.target.value })}
-                required
-              >
-                <option value="">Choose a reader...</option>
-                {readers.map((reader) => (
-                  <option key={reader.id} value={reader.id}>
-                    {reader.fullName} ({reader.username})
-                  </option>
-                ))}
-              </Form.Select>
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={loadReaderOptions}
+                value={selectedReader}
+                onChange={(option) => {
+                  setSelectedReader(option);
+                  setCreateForm({ ...createForm, readerId: option?.value || '' });
+                }}
+                placeholder="Search by name or reader code..."
+                isClearable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '38px',
+                    borderColor: '#dee2e6'
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    zIndex: 9999
+                  })
+                }}
+              />
               <Form.Text className="text-muted">
-                Only readers without library cards are shown
+                Type to search readers by name or reader code
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">

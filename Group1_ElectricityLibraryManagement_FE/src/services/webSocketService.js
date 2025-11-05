@@ -5,6 +5,7 @@ class WebSocketService {
   constructor() {
     this.client = null;
     this.isConnected = false;
+    this.isConnecting = false;
     this.subscriptions = new Map();
     this.messageHandlers = new Map();
     this.reconnectAttempts = 0;
@@ -19,18 +20,37 @@ class WebSocketService {
    * @param {Function} onError - Callback on error
    */
   connect(userId, onConnect, onError) {
+    // Prevent duplicate connection attempts
     if (this.isConnected) {
-      console.log('WebSocket already connected');
+      console.log('[WebSocket] Already connected');
+      if (onConnect) onConnect();
       return;
     }
 
-    const socket = new SockJS('http://localhost:8080/ws/notifications');
+    if (this.isConnecting) {
+      console.log('[WebSocket] Connection already in progress');
+      return;
+    }
+
+    // Get JWT token from localStorage
+    const token = localStorage.getItem('accessToken');
+    
+    if (!token) {
+      console.error('[WebSocket] No access token found. Cannot establish WebSocket connection.');
+      if (onError) {
+        onError(new Error('Authentication token not found'));
+      }
+      return;
+    }
+
+    this.isConnecting = true;
+    console.log('[WebSocket] Connecting with JWT authentication...');
+    const socket = new SockJS('http://localhost:8080/ws');
     
     this.client = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
-        login: 'user',
-        passcode: 'password'
+        Authorization: `Bearer ${token}`
       },
       debug: (str) => {
         console.log('[WebSocket]', str);
@@ -39,8 +59,9 @@ class WebSocketService {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: (frame) => {
-        console.log('WebSocket connected:', frame);
+        console.log('[WebSocket] ✅ Connected successfully:', frame);
         this.isConnected = true;
+        this.isConnecting = false;
         this.reconnectAttempts = 0;
         
         // Subscribe to user-specific notifications
@@ -51,20 +72,27 @@ class WebSocketService {
         }
       },
       onStompError: (frame) => {
-        console.error('WebSocket error:', frame);
+        console.error('[WebSocket] ❌ STOMP error:', frame);
         this.isConnected = false;
+        this.isConnecting = false;
         
         if (onError) {
           onError(frame);
         }
       },
       onWebSocketError: (error) => {
-        console.error('WebSocket connection error:', error);
+        console.error('[WebSocket] ❌ Connection error:', error);
         this.isConnected = false;
+        this.isConnecting = false;
         
         if (onError) {
           onError(error);
         }
+      },
+      onDisconnect: () => {
+        console.log('[WebSocket] 🔌 Disconnected');
+        this.isConnected = false;
+        this.isConnecting = false;
       }
     });
 

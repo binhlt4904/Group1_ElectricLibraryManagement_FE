@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Bell, BellFill } from 'react-bootstrap-icons';
 import { Badge, Button } from 'react-bootstrap';
-import useNotificationStore from '../../stores/notificationStore';
-import NotificationDropdown from './NotificationDropdown';
+import NotificationContext from '../contexts/NotificationContext';
+import NotificationDropdown from '../notifications/NotificationDropdown';
 import styles from './NotificationBell.module.css';
 
 /**
@@ -15,8 +15,8 @@ const NotificationBell = ({ variant = 'outline-secondary', size = 'md' }) => {
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Get notification state from Zustand store
-  const { unreadCount, notifications } = useNotificationStore();
+  // Get notification state from context
+  const { unreadCount, notifications } = useContext(NotificationContext);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -82,7 +82,6 @@ const NotificationBell = ({ variant = 'outline-secondary', size = 'md' }) => {
           role="menu"
         >
           <NotificationDropdown
-            notifications={notifications}
             onClose={handleCloseDropdown}
           />
         </div>

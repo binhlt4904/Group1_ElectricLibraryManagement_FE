@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Badge } from 'react-bootstrap';
+import { Button, Badge, Spinner } from 'react-bootstrap';
 import {
   BookFill,
   CalendarEvent,
@@ -9,18 +9,18 @@ import {
   ChevronRight,
   Bell
 } from 'react-bootstrap-icons';
-import useNotificationStore from '../../stores/notificationStore';
+import NotificationContext from '../contexts/NotificationContext';
 import styles from './NotificationDropdown.module.css';
 
 /**
  * NotificationDropdown Component
  * Displays recent notifications in a dropdown menu
  */
-const NotificationDropdown = ({ notifications = [], onClose }) => {
-  const { markAsRead, getRecentNotifications, getNotificationConfig } = useNotificationStore();
+const NotificationDropdown = ({ onClose }) => {
+  const { notifications, loading, markAsRead } = useContext(NotificationContext);
 
   // Get recent notifications (limit to 5)
-  const recentNotifications = getRecentNotifications(5);
+  const recentNotifications = notifications.slice(0, 5);
 
   /**
    * Get icon component based on notification type
@@ -76,14 +76,17 @@ const NotificationDropdown = ({ notifications = [], onClose }) => {
   };
 
   /**
-   * Get badge variant based on priority
+   * Get badge variant based on type
    */
-  const getPriorityBadge = (type) => {
-    const config = getNotificationConfig(type);
-    if (config.priority === 'high') {
-      return <Badge bg="danger" className={styles.priorityBadge}>High</Badge>;
+  const getTypeBadge = (type) => {
+    switch (type) {
+      case 'OVERDUE':
+        return <Badge bg="danger" className={styles.priorityBadge}>Urgent</Badge>;
+      case 'REMINDER':
+        return <Badge bg="warning" className={styles.priorityBadge}>Reminder</Badge>;
+      default:
+        return null;
     }
-    return null;
   };
 
   return (
@@ -105,7 +108,12 @@ const NotificationDropdown = ({ notifications = [], onClose }) => {
 
       {/* Notifications List */}
       <div className={styles.notificationsList}>
-        {recentNotifications.length === 0 ? (
+        {loading ? (
+          <div className={styles.loadingState}>
+            <Spinner animation="border" size="sm" />
+            <p className={styles.loadingText}>Loading notifications...</p>
+          </div>
+        ) : recentNotifications.length === 0 ? (
           <div className={styles.emptyState}>
             <Bell size={32} className={styles.emptyIcon} />
             <p className={styles.emptyText}>No notifications yet</p>
@@ -128,7 +136,7 @@ const NotificationDropdown = ({ notifications = [], onClose }) => {
                     <h6 className={styles.notificationTitle}>
                       {notification.title}
                     </h6>
-                    {getPriorityBadge(notification.notificationType)}
+                    {getTypeBadge(notification.notificationType)}
                   </div>
                   <p className={styles.notificationMessage}>
                     {notification.description}

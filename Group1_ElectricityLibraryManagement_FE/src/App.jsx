@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { UserProvider } from './components/contexts/UserProvider';
+import { NotificationProvider } from './components/contexts/NotificationProvider';
 import HomePage from './pages/public/HomePage';
 import BookListPage from './pages/public/BookListPage';
 import BookDetailPage from './pages/public/BookDetailPage';
@@ -51,19 +52,20 @@ const AppContent = () => {
 
   return (
     <UserProvider>
-      <div className="app-container">
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
+      <NotificationProvider>
+        <div className="app-container">
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         {!isAdminPage && <Header />}
         <main className="main-content">
 
@@ -116,7 +118,8 @@ const AppContent = () => {
                 </main>
                 {!isAdminPage && <Footer />}
             </div>
-        </UserProvider>
+        </NotificationProvider>
+      </UserProvider>
     );
 }
 
