@@ -227,7 +227,7 @@ const CategoryManagementPage = () => {
           >
             <option value="ALL">All status</option>
             <option value="ACTIVE">Active</option>
-            <option value="DELETED">Deleted</option>
+            <option value="DELETED">Inactive</option>
           </Form.Select>
         </Col>
       </Row>
@@ -263,7 +263,7 @@ const CategoryManagementPage = () => {
                         <td>{idx + 1}</td>
                         <td>{c.name ?? "—"}</td>
                         <td>
-                          {isDeleted ? <Badge bg="danger">DELETED</Badge> : <Badge bg="success">ACTIVE</Badge>}
+                          {isDeleted ? <Badge bg="danger">INACTIVE</Badge> : <Badge bg="success">ACTIVE</Badge>}
                         </td>
                         <td>{c.createdDate ? new Date(c.createdDate).toLocaleString() : "—"}</td>
                         <td>{c.updatedDate ? new Date(c.updatedDate).toLocaleString() : "—"}</td>
