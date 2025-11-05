@@ -13,7 +13,6 @@ const BookListPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('title');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(4);
   const [totalPages, setTotalPages] = useState(1);
@@ -109,25 +108,7 @@ const BookListPage = () => {
               {Math.min(currentPage * itemsPerPage, totalElements)} of {totalElements} books
             </p>
           </Col>
-          <Col xs="auto">
-            <div className={styles.viewToggle}>
-              <Button
-                variant={viewMode === 'grid' ? 'primary' : 'outline-primary'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid3x3Gap />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'primary' : 'outline-primary'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="ms-2"
-              >
-                <List />
-              </Button>
-            </div>
-          </Col>
+
         </Row>
 
         {/* Books Grid */}

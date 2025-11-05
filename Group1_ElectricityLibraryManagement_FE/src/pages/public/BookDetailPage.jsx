@@ -115,7 +115,8 @@ const BookDetailPage = () => {
       try {
         const bookRes = await bookApi.findBookUserById(bookId);
 
-        const contentsRes = await bookApi.findBookContentsById(bookId);
+        const contentsRes = await bookApi.findBookContentsUserById(bookId);
+        console.log(contentsRes.data)
         const reviewsRes = await bookApi.findReviewsByBookId(bookId);
 
         setBook(bookRes.data);
@@ -168,11 +169,6 @@ const BookDetailPage = () => {
   const handleBorrow = () => {
     // console.log("Borrow book:", book.id);
     // Handle borrow logic
-  };
-
-  const handleReserve = () => {
-    // console.log("Reserve book:", book.id);
-    // Handle reserve logic
   };
 
   const handleReportIssue = () => {

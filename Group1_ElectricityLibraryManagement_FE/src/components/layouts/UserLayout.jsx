@@ -24,31 +24,31 @@ const UserLayout = () => {
 
   const navigationItems = [
     {
-      path: '/user/profile',
+      path: '/profile',
       icon: PersonCircle,
       label: 'My Profile',
       badge: null
     },
     {
-      path: '/user/borrow-history',
+      path: '/borrow-history',
       icon: ClockHistory,
       label: 'Borrow History',
       badge: '3'
     },
     {
-      path: '/user/library-card',
+      path: '/library-card',
       icon: CreditCard,
       label: 'Library Card',
       badge: null
     },
     {
-      path: '/user/wallet',
+      path: '/wallet',
       icon: Wallet,
       label: 'My Wallet',
       badge: null
     },
     {
-      path: '/user/notifications',
+      path: '/notifications',
       icon: Bell,
       label: 'Notifications',
       badge: '5'

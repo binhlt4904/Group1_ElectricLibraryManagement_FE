@@ -4,6 +4,9 @@ const bookApi = {
     findAll: async (params) => {
         return await axiosClient.get("/api/v1/public/books/",{params});
     },
+    findListBook: async () => {
+        return await axiosClient.get("/api/v1/public/books/list-book");
+    },
     findAllAdmin: async (params) => {
         return await axiosClient.get("/api/v1/public/admin/books/",{params});
     },
@@ -21,6 +24,9 @@ const bookApi = {
     findBookContentsById: async (id) => {
         return await axiosClient.get(`/api/v1/public/admin/books/${id}/contents`);
     },
+    findBookContentsUserById: async (id) => {
+        return await axiosClient.get(`/api/v1/public/book-contents/${id}/contents`);
+    },
     findReviewsByBookId: async (id) => {
         return await axiosClient.get(`/api/v1/public/books/${id}/reviews`);
     },
@@ -34,11 +40,20 @@ const bookApi = {
             ...config,
         });
     },
+    updateBookContent: async (contentId, formData) => {
+        return await axiosClient.patch(`/api/v1/public/admin/book-contents/${contentId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    },
     getBookContentByBookIdAndChapter: async(bookId, chapter) =>{
         return await axiosClient.get(`/api/v1/public/book-contents/${bookId}/${chapter}`);
     },
     getRelatedBooks: async (bookId) => {
         return await axiosClient.get(`/api/v1/public/books/${bookId}/related`);
+    },
+    update : async (bookId, data) => {
+        console.log(data);
+        return await axiosClient.patch(`/api/v1/public/admin/books/${bookId}`, data);
     },
 };
 

@@ -3,7 +3,7 @@ import axios from "axios";
 import DOMPurify from "dompurify";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./AdminBookDetailPage.module.css";
-import { Button } from "react-bootstrap";
+import { Button, Alert } from "react-bootstrap";
 import { Eye, Pencil, Trash } from "react-bootstrap-icons";
 import bookApi from "../../../api/book";
 import BookReaderModal from "../../../components/commons/books/BookReaderModal";
@@ -14,6 +14,14 @@ const AdminBookDetailPage = () => {
   const [book, setBook] = useState(null);
   const [contents, setContents] = useState([]);
   const [viewContent, setViewContent] = useState(null); // lưu object thay vì id
+  const [editingContentId, setEditingContentId] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+  const [editContentForm, setEditContentForm] = useState({
+    chapter: '',
+    title: '',
+    file: null, // file content mới (tuỳ chọn)
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +29,7 @@ const AdminBookDetailPage = () => {
       try {
         const bookRes = await bookApi.findBookAdminById(id);
         const contentRes = await bookApi.findBookContentsById(id);
+        console.log(contentRes)
         setBook(bookRes.data);
         setContents(contentRes.data);
       } catch (error) {
@@ -46,6 +55,59 @@ const AdminBookDetailPage = () => {
     } catch (err) {
       console.error("Failed to toggle visibility:", err);
     }
+  };
+
+  const startEditContent = (content) => {
+    setEditingContentId(content.id);
+    setEditContentForm({
+      chapter: content.chapter ?? '',
+      title: content.title ?? '',
+      file: null,
+    });
+  };
+
+  const onChangeContent = (field, value) => {
+    setEditContentForm((p) => ({ ...p, [field]: value }));
+  };
+
+  const cancelEditContent = () => {
+    setEditingContentId(null);
+    setEditContentForm({ chapter: '', title: '', file: null });
+  };
+
+  const saveEditContent = async (contentId) => {
+    try {
+      // ✅ Gửi FormData để BE nhận được @ModelAttribute / multipart dễ nhất
+      const form = new FormData();
+      form.append('chapter', editContentForm.chapter ?? '');
+      form.append('title', editContentForm.title ?? '');
+      if (editContentForm.file) form.append('file', editContentForm.file); // tuỳ BE đặt tên field: file/content
+     
+
+      // TODO: đổi URL theo BE bạn (ví dụ PATCH/PUT)
+      const response = await bookApi.updateBookContent(contentId,form);
+      console.log(response.data)
+
+      if (response?.status >= 200 && response?.status < 300) {
+        showAlertMessage('Update book content successfully!');
+        
+      } else {
+        throw new Error('Upload failed');
+      }
+      // Cập nhật UI lạc quan
+      setContents(response.data);
+
+      cancelEditContent();
+    } catch (err) {
+      console.error('Update content failed:', err);
+      // bạn có thể show toast/alert ở đây
+    }
+  };
+
+   const showAlertMessage = (message) => {
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
   };
 
   if (!book) return <p>Loading...</p>;
@@ -80,6 +142,7 @@ const AdminBookDetailPage = () => {
       {/* ===== CONTENTS TABLE ===== */}
       <div className={styles.contentsCard}>
         <div className={styles.sectionHeader}>
+          {showAlert && <Alert variant="success" className={styles.alert}>{alertMessage}</Alert>}
           <h3 className={styles.sectionTitle}>Book Contents</h3>
           <button className={styles.addButton} onClick={handleNavigate}>+ Add Chapter</button>
         </div>
@@ -95,45 +158,123 @@ const AdminBookDetailPage = () => {
               </tr>
             </thead>
             <tbody>
-              {contents.map((c, index) => (
-                <tr
-                  key={c.id}
-                  className={`${styles.bookRow} ${c.hidden ? styles.hiddenRow : ""}`}
-                >
-                  <td>{index + 1}</td>
-                  <td>{c.chapter}</td>
-                  <td>{c.title}</td>
-                  <td className={styles.actionsCell}>
-                    <div className={styles.actionButtons}>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => setViewContent(c)}
-                        className={styles.actionButton}
-                      >
-                        <Eye />
-                      </Button>
-                      <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={() => handleEdit(book.id)}
-                        className={styles.actionButton}
-                      >
-                        <Pencil />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleToggleVisibility(c.id, c.hidden)}
-                        className={styles.actionButton}
-                      >
-                        <Trash />
-                      </Button>
-                    </div>
-                  </td>
+              {contents.map((c, index) => {
+                const isEditing = editingContentId === c.id;
 
-                </tr>
-              ))}
+                return (
+                  <tr
+                    key={c.id}
+                    className={`${styles.bookRow} ${c.hidden ? styles.hiddenRow : ""}`}
+                  >
+                    <td>{index + 1}</td>
+
+                    {/* Chapter */}
+                    <td>
+                      {!isEditing ? (
+                        c.chapter
+                      ) : (
+                        <input
+                          type="number"
+                          className="form-control form-control-sm"
+                          value={editContentForm.chapter}
+                          onChange={(e) => onChangeContent('chapter', e.target.value)}
+                          placeholder="Chapter"
+                          min={0}
+                        />
+                      )}
+                    </td>
+
+                    {/* Title (+ chọn file khi edit) */}
+                    <td>
+                      {!isEditing ? (
+                        c.title
+                      ) : (
+                        <div className="d-flex flex-column gap-2">
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={editContentForm.title}
+                            onChange={(e) => onChangeContent('title', e.target.value)}
+                            placeholder="Title"
+                          />
+                          <div className="d-flex align-items-center gap-2">
+                            <input
+                              type="file"
+                              className="form-control form-control-sm"
+                              onChange={(e) => onChangeContent('file', e.target.files?.[0] ?? null)}
+                              accept="application/pdf"
+                            // tuỳ BE: nếu content là PDF/HTML, sửa accept cho phù hợp
+                            />
+                            {c.content && (
+                              <a
+                                href={`http://localhost:8080${c.content}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-muted small"
+                              >
+                                (Current file)
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className={styles.actionsCell}>
+                      <div className={styles.actionButtons}>
+                        {!isEditing ? (
+                          <>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => setViewContent(c)}
+                              className={styles.actionButton}
+                            >
+                              <Eye />
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => startEditContent(c)}
+                              className={styles.actionButton}
+                            >
+                              <Pencil />
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleToggleVisibility(c.id, c.hidden)}
+                              className={styles.actionButton}
+                            >
+                              <Trash />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => saveEditContent(c.id)}
+                              className={styles.actionButton}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={cancelEditContent}
+                              className={styles.actionButton}
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
