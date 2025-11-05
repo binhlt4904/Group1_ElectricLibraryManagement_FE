@@ -1,0 +1,102 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding-top: 56px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  width: min(96vw, 1024px);
+  height: min(92vh, 800px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80%;
+}
+
+.closeBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+  padding: 6px;
+  border-radius: 8px;
+}
+.closeBtn:hover {
+  background: #f2f2f2;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.viewerWrap {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+   min-height: 0;      
+  background: #f7f7f7;
+  padding-bottom: 64px;  
+}
+
+.controls {
+  padding: 10px;
+  border-top: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  position: sticky;   
+    min-height: 44px;
+}
+
+.pageInfo {
+  padding: 0 8px;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .modal {
+    width: 98vw;
+    height: 92vh;
+    border-radius: 10px;
+  }
+  .title {
+    max-width: 70%;
+  }
+}

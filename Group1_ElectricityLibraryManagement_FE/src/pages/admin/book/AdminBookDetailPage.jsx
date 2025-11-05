@@ -1,125 +1,294 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import axios from "axios";
+import DOMPurify from "dompurify";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "./AdminBookDetailPage.module.css";
+import { Button, Alert } from "react-bootstrap";
+import { Eye, Pencil, Trash } from "react-bootstrap-icons";
+import bookApi from "../../../api/book";
+import BookReaderModal from "../../../components/commons/books/BookReaderModal";
+
 
 const AdminBookDetailPage = () => {
   const { id } = useParams();
   const [book, setBook] = useState(null);
   const [contents, setContents] = useState([]);
-  const [newContent, setNewContent] = useState({ chapter: "", title: "", content: "" });
+  const [viewContent, setViewContent] = useState(null); // lưu object thay vì id
+  const [editingContentId, setEditingContentId] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+  const [editContentForm, setEditContentForm] = useState({
+    chapter: '',
+    title: '',
+    file: null, // file content mới (tuỳ chọn)
+  });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchBookData = async () => {
-      const [bookRes, contentRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/books/${id}`),
-        axios.get(`http://localhost:8080/api/books/${id}/contents`)
-      ]);
-      setBook(bookRes.data);
-      setContents(contentRes.data);
+    const fetchData = async () => {
+      try {
+        const bookRes = await bookApi.findBookAdminById(id);
+        const contentRes = await bookApi.findBookContentsById(id);
+        console.log(contentRes)
+        setBook(bookRes.data);
+        setContents(contentRes.data);
+      } catch (error) {
+        console.error("Error loading book detail:", error);
+      }
     };
-    fetchBookData();
+    fetchData();
   }, [id]);
 
-  const handleAddContent = async (e) => {
-    e.preventDefault();
-    const res = await axios.post(`http://localhost:8080/api/books/${id}/contents`, newContent);
-    setContents([...contents, res.data]);
-    setNewContent({ chapter: "", title: "", content: "" });
+  const handleNavigate = () => {
+    // Điều hướng đến trang chỉnh sửa sách
+    navigate(`/admin/books/add/${book.id}`);
+  }
+
+  const handleToggleVisibility = async (contentId, isHidden) => {
+    try {
+      await axios.put(`http://localhost:8080/api/book-contents/${contentId}/visibility`, {
+        hidden: !isHidden,
+      });
+      setContents((prev) =>
+        prev.map((c) => (c.id === contentId ? { ...c, hidden: !c.hidden } : c))
+      );
+    } catch (err) {
+      console.error("Failed to toggle visibility:", err);
+    }
+  };
+
+  const startEditContent = (content) => {
+    setEditingContentId(content.id);
+    setEditContentForm({
+      chapter: content.chapter ?? '',
+      title: content.title ?? '',
+      file: null,
+    });
+  };
+
+  const onChangeContent = (field, value) => {
+    setEditContentForm((p) => ({ ...p, [field]: value }));
+  };
+
+  const cancelEditContent = () => {
+    setEditingContentId(null);
+    setEditContentForm({ chapter: '', title: '', file: null });
+  };
+
+  const saveEditContent = async (contentId) => {
+    try {
+      // ✅ Gửi FormData để BE nhận được @ModelAttribute / multipart dễ nhất
+      const form = new FormData();
+      form.append('chapter', editContentForm.chapter ?? '');
+      form.append('title', editContentForm.title ?? '');
+      if (editContentForm.file) form.append('file', editContentForm.file); // tuỳ BE đặt tên field: file/content
+     
+
+      // TODO: đổi URL theo BE bạn (ví dụ PATCH/PUT)
+      const response = await bookApi.updateBookContent(contentId,form);
+      console.log(response.data)
+
+      if (response?.status >= 200 && response?.status < 300) {
+        showAlertMessage('Update book content successfully!');
+        
+      } else {
+        throw new Error('Upload failed');
+      }
+      // Cập nhật UI lạc quan
+      setContents(response.data);
+
+      cancelEditContent();
+    } catch (err) {
+      console.error('Update content failed:', err);
+      // bạn có thể show toast/alert ở đây
+    }
+  };
+
+   const showAlertMessage = (message) => {
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
   };
 
   if (!book) return <p>Loading...</p>;
 
+
   return (
     <div className={styles.bookDetailPage}>
-      {/* Header */}
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>{book.title}</h1>
-          <p className={styles.pageSubtitle}>{book.description}</p>
-        </div>
-      </div>
-
-      {/* Book Info */}
+      {/* ===== BOOK INFO ===== */}
       <div className={styles.bookInfoCard}>
-        <h3 className={styles.sectionTitle}>Book Information</h3>
-        <div className={styles.bookInfoGrid}>
-          <p><strong>Book Code:</strong> {book.bookCode}</p>
-          <p><strong>Publisher:</strong> {book.publisher?.name || "N/A"}</p>
-          <p><strong>Category:</strong> {book.category?.name || "N/A"}</p>
-          <p><strong>Published Date:</strong> {book.publishedDate || "N/A"}</p>
+        <div className={styles.bookInfoWrapper}>
+          <div className={styles.bookCoverContainer}>
+            <img
+              src={
+                book.image
+                  ? `http://localhost:8080${book.image}`
+                  : "https://via.placeholder.com/300x400?text=No+Cover"
+              }
+              alt={book.title}
+              className={styles.bookCoverLarge}
+            />
+          </div>
+          <div className={styles.bookDetailsRight}>
+            <h2 className={styles.pageTitle}>{book.title}</h2>
+            <p><strong>Author:</strong> {book.author || "N/A"}</p>
+            <p><strong>Publisher:</strong> {book.publisher || "N/A"}</p>
+            <p><strong>Category:</strong> {book.category || "N/A"}</p>
+            <p><strong>Published Date:</strong> {book.publishedDate}</p>
+          </div>
         </div>
       </div>
 
-      {/* Book Contents Table */}
+      {/* ===== CONTENTS TABLE ===== */}
       <div className={styles.contentsCard}>
-        <h3 className={styles.sectionTitle}>Book Contents</h3>
+        <div className={styles.sectionHeader}>
+          {showAlert && <Alert variant="success" className={styles.alert}>{alertMessage}</Alert>}
+          <h3 className={styles.sectionTitle}>Book Contents</h3>
+          <button className={styles.addButton} onClick={handleNavigate}>+ Add Chapter</button>
+        </div>
+
         <div className={styles.tableContainer}>
           <table className={styles.booksTable}>
             <thead>
               <tr>
+                <th>#</th>
                 <th>Chapter</th>
                 <th>Title</th>
-                <th>Content</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {contents.length > 0 ? (
-                contents.map((c) => (
-                  <tr key={c.id} className={styles.bookRow}>
-                    <td>{c.chapter}</td>
-                    <td>{c.title}</td>
-                    <td className={styles.contentCell}>{c.content}</td>
+              {contents.map((c, index) => {
+                const isEditing = editingContentId === c.id;
+
+                return (
+                  <tr
+                    key={c.id}
+                    className={`${styles.bookRow} ${c.hidden ? styles.hiddenRow : ""}`}
+                  >
+                    <td>{index + 1}</td>
+
+                    {/* Chapter */}
+                    <td>
+                      {!isEditing ? (
+                        c.chapter
+                      ) : (
+                        <input
+                          type="number"
+                          className="form-control form-control-sm"
+                          value={editContentForm.chapter}
+                          onChange={(e) => onChangeContent('chapter', e.target.value)}
+                          placeholder="Chapter"
+                          min={0}
+                        />
+                      )}
+                    </td>
+
+                    {/* Title (+ chọn file khi edit) */}
+                    <td>
+                      {!isEditing ? (
+                        c.title
+                      ) : (
+                        <div className="d-flex flex-column gap-2">
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={editContentForm.title}
+                            onChange={(e) => onChangeContent('title', e.target.value)}
+                            placeholder="Title"
+                          />
+                          <div className="d-flex align-items-center gap-2">
+                            <input
+                              type="file"
+                              className="form-control form-control-sm"
+                              onChange={(e) => onChangeContent('file', e.target.files?.[0] ?? null)}
+                              accept="application/pdf"
+                            // tuỳ BE: nếu content là PDF/HTML, sửa accept cho phù hợp
+                            />
+                            {c.content && (
+                              <a
+                                href={`http://localhost:8080${c.content}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-muted small"
+                              >
+                                (Current file)
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className={styles.actionsCell}>
+                      <div className={styles.actionButtons}>
+                        {!isEditing ? (
+                          <>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => setViewContent(c)}
+                              className={styles.actionButton}
+                            >
+                              <Eye />
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => startEditContent(c)}
+                              className={styles.actionButton}
+                            >
+                              <Pencil />
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleToggleVisibility(c.id, c.hidden)}
+                              className={styles.actionButton}
+                            >
+                              <Trash />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => saveEditContent(c.id)}
+                              className={styles.actionButton}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={cancelEditContent}
+                              className={styles.actionButton}
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" style={{ textAlign: "center", color: "gray" }}>
-                    No contents yet.
-                  </td>
-                </tr>
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Add New Chapter */}
-      <div className={styles.addContentCard}>
-        <h3 className={styles.sectionTitle}>Add New Chapter</h3>
-        <form onSubmit={handleAddContent} className={styles.addForm}>
-          <div className={styles.formGroup}>
-            <label>Chapter</label>
-            <input
-              type="number"
-              value={newContent.chapter}
-              onChange={(e) => setNewContent({ ...newContent, chapter: e.target.value })}
-              required
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Title</label>
-            <input
-              type="text"
-              value={newContent.title}
-              onChange={(e) => setNewContent({ ...newContent, title: e.target.value })}
-              required
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Content</label>
-            <textarea
-              rows="4"
-              value={newContent.content}
-              onChange={(e) => setNewContent({ ...newContent, content: e.target.value })}
-              required
-            ></textarea>
-          </div>
-          <button type="submit" className={styles.addButton}>
-            Add Chapter
-          </button>
-        </form>
-      </div>
+      <BookReaderModal
+        show={!!viewContent}
+        onClose={() => setViewContent(null)}
+        title={viewContent ? `Chapter ${viewContent.chapter} - ${viewContent.title}` : ""}
+        fileUrl={viewContent ? `http://localhost:8080${viewContent.content}` : ""}
+      />
+
+
+
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import './App.css'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { UserProvider } from './components/contexts/UserProvider';
 import HomePage from './pages/public/HomePage';
 import BookListPage from './pages/public/BookListPage';
 import BookDetailPage from './pages/public/BookDetailPage';
@@ -12,6 +13,7 @@ import BorrowHistoryPage from './pages/user/BorrowHistoryPage';
 import LibraryCardPage from './pages/user/LibraryCardPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import WalletPage from './pages/user/WalletPage';
+import WishlistPage from "./pages/user/WishlistPage";
 import BookReaderPage from './pages/user/BookReaderPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
@@ -32,76 +34,83 @@ import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 import AddBookPage from './pages/admin/book/AddBookPage';
 import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
+import ImportExcel from "./pages/admin/ImportExcel";
 import CategoryManagementPage from './pages/admin/CategoryManagementPage';
+import TestPDF from './pages/admin/book/TestPDF';
+import AddBookContentPage from './pages/admin/book/AddBookContentPage';
+import DepositPage from './pages/user/DepositPage';
+import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 const AppContent = () => {
-  const location = useLocation();
-  const isAdminPage = location.pathname.startsWith('/admin');
+    const location = useLocation();
+    const isAdminPage = location.pathname.startsWith('/admin');
 
 
 
-  return (
-    <div className="app-container">
-      {!isAdminPage && <Header />}
-      <main className="main-content">
-        <Routes>
-          {/* Public Pages */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/books" element={<BookListPage />} />
-          <Route path="/books/:id" element={<BookDetailPage />} />
-          <Route path="/events" element={<EventsListPage />} />
-          <Route path="/events/:id" element={<EventDetailPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+    return (
+        <UserProvider>
+            <div className="app-container">
+                {!isAdminPage && <Header />}
+                <main className="main-content">
 
-          {/* User Pages */}
-          <Route path="/user" element={<UserLayout />}>
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="borrow-history" element={<BorrowHistoryPage />} />
-            <Route path="library-card" element={<LibraryCardPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="wallet" element={<WalletPage />} />
-          </Route>
+                    <Routes>
+                        {/* Public Pages */}
+                        <Route path="/abc" element={<ImportExcel />} />
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/books" element={<BookListPage />} />
+                        <Route path="/books/:id" element={<BookDetailPage />} />
+                        <Route path="/events" element={<EventsListPage />} />
+                        <Route path="/events/:id" element={<EventDetailPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/test" element={<TestPDF />} />
 
-          {/* Individual User Pages (outside layout) */}
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/borrow-history" element={<BorrowHistoryPage />} />
-          <Route path="/library-card" element={<LibraryCardPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/wallet" element={<WalletPage />} />
-          <Route path="/book-reader/:bookId/:chapterId" element={<BookReaderPage />} />
+           
 
-          {/* Admin Pages */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="categories" element={<CategoryManagementPage />} />
-            <Route path="books" element={<BooksManagementPage />} />
-            <Route path="books/:id" element={<AdminBookDetailPage />} />
-            <Route path="books/add" element={<AddBookPage />} />
-            <Route path="authors" element={<AuthorsManagementPage />} />
-            <Route path="publishers" element={<PublishersManagementPage />} />
-            <Route path="readers" element={<ReadersManagementPage />} />
-            <Route path="borrowals" element={<BorrowalsManagementPage />} />
-            <Route path="events" element={<EventManagementPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="user-reports" element={<ReportManagementPage />} />
-            <Route path="documents" element={<DocumentManagementPage />} />
-            <Route path="system-users" element={<StaffManagementPage />} />
-            {/* Default redirect to dashboard */}
-            <Route index element={<DashboardPage />} />
-          </Route>
-        </Routes>
-      </main>
-      {!isAdminPage && <Footer />}
-    </div>
-  );
+                        {/* Individual User Pages (outside layout) */}
+                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/borrow-history" element={<BorrowHistoryPage />} />
+                        <Route path="/library-card" element={<LibraryCardPage />} />
+                        <Route path="/notifications" element={<NotificationsPage />} />
+                        <Route path="/wallet" element={<WalletPage />} />
+                        <Route path="/reader-report-history" element={<ReaderReportManagementPage />} />                       
+                        <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
+                        <Route path="/wishlist" element={<WishlistPage />} />
+
+                        {/* Admin Pages */}
+                        <Route path="/admin" element={<AdminLayout />}>
+                            <Route path="dashboard" element={<DashboardPage />} />
+                            <Route path="categories" element={<CategoryManagementPage />} />
+                            <Route path="books" element={<BooksManagementPage />} />
+                            <Route path="books/:id" element={<AdminBookDetailPage />} />
+                            <Route path="books/add" element={<AddBookPage />} />
+                            <Route path="authors" element={<AuthorsManagementPage />} />
+                            <Route path="publishers" element={<PublishersManagementPage />} />
+                            <Route path="readers" element={<ReadersManagementPage />} />
+                            <Route path="borrowals" element={<BorrowalsManagementPage />} />
+                            <Route path="events" element={<EventManagementPage />} />
+                            <Route path="reports" element={<ReportsPage />} />
+                            <Route path="user-reports" element={<ReportManagementPage />} />
+                            <Route path="documents" element={<DocumentManagementPage />} />
+                            <Route path="system-users" element={<StaffManagementPage />} />
+                            <Route path="books/add/:id" element={<AddBookContentPage />} />
+                            {/* Default redirect to dashboard */}
+                            <Route index element={<DashboardPage />} />
+                        </Route>
+                    </Routes>
+
+                </main>
+                {!isAdminPage && <Footer />}
+            </div>
+        </UserProvider>
+    );
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
-  )
+    return (
+        <BrowserRouter>
+            <AppContent />
+        </BrowserRouter>
+    )
 }
 
 export default App

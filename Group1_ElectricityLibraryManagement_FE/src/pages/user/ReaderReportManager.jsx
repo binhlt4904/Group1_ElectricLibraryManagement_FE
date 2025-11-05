@@ -25,11 +25,11 @@ import {
   Clock,
   Flag
 } from 'react-bootstrap-icons';
-import styles from './ReportManagementPage.module.css';
+import styles from '../admin/ReportManagementPage.module.css';
 import { useContext } from 'react';
 import UserContext from '../../components/contexts/UserContext';
 import reportApi from '../../api/admin/reportApi';
-const ReportManagementPage = () => {
+const ReaderReportManagementPage = () => {
 
   const { user } = useContext(UserContext)
   const [reports, setReports] = useState([]);
@@ -67,7 +67,7 @@ const ReportManagementPage = () => {
       };
       console.log("Call api fetch borrowals: ", params);
       console.log("User in Context", user)
-      const response = await reportApi.getReportByCriteria(params);
+      const response = await reportApi.getReportBySpecReaderAndCriteria(params);
       setReports(response.data.content || []);
       console.log("Content of borrowals: ", response.data.content);
       setTotalPages(response.data.totalPages || 1);
@@ -84,7 +84,7 @@ const ReportManagementPage = () => {
         fromDate: fromDate || undefined,
         toDate: toDate || undefined,
       }
-      const response = await reportApi.getReportsByStatistic(params);
+      const response = await reportApi.getReportsBySpecReaderAndStatistic(params);
       setReportStatistics(response.data || []);
       console.log("Content of statistics: ", response.data);
     } catch (error) {
@@ -104,41 +104,6 @@ const ReportManagementPage = () => {
     fetchStatistics();
   }, [fromDate, toDate]);
 
-  useEffect(() => {
-    // Chỉ kết nối khi user là staff
-    if (!user || user.role !== '[ROLE_STAFF]') return;
-
-    const eventSource = new EventSource(`http://localhost:8080/api/reports/stream`, {
-      withCredentials: true
-    });
-
-    eventSource.addEventListener("new-report", (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("📡 New report received:", data);
-
-        // Gợi ý: Hiển thị thông báo nhẹ
-        const msg = `New report from ${data.reporterName}: ${data.description}`;
-        alert(msg); // bạn có thể thay bằng Toast hoặc Notification
-
-        // Gọi lại API để load danh sách mới
-        fetchReports();
-      } catch (e) {
-        console.error("Error parsing SSE event:", e);
-      }
-    });
-
-    eventSource.onerror = (err) => {
-      console.error("SSE connection error:", err);
-      eventSource.close();
-    };
-
-    // cleanup khi component unmount
-    return () => {
-      console.log("Closing SSE connection");
-      eventSource.close();
-    };
-  }, [user]);
 
   const handleProcessClick = (report) => {
     setReportToProcess(report);
@@ -158,7 +123,7 @@ const ReportManagementPage = () => {
     } catch (error) {
       console.error('Failed to resolve report:', error);
     }
-
+    
   };
 
   const handleProcessConfirm = async (id) => {
@@ -169,7 +134,7 @@ const ReportManagementPage = () => {
     } catch (error) {
       console.error('Failed to resolve report:', error);
     }
-
+    
   };
 
   const getStatusVariant = (status) => {
@@ -207,7 +172,7 @@ const ReportManagementPage = () => {
   };
 
   return (
-    <Container fluid className={styles.reportManagementPage}>
+    <Container fluid className={`${styles.reportManagementPage}`}>
       {/* Page Header */}
       <Row className="mb-4">
         <Col>
@@ -215,10 +180,10 @@ const ReportManagementPage = () => {
             <div>
               <h1 className={styles.pageTitle}>
                 <ExclamationTriangle className="me-3" />
-                Report Management
+                List of Reports
               </h1>
               <p className={styles.pageSubtitle}>
-                View and manage user-submitted reports and issues
+                View and manage reports and issues
               </p>
             </div>
           </div>
@@ -227,11 +192,11 @@ const ReportManagementPage = () => {
 
       {/* Statistics Cards */}
       <Row className="mb-4">
-        <Col md={4} className="mb-3">
+        <Col md={3} className="mb-3">
           <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
-                <div className={styles.statIcon} style={{ backgroundColor: 'var(--primary-blue)' }}>
+                <div className={styles.statIcon} style={{ backgroundColor: 'var(--alert-red)' }}>
                   <ExclamationTriangle />
                 </div>
                 <div className={styles.statInfo}>
@@ -244,24 +209,24 @@ const ReportManagementPage = () => {
             </Card.Body>
           </Card>
         </Col>
-        {/* <Col md={3} className="mb-3">
+        <Col md={3} className="mb-3">
           <Card className={styles.statCard}>
             <Card.Body>
               <div className={styles.statContent}>
-                <div className={styles.statIcon} style={{ backgroundColor: 'var(--alert-red)' }}>
+                <div className={styles.statIcon} style={{ backgroundColor: 'var(--primary-blue)' }}>
                   <Flag />
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockReports.filter(r => r.priority === 'urgent').length}
+                    {reportStatistics.filter(r => r.status === 'PROCESSING').length}
                   </div>
-                  <div className={styles.statLabel}>Urgent Priority</div>
+                  <div className={styles.statLabel}>Processing Reports</div>
                 </div>
               </div>
             </Card.Body>
           </Card>
-        </Col> */}
-        <Col md={4} className="mb-3 ">
+        </Col>
+        <Col md={3} className="mb-3 ">
           <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
@@ -272,13 +237,13 @@ const ReportManagementPage = () => {
                   <div className={styles.statValue}>
                     {reportStatistics.filter(r => r.status === 'RESOLVED').length}
                   </div>
-                  <div className={styles.statLabel}>Resolved Today</div>
+                  <div className={styles.statLabel}>Resolved Reports</div>
                 </div>
               </div>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4} className="mb-3">
+        <Col md={3} className="mb-3">
           <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
@@ -378,9 +343,7 @@ const ReportManagementPage = () => {
                       <th>Date</th>
                       <th>Status</th>
                       <th>Assigned To</th>
-                      {user && user.role === '[ROLE_STAFF]' ?
-                        (<th>Actions</th>) : null}
-
+                      
                     </tr>
                   </thead>
                   <tbody>
@@ -437,43 +400,7 @@ const ReportManagementPage = () => {
                           ) : (
                             <span className={styles.unassigned}>Unassigned</span>
                           )}
-                        </td>
-                        {user && user.role === '[ROLE_STAFF]' ? (
-                          <td className={styles.actionsCell}>
-                            <div className={styles.actionButtons}>
-                              {/* <Button
-                                variant="outline-primary"
-                                size="sm"
-                                className={styles.actionButton}
-                                title="View Details"
-                              >
-                                <Eye />
-                              </Button> */}
-                              {report.status === 'PROCESSING' && (
-                                <Button
-                                  variant="outline-secondary"
-                                  size="sm"
-                                  className={styles.actionButton}
-                                  title="Update Report"
-                                  onClick={() => handleResolveClick(report)}
-                                >
-                                  <PencilSquare />
-                                </Button>
-                              )}
-                              {report.status === 'PENDING' && (
-                                <Button
-                                  variant="outline-success"
-                                  size="sm"
-                                  className={styles.actionButton}
-                                  title="Mark as processing"
-                                  onClick={() => handleProcessClick(report)}
-                                >
-                                  <CheckCircle />
-                                </Button>
-                              )}
-                            </div>
-                          </td>) : null
-                        }
+                        </td>                   
                       </tr>
                     ))}
                   </tbody>
@@ -588,4 +515,4 @@ const ReportManagementPage = () => {
   );
 };
 
-export default ReportManagementPage;
+export default ReaderReportManagementPage;

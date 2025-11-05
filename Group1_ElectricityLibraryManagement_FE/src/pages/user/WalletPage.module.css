@@ -302,7 +302,7 @@
 }
 
 .amountCell {
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
 }
 
@@ -427,6 +427,12 @@
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.resultsInfo {
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 /* Payment Modal */

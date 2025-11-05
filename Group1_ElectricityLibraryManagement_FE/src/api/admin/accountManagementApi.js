@@ -43,6 +43,13 @@ const accountManagementApi = {
   getStaffDetail: async (accountId) => {
     return await axiosClient.get(`/api/v1/admin/accounts/staff/${accountId}`);
   },
+  importReaders: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return axiosClient.post('/api/v1/accounts/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 
 };
 
