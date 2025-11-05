@@ -57,7 +57,7 @@ const AdminLayout = () => {
       path: '/admin/readers',
       icon: People,
       label: 'Readers Management',
-      badge: '1,234'
+      badge: null
     },
     {
       path: '/admin/system-users',

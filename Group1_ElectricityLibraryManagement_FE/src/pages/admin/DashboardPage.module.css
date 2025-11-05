@@ -175,63 +175,6 @@
   font-weight: var(--weight-medium);
 }
 
-/* System Health */
-.healthCard {
-  height: 400px;
-}
-
-.healthBody {
-  padding: 1.5rem;
-}
-
-.healthItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.healthItem:last-child {
-  border-bottom: none;
-}
-
-.healthLabel {
-  font-weight: var(--weight-medium);
-  color: var(--dark-charcoal);
-}
-
-.healthBadge {
-  font-size: 0.75rem;
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.healthValue {
-  font-size: 0.9rem;
-  color: var(--medium-gray);
-}
-
-.progressContainer {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  max-width: 120px;
-}
-
-.healthProgress {
-  flex: 1;
-  height: 8px;
-}
-
-.progressLabel {
-  font-size: 0.8rem;
-  font-weight: var(--weight-bold);
-  color: var(--dark-charcoal);
-  min-width: 30px;
-}
 
 /* Activities */
 .activitiesBody {
@@ -303,7 +246,7 @@
 
 /* Popular Books */
 .popularCard {
-  height: 400px;
+  height: 500px;
 }
 
 .popularBody {
