@@ -64,12 +64,13 @@
 
 .statInfo {
   flex: 1;
+  min-width: 1
 }
 
 .statValue {
   font-family: var(--font-heading);
   font-weight: var(--weight-bold);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   color: var(--dark-charcoal);
   margin-bottom: 0.25rem;
   line-height: 1;

@@ -335,7 +335,7 @@ const DashboardPage = () => {
   const formatTime = (ts) =>
     new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   const monthLabel = (m) =>
-    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.max(0, Math.min(11, (m ?? 1) - 1))];
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Math.max(0, Math.min(11, (m ?? 1) - 1))];
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
@@ -365,28 +365,28 @@ const DashboardPage = () => {
 
         const popularBooks = Array.isArray(popularRes?.data)
           ? popularRes.data.map((b, i) => ({
-              id: b.bookId ?? i,
-              title: b.bookName ?? 'Unknown title',
-              author: b.authorName ?? 'Unknown author',
-              borrowCount: toNumber(b.borrowCount, 0),
-            }))
+            id: b.bookId ?? i,
+            title: b.bookName ?? 'Unknown title',
+            author: b.authorName ?? 'Unknown author',
+            borrowCount: toNumber(b.borrowCount, 0),
+          }))
           : [];
 
         const recentActivities = Array.isArray(activitiesRes?.data)
           ? activitiesRes.data.map((a, i) => ({
-              id: a.id ?? i,
-              title: a.title ?? '',
-              description: a.description ?? '',
-              user: a.fromUser ?? 'System',
-              timestamp: a.createdDate ?? new Date().toISOString(),
-            }))
+            id: a.id ?? i,
+            title: a.title ?? '',
+            description: a.description ?? '',
+            user: a.fromUser ?? 'System',
+            timestamp: a.createdDate ?? new Date().toISOString(),
+          }))
           : [];
 
         const trends = Array.isArray(trendsRes?.data)
           ? trendsRes.data.map(t => ({
-              month: toNumber(t.month, 0),         // 1..12
-              borrowCount: toNumber(t.borrowCount, 0),
-            }))
+            month: toNumber(t.month, 0),         // 1..12
+            borrowCount: toNumber(t.borrowCount, 0),
+          }))
           : [];
 
         setDashboardData({ statistics: stats, recentActivities, popularBooks, trends });
@@ -418,7 +418,7 @@ const DashboardPage = () => {
 
       // Tạo blob & tải
       const mime = res?.headers?.['content-type'] ||
-                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       const blob = new Blob([res.data], { type: mime });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -505,34 +505,15 @@ const DashboardPage = () => {
         </Col>
       </Row>
 
-      {/* Row 1: Total Revenue */}
-      <Row className="mb-4">
-        <Col lg={7} className="mb-3">
-          <StatCard
-            title="Total Revenue"
-            value={statistics.totalRevenue}
-            icon={CashCoin}
-            color="#ffc107"
-            suffix=" đ"
-          />
-        </Col>
+      {/* Row 2: 4 stat cards */}
+      <Row xs={1} sm={2} md={3} lg={5} className="g-3 mb-4">
+        <Col><StatCard title="Total Books" value={statistics.totalBooks} icon={BookFill} color="var(--primary-blue)"/></Col>
+        <Col><StatCard title="Active Readers" value={statistics.activeReaders} icon={People} color="var(--accent-green)"/></Col>
+        <Col><StatCard title="Current Borrowals" value={statistics.currentBorrowals} icon={BookFill} color="#6f42c1"/></Col>
+        <Col><StatCard title="Overdue Items" value={statistics.overdueItems} icon={ExclamationTriangleFill} color="var(--alert-red)"/></Col>
+        <Col><StatCard title="Total Revenue" value={statistics.totalRevenue} icon={CashCoin} color="#ffc107" suffix="$" /></Col>
       </Row>
 
-      {/* Row 2: 4 stat cards */}
-      <Row className="mb-4">
-        <Col lg={3} md={4} sm={6} className="mb-3">
-          <StatCard title="Total Books" value={statistics.totalBooks} icon={BookFill} color="var(--primary-blue)" />
-        </Col>
-        <Col lg={3} md={4} sm={6} className="mb-3">
-          <StatCard title="Active Readers" value={statistics.activeReaders} icon={People} color="var(--accent-green)" />
-        </Col>
-        <Col lg={3} md={4} sm={6} className="mb-3">
-          <StatCard title="Current Borrowals" value={statistics.currentBorrowals} icon={ClipboardData} color="#6f42c1" />
-        </Col>
-        <Col lg={3} md={4} sm={6} className="mb-3">
-          <StatCard title="Overdue Items" value={statistics.overdueItems} icon={ExclamationTriangleFill} color="var(--alert-red)" />
-        </Col>
-      </Row>
 
       <Row>
         {/* Trends */}
