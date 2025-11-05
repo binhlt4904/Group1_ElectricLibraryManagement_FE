@@ -3,19 +3,19 @@ import UserContext from "./UserContext";
 import { jwtDecode } from "jwt-decode";
 
 export const UserProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+   const [user, setUser] = useState(null);
+   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const accessToken = localStorage.getItem("accessToken");
-        if (accessToken) {
-            try {
-                const decodedToken = jwtDecode(accessToken);
+   useEffect(() => {
+       const accessToken = localStorage.getItem("accessToken");
+       if (accessToken) {
+           try {
+               const decodedToken = jwtDecode(accessToken);
 
-                if (decodedToken.exp * 1000 < Date.now()) {
-                    console.log("Token has expired");
-                    localStorage.removeItem("accessToken");
-                    localStorage.removeItem("refreshToken");
+               if (decodedToken.exp * 1000 < Date.now()) {
+                   console.log("Token has expired");
+                   localStorage.removeItem("accessToken");
+                   localStorage.removeItem("refreshToken");
                     return;
                 }
 

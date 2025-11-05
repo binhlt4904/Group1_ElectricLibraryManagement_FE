@@ -70,14 +70,7 @@ const BookHeader = ({book,handleBorrow, handleWishlistToggle,isInWishlist,handle
                   {isInWishlist ? <HeartFill className="me-2" /> : <Heart className="me-2" />}
                   {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
                 </Button>
-                <Button variant="outline-secondary" size="lg" className="me-3">
-                  <BookmarkPlus className="me-2" />
-                  Save
-                </Button>
-                <Button variant="outline-secondary" size="lg" className="me-3">
-                  <Share className="me-2" />
-                  Share
-                </Button>
+                
                 <Button
                   variant="outline-warning"
                   size="lg"

@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Table, 
-  Button, 
-  Form, 
-  InputGroup, 
-  Badge, 
+import React, { useEffect, useState } from 'react';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Button,
+  Form,
+  InputGroup,
+  Badge,
   Pagination,
   Modal,
   Alert
 } from 'react-bootstrap';
-import { 
-  ClipboardData, 
-  Search, 
-  Calendar, 
-  Eye, 
-  PencilSquare, 
+import {
+  ClipboardData,
+  Search,
+  Calendar,
+  Eye,
+  PencilSquare,
   CheckCircle,
   XCircle,
   Clock,
@@ -27,219 +27,92 @@ import {
   ExclamationTriangle
 } from 'react-bootstrap-icons';
 import styles from './BorrowalsManagementPage.module.css';
-
+import borrowalApi from '../../api/admin/borrowalApi';
+import { useContext } from 'react';
+import UserContext from '../../components/contexts/UserContext';
 const BorrowalsManagementPage = () => {
+  const { user } = useContext(UserContext)
+  const [borrowals, setBorrowals] = useState([]);
+  const [borrowalStatistics, setBorrowalStatistics] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedDateRange, setSelectedDateRange] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [borrowalToReturn, setBorrowalToReturn] = useState(null);
-  const borrowalsPerPage = 10;
+  const pageSize = 4;
 
-  // Mock borrowals data
-  const mockBorrowals = [
-    {
-      id: 1,
-      borrowalCode: "BRW-2024-001",
-      reader: {
-        id: 1,
-        name: "John Smith",
-        email: "john.smith@email.com",
-        membershipType: "Premium"
-      },
-      book: {
-        id: 1,
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        isbn: "978-0-7432-7356-5",
-        coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=100&h=150&fit=crop"
-      },
-      borrowDate: "2024-01-10",
-      dueDate: "2024-01-24",
-      returnDate: null,
-      status: "borrowed",
-      renewalCount: 0,
-      maxRenewals: 2,
-      fineAmount: 0,
-      notes: ""
-    },
-    {
-      id: 2,
-      borrowalCode: "BRW-2024-002",
-      reader: {
-        id: 2,
-        name: "Sarah Johnson",
-        email: "sarah.johnson@email.com",
-        membershipType: "Standard"
-      },
-      book: {
-        id: 2,
-        title: "To Kill a Mockingbird",
-        author: "Harper Lee",
-        isbn: "978-0-06-112008-4",
-        coverImage: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=100&h=150&fit=crop"
-      },
-      borrowDate: "2024-01-05",
-      dueDate: "2024-01-19",
-      returnDate: null,
-      status: "overdue",
-      renewalCount: 1,
-      maxRenewals: 2,
-      fineAmount: 5.50,
-      notes: "Reader contacted about overdue book"
-    },
-    {
-      id: 3,
-      borrowalCode: "BRW-2024-003",
-      reader: {
-        id: 3,
-        name: "Michael Brown",
-        email: "michael.brown@email.com",
-        membershipType: "Student"
-      },
-      book: {
-        id: 3,
-        title: "1984",
-        author: "George Orwell",
-        isbn: "978-0-452-28423-4",
-        coverImage: "https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=100&h=150&fit=crop"
-      },
-      borrowDate: "2024-01-08",
-      dueDate: "2024-01-22",
-      returnDate: "2024-01-20",
-      status: "returned",
-      renewalCount: 0,
-      maxRenewals: 2,
-      fineAmount: 0,
-      notes: "Returned in excellent condition"
-    },
-    {
-      id: 4,
-      borrowalCode: "BRW-2024-004",
-      reader: {
-        id: 4,
-        name: "Emily Davis",
-        email: "emily.davis@email.com",
-        membershipType: "Premium"
-      },
-      book: {
-        id: 4,
-        title: "Pride and Prejudice",
-        author: "Jane Austen",
-        isbn: "978-0-14-143951-8",
-        coverImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=100&h=150&fit=crop"
-      },
-      borrowDate: "2024-01-12",
-      dueDate: "2024-01-26",
-      returnDate: null,
-      status: "borrowed",
-      renewalCount: 1,
-      maxRenewals: 3,
-      fineAmount: 0,
-      notes: ""
-    },
-    {
-      id: 5,
-      borrowalCode: "BRW-2024-005",
-      reader: {
-        id: 5,
-        name: "David Wilson",
-        email: "david.wilson@email.com",
-        membershipType: "Standard"
-      },
-      book: {
-        id: 5,
-        title: "The Catcher in the Rye",
-        author: "J.D. Salinger",
-        isbn: "978-0-316-76948-0",
-        coverImage: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=100&h=150&fit=crop"
-      },
-      borrowDate: "2023-12-28",
-      dueDate: "2024-01-11",
-      returnDate: null,
-      status: "overdue",
-      renewalCount: 2,
-      maxRenewals: 2,
-      fineAmount: 12.75,
-      notes: "Multiple renewal attempts, reader unresponsive"
-    },
-    {
-      id: 6,
-      borrowalCode: "BRW-2024-006",
-      reader: {
-        id: 6,
-        name: "Lisa Anderson",
-        email: "lisa.anderson@email.com",
-        membershipType: "Premium"
-      },
-      book: {
-        id: 6,
-        title: "Harry Potter and the Sorcerer's Stone",
-        author: "J.K. Rowling",
-        isbn: "978-0-439-70818-8",
-        coverImage: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=100&h=150&fit=crop"
-      },
-      borrowDate: "2024-01-15",
-      dueDate: "2024-01-29",
-      returnDate: null,
-      status: "borrowed",
-      renewalCount: 0,
-      maxRenewals: 3,
-      fineAmount: 0,
-      notes: ""
+  // fetch borrowals from API
+  const fetchBorrowals = async () => {
+    try {
+      const params = {
+        search: searchTerm || '',
+        status: selectedStatus || '',
+        fromDate: fromDate || undefined,
+        toDate: toDate || undefined,
+        page: currentPage - 1,
+        size: pageSize
+      };
+      console.log("Call api fetch borrowals: ", params);
+      console.log("User in Context", user)
+      const response = await borrowalApi.getBorrowalByCriteria(params);
+      setBorrowals(response.data.content || []);
+      console.log("Content of borrowals: ", response.data.content);
+      setTotalPages(response.data.totalPages || 1);
+    } catch (error) {
+      console.error('Failed to fetch borrow records:', error);
+      setBorrowals([]);
+      setTotalPages(1);
     }
-  ];
+  };
 
-  const statuses = ['all', 'borrowed', 'overdue', 'returned'];
-  const dateRanges = ['all', 'today', 'this-week', 'this-month', 'last-month'];
-
-  // Filter borrowals based on search and filters
-  const filteredBorrowals = mockBorrowals.filter(borrowal => {
-    const matchesSearch = borrowal.borrowalCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         borrowal.reader.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         borrowal.book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         borrowal.book.author.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || borrowal.status === selectedStatus;
-    
-    // Simple date range filtering (in real app, this would be more sophisticated)
-    let matchesDateRange = true;
-    if (selectedDateRange !== 'all') {
-      const borrowDate = new Date(borrowal.borrowDate);
-      const today = new Date();
-      
-      switch (selectedDateRange) {
-        case 'today':
-          matchesDateRange = borrowDate.toDateString() === today.toDateString();
-          break;
-        case 'this-week':
-          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          matchesDateRange = borrowDate >= weekAgo;
-          break;
-        case 'this-month':
-          matchesDateRange = borrowDate.getMonth() === today.getMonth() && 
-                            borrowDate.getFullYear() === today.getFullYear();
-          break;
-        case 'last-month':
-          const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-          const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          matchesDateRange = borrowDate >= lastMonth && borrowDate < thisMonth;
-          break;
-        default:
-          matchesDateRange = true;
-      }
+  const fetchStatistics = async () => {
+    try {
+        const params = {
+          fromDate: fromDate || undefined,
+          toDate: toDate || undefined,
+        }
+        const response = await borrowalApi.getBorrowalStatistic(params);
+        setBorrowalStatistics(response.data || []);
+        console.log("Content of statistics: ", response.data);
+    } catch (error) {
+      console.error('Failed to fetch borrow records in statics:', error);
     }
-    
-    return matchesSearch && matchesStatus && matchesDateRange;
-  });
+  }
 
-  // Pagination
-  const indexOfLastBorrowal = currentPage * borrowalsPerPage;
-  const indexOfFirstBorrowal = indexOfLastBorrowal - borrowalsPerPage;
-  const currentBorrowals = filteredBorrowals.slice(indexOfFirstBorrowal, indexOfLastBorrowal);
-  const totalPages = Math.ceil(filteredBorrowals.length / borrowalsPerPage);
+  useEffect(() => {  
+    fetchBorrowals();
+  }, [searchTerm, selectedStatus, fromDate, toDate, currentPage]);
 
-  const handleReturnClick = (borrowal) => {
+  useEffect(() => {
+      setCurrentPage(1);
+    }, [searchTerm, selectedStatus, fromDate, toDate]); // TODO: NOTICE BONUS
+
+  useEffect(() => {  
+    fetchStatistics();
+  }, [fromDate, toDate]);
+
+  const statuses = ['', 'Borrowed', 'Overdue', 'Returned'];
+  const formatDate = (dateString) => {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  };
+
+  const getStatusVariant = (status) => {
+    switch (status) {
+      case 'Borrowed': return 'primary';
+      case 'Overdue': return 'danger';
+      case 'Returned': return 'success';
+      default: return 'secondary';
+    }
+  };
+
+  const handleReturnClick = async (borrowal) => {
+
     setBorrowalToReturn(borrowal);
     setShowReturnModal(true);
   };
@@ -251,39 +124,6 @@ const BorrowalsManagementPage = () => {
     setBorrowalToReturn(null);
   };
 
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case 'borrowed': return 'primary';
-      case 'overdue': return 'danger';
-      case 'returned': return 'success';
-      default: return 'secondary';
-    }
-  };
-
-  const getMembershipColor = (type) => {
-    switch (type) {
-      case 'Premium': return 'warning';
-      case 'Standard': return 'info';
-      case 'Student': return 'success';
-      default: return 'secondary';
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getDaysOverdue = (dueDate) => {
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = today - due;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
-  };
 
   return (
     <Container fluid className={styles.borrowalsManagementPage}>
@@ -307,7 +147,7 @@ const BorrowalsManagementPage = () => {
       {/* Statistics Cards */}
       <Row className="mb-4">
         <Col md={3} className="mb-3">
-          <Card className={styles.statCard}>
+          <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
                 <div className={styles.statIcon} style={{ backgroundColor: 'var(--primary-blue)' }}>
@@ -315,7 +155,7 @@ const BorrowalsManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockBorrowals.filter(b => b.status === 'borrowed').length}
+                    {borrowalStatistics.filter(b => b.status === 'Borrowed').length}
                   </div>
                   <div className={styles.statLabel}>Active Borrowals</div>
                 </div>
@@ -324,7 +164,7 @@ const BorrowalsManagementPage = () => {
           </Card>
         </Col>
         <Col md={3} className="mb-3">
-          <Card className={styles.statCard}>
+          <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
                 <div className={styles.statIcon} style={{ backgroundColor: 'var(--alert-red)' }}>
@@ -332,7 +172,7 @@ const BorrowalsManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockBorrowals.filter(b => b.status === 'overdue').length}
+                    {borrowalStatistics.filter(b => b.status === 'Overdue').length}
                   </div>
                   <div className={styles.statLabel}>Overdue Items</div>
                 </div>
@@ -341,7 +181,7 @@ const BorrowalsManagementPage = () => {
           </Card>
         </Col>
         <Col md={3} className="mb-3">
-          <Card className={styles.statCard}>
+          <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
                 <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)' }}>
@@ -349,16 +189,16 @@ const BorrowalsManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {mockBorrowals.filter(b => b.status === 'returned').length}
+                    {borrowalStatistics.filter(b => b.status === 'Returned').length}
                   </div>
-                  <div className={styles.statLabel}>Returned Today</div>
+                  <div className={styles.statLabel}>Returned Items</div>
                 </div>
               </div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3} className="mb-3">
-          <Card className={styles.statCard}>
+          <Card className={`${styles.statCard} h-100`}>
             <Card.Body>
               <div className={styles.statContent}>
                 <div className={styles.statIcon} style={{ backgroundColor: 'var(--medium-gray)' }}>
@@ -366,7 +206,7 @@ const BorrowalsManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    ${mockBorrowals.reduce((sum, b) => sum + b.fineAmount, 0).toFixed(2)}
+                    ${borrowalStatistics.reduce((sum, b) => sum + b.fine, 0).toFixed(2)}
                   </div>
                   <div className={styles.statLabel}>Total Fines</div>
                 </div>
@@ -387,7 +227,7 @@ const BorrowalsManagementPage = () => {
               type="text"
               placeholder="Search borrowals..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)} // CONSIDER CHANGE INTO BLUR
               className={styles.searchInput}
             />
           </InputGroup>
@@ -400,31 +240,31 @@ const BorrowalsManagementPage = () => {
           >
             {statuses.map(status => (
               <option key={status} value={status}>
-                {status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
+                {status === '' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
               </option>
             ))}
           </Form.Select>
         </Col>
-        <Col lg={3} className="mb-3">
-          <Form.Select
-            value={selectedDateRange}
-            onChange={(e) => setSelectedDateRange(e.target.value)}
+
+        <Col lg={2}>
+          <Form.Control
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
             className={styles.filterSelect}
-          >
-            {dateRanges.map(range => (
-              <option key={range} value={range}>
-                {range === 'all' ? 'All Time' : 
-                 range === 'today' ? 'Today' :
-                 range === 'this-week' ? 'This Week' :
-                 range === 'this-month' ? 'This Month' :
-                 range === 'last-month' ? 'Last Month' : range}
-              </option>
-            ))}
-          </Form.Select>
+          />
+        </Col>
+        <Col lg={2}>
+          <Form.Control
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className={styles.filterSelect}
+          />
         </Col>
         <Col lg={2} className="mb-3">
           <div className={styles.resultsInfo}>
-            {filteredBorrowals.length} borrowals
+            {borrowals.length} borrowals
           </div>
         </Col>
       </Row>
@@ -444,15 +284,15 @@ const BorrowalsManagementPage = () => {
                       <th>Dates</th>
                       <th>Status</th>
                       <th>Fine</th>
-                      <th>Actions</th>
+                      {/* <th>Actions</th> */}
                     </tr>
                   </thead>
                   <tbody>
-                    {currentBorrowals.map(borrowal => (
+                    {borrowals.map(borrowal => (
                       <tr key={borrowal.id} className={styles.borrowalRow}>
                         <td className={styles.idCell}>
                           <div className={styles.borrowalId}>
-                            <strong>{borrowal.borrowalCode}</strong>
+                            <strong>{borrowal.id}</strong>
                           </div>
                         </td>
                         <td className={styles.readerCell}>
@@ -461,26 +301,20 @@ const BorrowalsManagementPage = () => {
                               <PersonFill />
                             </div>
                             <div className={styles.readerDetails}>
-                              <div className={styles.readerName}>{borrowal.reader.name}</div>
-                              <Badge 
-                                bg={getMembershipColor(borrowal.reader.membershipType)} 
-                                className={styles.membershipBadge}
-                              >
-                                {borrowal.reader.membershipType}
-                              </Badge>
+                              <div className={styles.readerName}>{borrowal.readerName}</div>
                             </div>
                           </div>
                         </td>
                         <td className={styles.bookCell}>
                           <div className={styles.bookInfo}>
-                            <img 
-                              src={borrowal.book.coverImage} 
+                            {/* <img
+                              src={borrowal.book.coverImage}
                               alt={borrowal.book.title}
                               className={styles.bookCover}
-                            />
+                            /> */}
                             <div className={styles.bookDetails}>
-                              <div className={styles.bookTitle}>{borrowal.book.title}</div>
-                              <div className={styles.bookAuthor}>{borrowal.book.author}</div>
+                              <div className={styles.bookTitle}>{borrowal.bookTitle}</div>
+                              <div className={styles.bookAuthor}>{borrowal.authorName}</div>
                             </div>
                           </div>
                         </td>
@@ -488,12 +322,12 @@ const BorrowalsManagementPage = () => {
                           <div className={styles.datesInfo}>
                             <div className={styles.dateItem}>
                               <span className={styles.dateLabel}>Borrowed:</span>
-                              <span>{formatDate(borrowal.borrowDate)}</span>
+                              <span>{formatDate(borrowal.borrowedDate)}</span>
                             </div>
                             <div className={styles.dateItem}>
                               <span className={styles.dateLabel}>Due:</span>
                               <span className={borrowal.status === 'overdue' ? styles.overdue : ''}>
-                                {formatDate(borrowal.dueDate)}
+                                {formatDate(borrowal.allowedDate)}
                               </span>
                             </div>
                             {borrowal.returnDate && (
@@ -502,33 +336,33 @@ const BorrowalsManagementPage = () => {
                                 <span>{formatDate(borrowal.returnDate)}</span>
                               </div>
                             )}
-                            {borrowal.status === 'overdue' && (
+                            {/* {borrowal.status === 'overdue' && (
                               <div className={styles.overdueInfo}>
                                 {getDaysOverdue(borrowal.dueDate)} days overdue
                               </div>
-                            )}
+                            )} */}
                           </div>
                         </td>
                         <td className={styles.statusCell}>
                           <Badge bg={getStatusVariant(borrowal.status)} className={styles.statusBadge}>
                             {borrowal.status.charAt(0).toUpperCase() + borrowal.status.slice(1)}
                           </Badge>
-                          {borrowal.renewalCount > 0 && (
+                          {/* {borrowal.renewalCount > 0 && (
                             <div className={styles.renewalInfo}>
                               Renewed {borrowal.renewalCount}/{borrowal.maxRenewals}
                             </div>
-                          )}
+                          )} */}
                         </td>
                         <td className={styles.fineCell}>
-                          {borrowal.fineAmount > 0 ? (
+                          {borrowal.fine > 0 ? (
                             <div className={styles.fineAmount}>
-                              ${borrowal.fineAmount.toFixed(2)}
+                              ${borrowal.fine.toFixed(2)}
                             </div>
                           ) : (
                             <span className={styles.noFine}>$0.00</span>
                           )}
                         </td>
-                        <td className={styles.actionsCell}>
+                        {/* <td className={styles.actionsCell}>
                           <div className={styles.actionButtons}>
                             <Button
                               variant="outline-primary"
@@ -546,7 +380,7 @@ const BorrowalsManagementPage = () => {
                             >
                               <PencilSquare />
                             </Button>
-                            {borrowal.status !== 'returned' && (
+                            {borrowal.status !== 'Returned' && (
                               <Button
                                 variant="outline-success"
                                 size="sm"
@@ -558,7 +392,7 @@ const BorrowalsManagementPage = () => {
                               </Button>
                             )}
                           </div>
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -575,15 +409,15 @@ const BorrowalsManagementPage = () => {
           <Col>
             <div className={styles.paginationContainer}>
               <Pagination>
-                <Pagination.First 
+                <Pagination.First
+                  disabled={currentPage === 1}
                   onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
                 />
-                <Pagination.Prev 
+                <Pagination.Prev
+                  disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
                 />
-                
+
                 {[...Array(totalPages)].map((_, index) => (
                   <Pagination.Item
                     key={index + 1}
@@ -593,14 +427,14 @@ const BorrowalsManagementPage = () => {
                     {index + 1}
                   </Pagination.Item>
                 ))}
-                
-                <Pagination.Next 
+
+                <Pagination.Next
+                  disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
                 />
-                <Pagination.Last 
-                  onClick={() => setCurrentPage(totalPages)}
+                <Pagination.Last
                   disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
                 />
               </Pagination>
             </div>
@@ -620,17 +454,17 @@ const BorrowalsManagementPage = () => {
                 <strong>Processing return for:</strong>
               </Alert>
               <div className={styles.returnInfo}>
-                <strong>Book:</strong> {borrowalToReturn.book.title}
+                <strong>Book:</strong> {borrowalToReturn.bookTitle}
                 <br />
-                <strong>Reader:</strong> {borrowalToReturn.reader.name}
+                <strong>Reader:</strong> {borrowalToReturn.readerName}
                 <br />
-                <strong>Due Date:</strong> {formatDate(borrowalToReturn.dueDate)}
+                <strong>Due Date:</strong> {formatDate(borrowalToReturn.allowedDate)}
                 <br />
                 <strong>Status:</strong> {borrowalToReturn.status}
-                {borrowalToReturn.fineAmount > 0 && (
+                {borrowalToReturn.fine > 0 && (
                   <>
                     <br />
-                    <strong>Outstanding Fine:</strong> ${borrowalToReturn.fineAmount.toFixed(2)}
+                    <strong>Outstanding Fine:</strong> ${borrowalToReturn.fine.toFixed(2)}
                   </>
                 )}
               </div>

@@ -5,6 +5,9 @@ import {
 } from 'react-bootstrap-icons';
 import styles from './BooksManagementPage.module.css';
 import bookApi from '../../../api/book';
+import authorApi from '../../../api/author';
+import categoryApi from '../../../api/category';
+import publisherApi from '../../../api/publisher';
 import { useNavigate } from 'react-router-dom';
 
 const BooksManagementPage = () => {
@@ -13,14 +16,17 @@ const BooksManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [authorsList, setAuthorsList] = useState([]);
+  const [publisherList, setPublisherList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(4);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [bookToDelete, setBookToDelete] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [editingId, setEditingId] = useState(null);      // id của book đang sửa inline
+  const [editForm, setEditForm] = useState({});
   const navigate = useNavigate();
 
   // 🔹 Fetch books from backend (with pagination + filters)
@@ -42,7 +48,7 @@ const BooksManagementPage = () => {
       const data = response.data;
       console.log(data)
 
-      if(searchTerm.trim() === '' && categoryFilter === 'all' && statusFilter === 'all'){
+      if (searchTerm.trim() === '' && categoryFilter === 'all' && statusFilter === 'all') {
         const uniqueCategories = [...new Set(data.content.map((book) => book.category))];
         setCategories(uniqueCategories);
       }
@@ -54,6 +60,44 @@ const BooksManagementPage = () => {
       console.error('Error fetching books:', error);
     }
   };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryApi.findAll();
+      console.log(response.data)
+      setCategoriesList(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchAuthors = async () => {
+    try {
+      const response = await authorApi.findAll();
+      setAuthorsList(response.data);
+    } catch (error) {
+      console.error('Error fetching authors:', error);
+    }
+  };
+
+  const fetchPublishers = async () => {
+    try {
+      const response = await publisherApi.findAll();
+      console.log(response.data)
+      setPublisherList(response.data);
+    } catch (error) {
+      console.error('Error fetching publishers:', error);
+    }
+  };
+
+
+  // 🔹 Initial fetch
+  useEffect(() => {
+    fetchCategories();
+    fetchAuthors();
+    fetchPublishers();
+  }, []);
+
 
   // 🔹 Fetch when page or filters change
   useEffect(() => {
@@ -80,26 +124,69 @@ const BooksManagementPage = () => {
   };
 
   const handleView = (bookId) => navigate(`/admin/books/${bookId}`);
-  const handleEdit = (bookId) => console.log('Edit book:', bookId);
-
-  const handleDelete = (book) => {
-    setBookToDelete(book);
-    setShowDeleteModal(true);
+  const handleEdit = (bookId) => {
+    const bk = books.find(b => b.id === bookId);
+    console.log(bk)
+    setEditingId(bookId);
+    setEditForm({
+      title: bk.title ?? '',
+      author: bk.author ?? '',
+      category: bk.category ?? '',
+      isDeleted: bk.isDeleted === 'true',
+      publisher: bk.publisher ?? '',
+      publishedDate: bk.publishedDate ?? ''
+    });
   };
 
-  const confirmDelete = () => {
-    // Gọi API xóa ở đây nếu cần
-    setBooks((prev) => prev.filter((b) => b.id !== bookToDelete.id));
-    setShowDeleteModal(false);
-    setBookToDelete(null);
-    showAlertMessage(`Book "${bookToDelete.title}" has been deleted successfully.`);
+  const handleChange = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditForm({});
+  };
+
+  const handleSaveEdit = async (bookId) => {
+    try {
+      // Chuẩn hóa payload theo backend của bạn
+      const payload = {
+        title: editForm.title?.trim(),
+        author: editForm.author?.trim(),
+        category: editForm.category,
+        isDeleted: !!editForm.isDeleted,
+        publisher: editForm.publisher?.trim(),
+        publishedDate: editForm.publishedDate
+      };
+      console.log(payload)
+
+      await bookApi.update(bookId, payload);
+
+      // Cập nhật optimistically trên client
+      setBooks(prev =>
+        prev.map(b =>
+          b.id === bookId ? { ...b, ...payload } : b
+        )
+      );
+
+      setEditingId(null);
+      setEditForm({});
+      showAlertMessage(`Book "${payload.title}" has been updated successfully.`);
+    } catch (err) {
+      console.error('Update failed:', err);
+      showAlertMessage('Update failed. Please try again.');
+    }
+  };
+
+
 
   const showAlertMessage = (message) => {
     setAlertMessage(message);
     setShowAlert(true);
     setTimeout(() => setShowAlert(false), 3000);
   };
+
+
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -209,42 +296,141 @@ const BooksManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {books.map((book) => (
-                  <tr key={book.id} className={styles.bookRow}>
-                    <td className={styles.bookCell}>
-                      <div className={styles.bookInfo}>
-                        <img
-                          src={`http://localhost:8080${book.image}`}
-                          alt={book.title}
-                          className={styles.bookCover}
-                        />
-                        <div className={styles.bookDetails}>
-                          <div className={styles.bookTitle}>{book.title}</div>
-                          <div className={styles.bookPublisher}>
-                            {book.publisher} ({book.publishedDate})
+                {books.map((book) => {
+                  const isEditing = editingId === book.id;
+                  return (
+                    <tr key={book.id} className={styles.bookRow}>
+                      <td className={styles.bookCell}>
+                        <div className={styles.bookInfo}>
+                          <img
+                            src={`http://localhost:8080${book.image}`}
+                            alt={book.title}
+                            className={styles.bookCover}
+                          />
+                          <div className={styles.bookDetails}>
+                            {!isEditing ? (
+                              <>
+                                <div className={styles.bookTitle}>{book.title}</div>
+                                <div className={styles.bookPublisher}>
+                                  {book.publisher} ({book.publishedDate})
+                                </div>
+                              </>
+                            ) : (
+                              <div className="d-flex flex-column gap-2">
+                                <Form.Control
+                                  size="sm"
+                                  value={editForm.title}
+                                  onChange={(e) => handleChange('title', e.target.value)}
+                                  placeholder="Title"
+                                />
+                                <InputGroup size="sm">
+                                  {/* ✅ Publisher dropdown */}
+                                  <Form.Select
+                                    value={editForm.publisher}
+                                    onChange={(e) => handleChange('publisher', e.target.value)}
+                                  >
+                                    {publisherList.map((p) => (
+                                      <option key={p.id} value={p.companyName}>{p.companyName}</option>
+                                    ))}
+                                  </Form.Select>
+
+                                  <Form.Control
+                                    style={{ maxWidth: 130 }}
+                                    value={editForm.publishedDate}
+                                    onChange={(e) => handleChange('publishedDate', e.target.value)}
+                                    placeholder="Year"
+                                  />
+                                </InputGroup>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>{book.author}</td>
-                    <td><Badge bg="info">{book.category}</Badge></td>
-                    <td>{getStatusBadge(book.isDeleted)}</td>
-                    <td>{formatDate(book.importedDate)}</td>
-                    <td>
-                      <div className={styles.actionButtons}>
-                        <Button variant="outline-primary" size="sm" onClick={() => handleView(book.id)}>
-                          <Eye />
-                        </Button>
-                        <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(book.id)}>
-                          <Pencil />
-                        </Button>
-                        <Button variant="outline-danger" size="sm" onClick={() => handleDelete(book)}>
-                          <Trash />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>
+                        {!isEditing ? (
+                          book.author
+                        ) : (
+                          <Form.Select
+                            size="sm"
+                            value={editForm.author}
+                            onChange={(e) => handleChange('author', e.target.value)}
+                          >
+                            {/* 🔹 bạn có thể thay danh sách authors động ở đây */}
+                            {authorsList.map((a) => (
+                              <option key={a.id} value={a.fullName}>{a.fullName}</option>
+                            ))}
+                          </Form.Select>
+                        )}
+                      </td>
+
+                      {/* Category (dropdown khi edit) */}
+                      <td>
+                        {!isEditing ? (
+                          <Badge bg="info">{book.category}</Badge>
+                        ) : (
+                          <Form.Select
+                            size="sm"
+                            value={editForm.category}
+                            onChange={(e) => handleChange('category', e.target.value)}
+                          >
+                            <option value="">Select category</option>
+                            {categoriesList.map((c) => (
+                              <option key={c.id} value={c.name}>{c.name}</option>
+                            ))}
+                          </Form.Select>
+                        )}
+                      </td>
+                      <td>
+                        {!isEditing ? (
+                          getStatusBadge(book.isDeleted)
+                        ) : (
+                          <Form.Check
+                            type="switch"
+                            id={`status-${book.id}`}
+                            label={editForm.isDeleted ? 'Inactive' : 'Active'}
+                            checked={!editForm.isDeleted}
+                            onChange={(e) => handleChange('isDeleted', !e.target.checked)}
+                          />
+                        )}
+                      </td>
+                      <td>{formatDate(book.importedDate)}</td>
+                      {/* Actions */}
+                      <td>
+                        <div className={styles.actionButtons}>
+                          {!isEditing ? (
+                            <>
+                              <Button variant="outline-primary" size="sm" onClick={() => handleView(book.id)}>
+                                <Eye />
+                              </Button>
+                              <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(book.id)}>
+                                <Pencil />
+                              </Button>
+                              
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleSaveEdit(book.id)}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                className="ms-2"
+                                onClick={handleCancelEdit}
+                              >
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </Table>
           </div>
@@ -272,28 +458,7 @@ const BooksManagementPage = () => {
         </Card.Body>
       </Card>
 
-      {/* Delete Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <ExclamationTriangleFill className="me-2 text-danger" /> Confirm Delete
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {bookToDelete && (
-            <>
-              <p>Are you sure you want to delete this book?</p>
-              <div><strong>Title:</strong> {bookToDelete.title}</div>
-              <div><strong>Author:</strong> {bookToDelete.author}</div>
-              <p className="text-danger mt-3"><small>This action cannot be undone.</small></p>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
-          <Button variant="danger" onClick={confirmDelete}>Delete Book</Button>
-        </Modal.Footer>
-      </Modal>
+     
     </div>
   );
 };
