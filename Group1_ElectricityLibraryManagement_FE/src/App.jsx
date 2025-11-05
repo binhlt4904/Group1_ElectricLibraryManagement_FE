@@ -34,11 +34,12 @@ import ReportManagementPage from './pages/admin/ReportManagementPage';
 import DocumentManagementPage from './pages/admin/DocumentManagementPage';
 import AddBookPage from './pages/admin/book/AddBookPage';
 import AdminBookDetailPage from './pages/admin/book/AdminBookDetailPage';
+import ImportExcel from "./pages/admin/ImportExcel";
 import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import TestPDF from './pages/admin/book/TestPDF';
 import AddBookContentPage from './pages/admin/book/AddBookContentPage';
 import DepositPage from './pages/user/DepositPage';
-
+import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 const AppContent = () => {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
@@ -53,6 +54,7 @@ const AppContent = () => {
 
                     <Routes>
                         {/* Public Pages */}
+                        <Route path="/abc" element={<ImportExcel />} />
                         <Route path="/" element={<HomePage />} />
                         <Route path="/books" element={<BookListPage />} />
                         <Route path="/books/:id" element={<BookDetailPage />} />
@@ -70,6 +72,7 @@ const AppContent = () => {
                         <Route path="/library-card" element={<LibraryCardPage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/wallet" element={<WalletPage />} />
+                        <Route path="/reader-report-history" element={<ReaderReportManagementPage />} />                       
                         <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
                         <Route path="/wishlist" element={<WishlistPage />} />
 

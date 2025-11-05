@@ -1,115 +1,84 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Badge, Button, Form, InputGroup, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Badge, Button, Form, InputGroup, Pagination, Modal } from 'react-bootstrap';
 import { Search, Calendar, BookFill, Clock, CheckCircleFill, ExclamationTriangleFill } from 'react-bootstrap-icons';
 import styles from './BorrowHistoryPage.module.css';
-
+import borrowReaderHistory from '../../api/user/borrowReaderHistory';
+import { useContext } from 'react';
+import UserContext from '../../components/contexts/UserContext';
 const BorrowHistoryPage = () => {
-  const [borrowHistory, setBorrowHistory] = useState([]);
-  const [filteredHistory, setFilteredHistory] = useState([]);
+
+  const { user } = useContext(UserContext)
+  const [borrowals, setBorrowals] = useState([]);
+  const [borrowalStatistics, setBorrowalStatistics] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 4;
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const fetchBorrowals = async () => {
+    try {
+      const params = {
+        search: searchTerm || '',
+        status: selectedStatus || '',
+        fromDate: fromDate || undefined,
+        toDate: toDate || undefined,
+        page: currentPage - 1,
+        size: pageSize
+      };
+      console.log("Call api fetch borrowals: ", params);
+      console.log("User in Context", user)
+      const response = await borrowReaderHistory.getBorrowalBySpecReaderAndCriteria(params);
+      setBorrowals(response.data.content || []);
+      console.log("Content of borrowals: ", response.data.content);
+      setTotalPages(response.data.totalPages || 1);
+    } catch (error) {
+      console.error('Failed to fetch borrow records:', error);
+      setBorrowals([]);
+      setTotalPages(1);
+    }
+  };
 
-  // Mock data - replace with API call
-  useEffect(() => {
-    const mockHistory = [
-      {
-        id: 1,
-        bookTitle: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        borrowDate: "2024-01-15",
-        dueDate: "2024-02-15",
-        returnDate: "2024-02-10",
-        status: "returned",
-        renewalCount: 1,
-        fine: 0,
-        coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=60&h=80&fit=crop"
-      },
-      {
-        id: 2,
-        bookTitle: "To Kill a Mockingbird",
-        author: "Harper Lee",
-        borrowDate: "2024-01-20",
-        dueDate: "2024-02-20",
-        returnDate: null,
-        status: "borrowed",
-        renewalCount: 0,
-        fine: 0,
-        coverImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=60&h=80&fit=crop"
-      },
-      {
-        id: 3,
-        bookTitle: "1984",
-        author: "George Orwell",
-        borrowDate: "2024-01-10",
-        dueDate: "2024-02-10",
-        returnDate: null,
-        status: "overdue",
-        renewalCount: 2,
-        fine: 5.50,
-        coverImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=80&fit=crop"
-      },
-      {
-        id: 4,
-        bookTitle: "Pride and Prejudice",
-        author: "Jane Austen",
-        borrowDate: "2023-12-15",
-        dueDate: "2024-01-15",
-        returnDate: "2024-01-12",
-        status: "returned",
-        renewalCount: 0,
-        fine: 0,
-        coverImage: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=60&h=80&fit=crop"
-      },
-      {
-        id: 5,
-        bookTitle: "The Catcher in the Rye",
-        author: "J.D. Salinger",
-        borrowDate: "2023-11-20",
-        dueDate: "2023-12-20",
-        returnDate: "2023-12-25",
-        status: "returned_late",
-        renewalCount: 1,
-        fine: 2.00,
-        coverImage: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60&h=80&fit=crop"
+  const fetchStatistics = async () => {
+    try {
+      const params = {
+        fromDate: fromDate || undefined,
+        toDate: toDate || undefined,
       }
-    ];
-    setBorrowHistory(mockHistory);
-    setFilteredHistory(mockHistory);
-  }, []);
+      const response = await borrowReaderHistory.getBorrowalStatisticBySpecReader(params);
+      setBorrowalStatistics(response.data || []);
+      console.log("Content of statistics: ", response.data);
+    } catch (error) {
+      console.error('Failed to fetch borrow records in statics:', error);
+    }
+  }
 
-  // Filter and search logic
   useEffect(() => {
-    let filtered = borrowHistory;
+    fetchBorrowals();
+  }, [searchTerm, selectedStatus, fromDate, toDate, currentPage]);
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(item =>
-        item.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.author.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(item => item.status === statusFilter);
-    }
-
-    setFilteredHistory(filtered);
+  useEffect(() => {
     setCurrentPage(1);
-  }, [borrowHistory, searchTerm, statusFilter]);
+  }, [searchTerm, selectedStatus, fromDate, toDate]);
+
+  useEffect(() => {
+    fetchStatistics();
+  }, [fromDate, toDate]);
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'borrowed':
+      case 'Borrowed':
         return <Badge bg="primary" className={styles.statusBadge}>Currently Borrowed</Badge>;
-      case 'returned':
+      case 'Returned':
         return <Badge bg="success" className={styles.statusBadge}>Returned</Badge>;
-      case 'overdue':
+      case 'Overdue':
         return <Badge bg="danger" className={styles.statusBadge}>Overdue</Badge>;
-      case 'returned_late':
-        return <Badge bg="warning" className={styles.statusBadge}>Returned Late</Badge>;
+      // case 'returned_late':
+      //   return <Badge bg="warning" className={styles.statusBadge}>Returned Late</Badge>;
       default:
         return <Badge bg="secondary" className={styles.statusBadge}>Unknown</Badge>;
     }
@@ -146,28 +115,44 @@ const BorrowHistoryPage = () => {
     return diffDays;
   };
 
-  const handleRenew = (bookId) => {
-    console.log('Renew book:', bookId);
-    // Handle renewal logic
+  // const handleRenew = (bookId) => {
+  //   console.log('Renew book:', bookId);
+  //   // Handle renewal logic
+  // };
+
+  const handleReturn = async (borrowalId) => {
+    // console.log('Return book:', borrowalId);
+    // try {
+    //   const response = await borrowReaderHistory.returnBook(borrowalId);
+    //   console.log('Return book response:', response);
+    //   fetchBorrowals();
+    // } catch (error) {
+    //   console.error('Failed to return book:', error);
+    // }
+
+    try {
+      const response = await borrowReaderHistory.returnBook(borrowalId);
+
+      if (response.data.success) {
+        const data = response.data.data;
+        setIsSuccess(true);
+        setModalMessage(
+          `Book "${data.bookTitle}" returned successfully!\nFine: $${data.fine.toFixed(2)}\nAllowed Date: ${data.allowedDate}\nReturn Date: ${data.returnedDate}`
+        );
+        fetchBorrowals();
+      } else {
+        setIsSuccess(false);
+        setModalMessage(response.data.message);
+      }
+    } catch (error) {
+      setIsSuccess(false);
+      const msg = error.response?.data?.message || "Failed to return book.";
+      setModalMessage(msg);
+    } finally {
+      setShowReturnModal(true);
+    }
   };
 
-  const handleReturn = (bookId) => {
-    console.log('Return book:', bookId);
-    // Handle return logic
-  };
-
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredHistory.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
-
-  const stats = {
-    total: borrowHistory.length,
-    borrowed: borrowHistory.filter(item => item.status === 'borrowed').length,
-    overdue: borrowHistory.filter(item => item.status === 'overdue').length,
-    totalFines: borrowHistory.reduce((sum, item) => sum + item.fine, 0)
-  };
 
   return (
     <div className={styles.borrowHistoryPage}>
@@ -187,7 +172,7 @@ const BorrowHistoryPage = () => {
           <Col md={3} className="mb-3">
             <Card className={`custom-card ${styles.statCard}`}>
               <Card.Body className={styles.statCardBody}>
-                <div className={styles.statNumber}>{stats.total}</div>
+                <div className={styles.statNumber}>{borrowalStatistics.length}</div>
                 <div className={styles.statLabel}>Total Books</div>
               </Card.Body>
             </Card>
@@ -195,23 +180,23 @@ const BorrowHistoryPage = () => {
           <Col md={3} className="mb-3">
             <Card className={`custom-card ${styles.statCard}`}>
               <Card.Body className={styles.statCardBody}>
-                <div className={styles.statNumber}>{stats.borrowed}</div>
+                <div className={styles.statNumber}>{borrowalStatistics.filter(stat => stat.status === 'Borrowed').length}</div>
                 <div className={styles.statLabel}>Currently Borrowed</div>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3} className="mb-3">
-            <Card className={`custom-card ${styles.statCard} ${stats.overdue > 0 ? styles.statCardDanger : ''}`}>
+            <Card className={`custom-card ${styles.statCard} ${borrowalStatistics.filter(stat => stat.status === 'Overdue').length > 0 ? styles.statCardDanger : ''}`}>
               <Card.Body className={styles.statCardBody}>
-                <div className={styles.statNumber}>{stats.overdue}</div>
+                <div className={styles.statNumber}>{borrowalStatistics.filter(stat => stat.status === 'Overdue').length}</div>
                 <div className={styles.statLabel}>Overdue</div>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3} className="mb-3">
-            <Card className={`custom-card ${styles.statCard} ${stats.totalFines > 0 ? styles.statCardWarning : ''}`}>
+            <Card className={`custom-card ${styles.statCard} ${borrowalStatistics.reduce((sum, b) => sum + b.fine, 0).toFixed(2) > 0 ? styles.statCardWarning : ''}`}>
               <Card.Body className={styles.statCardBody}>
-                <div className={styles.statNumber}>${stats.totalFines.toFixed(2)}</div>
+                <div className={styles.statNumber}>${borrowalStatistics.reduce((sum, b) => sum + b.fine, 0).toFixed(2)}</div>
                 <div className={styles.statLabel}>Total Fines</div>
               </Card.Body>
             </Card>
@@ -220,7 +205,7 @@ const BorrowHistoryPage = () => {
 
         {/* Filters */}
         <Row className="mb-4">
-          <Col lg={6} className="mb-3">
+          <Col lg={4} className="mb-3">
             <InputGroup size="lg">
               <Form.Control
                 type="text"
@@ -236,20 +221,36 @@ const BorrowHistoryPage = () => {
           </Col>
           <Col lg={3} className="mb-3">
             <Form.Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
               size="lg"
             >
-              <option value="all">All Status</option>
-              <option value="borrowed">Currently Borrowed</option>
-              <option value="returned">Returned</option>
-              <option value="overdue">Overdue</option>
-              <option value="returned_late">Returned Late</option>
+              <option value="">All Status</option>
+              <option value="Borrowed">Currently Borrowed</option>
+              <option value="Returned">Returned</option>
+              <option value="Overdue">Overdue</option>
+              {/* <option value="returned_late">Returned Late</option> */}
             </Form.Select>
+          </Col>
+          <Col lg={2}>
+            <Form.Control
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className={styles.filterSelect}
+            />
+          </Col>
+          <Col lg={2}>
+            <Form.Control
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className={styles.filterSelect}
+            />
           </Col>
           <Col lg={3} className="mb-3">
             <div className={styles.resultsInfo}>
-              Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredHistory.length)} of {filteredHistory.length} records
+              Showing {borrowals.length} of {borrowalStatistics.length} records
             </div>
           </Col>
         </Row>
@@ -272,46 +273,46 @@ const BorrowHistoryPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentItems.map(item => (
+                  {borrowals.map(item => (
                     <tr key={item.id} className={styles.historyRow}>
                       <td className={styles.bookCell}>
                         <div className={styles.bookInfo}>
-                          <img
+                          {/* <img
                             src={item.coverImage}
                             alt={item.bookTitle}
                             className={styles.bookCover}
-                          />
+                          /> */}
                           <div className={styles.bookDetails}>
                             <div className={styles.bookTitle}>{item.bookTitle}</div>
-                            <div className={styles.bookAuthor}>by {item.author}</div>
+                            <div className={styles.bookAuthor}>by {item.authorName}</div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div className={styles.dateCell}>
                           <Calendar className={styles.dateIcon} />
-                          {formatDate(item.borrowDate)}
+                          {formatDate(item.borrowedDate)}
                         </div>
                       </td>
                       <td>
                         <div className={styles.dateCell}>
                           <Calendar className={styles.dateIcon} />
-                          {formatDate(item.dueDate)}
-                          {item.status === 'borrowed' && (
+                          {formatDate(item.allowedDate)}
+                          {item.status === 'Borrowed' && (
                             <div className={styles.daysRemaining}>
-                              {getDaysRemaining(item.dueDate) > 0 
-                                ? `${getDaysRemaining(item.dueDate)} days left`
-                                : `${Math.abs(getDaysRemaining(item.dueDate))} days overdue`
+                              {getDaysRemaining(item.allowedDate) > 0
+                                ? `${getDaysRemaining(item.allowedDate)} days left`
+                                : `${Math.abs(getDaysRemaining(item.allowedDate))} days overdue`
                               }
                             </div>
                           )}
                         </div>
                       </td>
                       <td>
-                        {item.returnDate ? (
+                        {item.returnedDate ? (
                           <div className={styles.dateCell}>
                             <Calendar className={styles.dateIcon} />
-                            {formatDate(item.returnDate)}
+                            {formatDate(item.returnedDate)}
                           </div>
                         ) : (
                           <span className={styles.notReturned}>Not returned</span>
@@ -323,9 +324,9 @@ const BorrowHistoryPage = () => {
                           {getStatusBadge(item.status)}
                         </div>
                       </td>
-                      <td className={styles.renewalCell}>
+                      {/* <td className={styles.renewalCell}>
                         {item.renewalCount}
-                      </td>
+                      </td> */}
                       <td className={styles.fineCell}>
                         {item.fine > 0 ? (
                           <span className={styles.fineAmount}>${item.fine.toFixed(2)}</span>
@@ -334,16 +335,16 @@ const BorrowHistoryPage = () => {
                         )}
                       </td>
                       <td className={styles.actionsCell}>
-                        {item.status === 'borrowed' && (
+                        {item.status === 'Borrowed' && (
                           <div className={styles.actionButtons}>
-                            <Button
+                            {/* <Button
                               variant="outline-primary"
                               size="sm"
                               onClick={() => handleRenew(item.id)}
                               disabled={item.renewalCount >= 3}
                             >
                               Renew
-                            </Button>
+                            </Button> */}
                             <Button
                               variant="outline-success"
                               size="sm"
@@ -396,6 +397,23 @@ const BorrowHistoryPage = () => {
           </Card.Body>
         </Card>
       </Container>
+
+      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{isSuccess ? 'Return Successful' : 'Return Failed'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p style={{ whiteSpace: 'pre-line' }}>{modalMessage}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant={isSuccess ? 'success' : 'danger'}
+            onClick={() => setShowReturnModal(false)}
+          >
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
