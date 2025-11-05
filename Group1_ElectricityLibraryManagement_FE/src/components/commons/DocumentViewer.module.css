@@ -1,0 +1,236 @@
+/* Document Modal */
+.documentModal {
+  --bs-modal-width: 90vw;
+  --bs-modal-margin: 1rem;
+}
+
+.documentModal :global(.modal-content) {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Header */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  flex: 1;
+  word-break: break-word;
+  max-width: 70%;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.downloadButton,
+.closeButton {
+  padding: 6px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.downloadButton:hover {
+  background-color: #e7f1ff;
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.closeButton:hover {
+  background-color: #f8f9fa;
+  border-color: #6c757d;
+  color: #212529;
+}
+
+/* Modal Body */
+.modalBody {
+  padding: 0;
+  background-color: #f8f9fa;
+  height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* PDF Viewer Container */
+.pdfViewerContainer {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Office Document Container */
+.officeDocumentContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  padding: 16px;
+}
+
+.officeDocumentFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 4px;
+  background-color: white;
+}
+
+/* Unsupported File Alert */
+.unsupportedAlert {
+  margin: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.unsupportedAlert h5 {
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.unsupportedAlert p {
+  margin-bottom: 20px;
+  color: #6c757d;
+  max-width: 400px;
+}
+
+.downloadButtonAlert {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .documentModal {
+    --bs-modal-width: 95vw;
+  }
+
+  .modalBody {
+    height: 60vh;
+  }
+
+  .modalTitle {
+    font-size: 16px;
+    max-width: 60%;
+  }
+
+  .downloadButton {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+
+  .closeButton {
+    padding: 5px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .documentModal {
+    --bs-modal-width: 100vw;
+    --bs-modal-margin: 0;
+  }
+
+  .documentModal :global(.modal-content) {
+    border-radius: 0;
+    height: 100vh;
+  }
+
+  .modalHeader {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .modalTitle {
+    font-size: 14px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .modalBody {
+    height: calc(100vh - 80px);
+  }
+
+  .downloadButton {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  .downloadButton :global(svg) {
+    margin-right: 4px;
+  }
+
+  .closeButton {
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalHeader {
+    padding: 10px 12px;
+  }
+
+  .modalTitle {
+    font-size: 13px;
+  }
+
+  .downloadButton,
+  .closeButton {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .downloadButton :global(svg),
+  .closeButton :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .modalBody {
+    height: calc(100vh - 60px);
+  }
+
+  .unsupportedAlert {
+    padding: 20px 12px;
+  }
+
+  .unsupportedAlert h5 {
+    font-size: 14px;
+  }
+
+  .unsupportedAlert p {
+    font-size: 12px;
+  }
+}
+

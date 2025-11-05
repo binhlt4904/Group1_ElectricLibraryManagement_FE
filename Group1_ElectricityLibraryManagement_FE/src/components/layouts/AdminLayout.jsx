@@ -6,11 +6,13 @@ import {
 import {
   List, X, House, BookFill, PersonFill, Building, People, Tags,
   ClipboardData, CalendarEvent, BarChart, ExclamationTriangle, FileEarmark,
-  Gear, BoxArrowRight, Bell, PersonCircle
+  Gear, BoxArrowRight, PersonCircle, CreditCard
 } from 'react-bootstrap-icons';
 import styles from './AdminLayout.module.css';
 import { useContext } from 'react';
 import UserContext from '../contexts/UserContext';
+import NotificationBell from '../commons/NotificationBell';
+
 const AdminLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const location = useLocation();
@@ -76,6 +78,12 @@ const AdminLayout = () => {
       path: '/admin/events',
       icon: CalendarEvent,
       label: 'Events Management',
+      badge: null
+    },
+    {
+      path: '/admin/library-cards',
+      icon: CreditCard,
+      label: 'Library Cards',
       badge: null
     },
     {
@@ -179,10 +187,7 @@ const AdminLayout = () => {
 
           <div className={styles.topNavRight}>
             {/* Notifications */}
-            <Button variant="outline-secondary" className={styles.notificationBtn}>
-              <Bell />
-              <Badge bg="danger" className={styles.notificationBadge}>3</Badge>
-            </Button>
+            <NotificationBell variant="outline-secondary" size="md" />
 
             {/* Admin User Dropdown */}
             <Dropdown align="end">

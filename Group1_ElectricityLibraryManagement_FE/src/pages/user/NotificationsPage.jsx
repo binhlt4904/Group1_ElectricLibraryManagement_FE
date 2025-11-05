@@ -1,93 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Form, ButtonGroup, Alert } from 'react-bootstrap';
-import { 
-  Bell, BellFill, BookFill, CalendarEvent, ExclamationTriangleFill, 
-  InfoCircleFill, CheckCircleFill, Trash, Check, X, Filter 
+import React, { useState, useEffect, useContext } from 'react';
+import { Container, Row, Col, Card, Button, Badge, ButtonGroup, Alert, Spinner } from 'react-bootstrap';
+import {
+  Bell, BellFill, BookFill, CalendarEvent, ExclamationTriangleFill,
+  Trash, Check, Filter
 } from 'react-bootstrap-icons';
 import styles from './NotificationsPage.module.css';
+import useNotificationStore, { notificationTypeConfig } from '../../stores/notificationStore';
+import UserContext from '../../components/contexts/UserContext';
 
 const NotificationsPage = () => {
-  const [notifications, setNotifications] = useState([]);
+  const { user } = useContext(UserContext);
+  const {
+    notifications,
+    isLoading,
+    error,
+    fetchNotifications,
+    markAsReadAPI,
+    markAllAsReadAPI,
+    deleteNotificationAPI,
+    deleteAllNotificationsAPI,
+    connectWebSocket,
+    disconnectWebSocket,
+    getNotificationConfig
+  } = useNotificationStore();
+
   const [filteredNotifications, setFilteredNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(10);
 
-  // Mock notifications data
+  // Fetch notifications on mount and connect WebSocket
   useEffect(() => {
-    const mockNotifications = [
-      {
-        id: 1,
-        type: 'due_soon',
-        title: 'Book Due Tomorrow',
-        message: '"The Great Gatsby" is due tomorrow. Please return or renew to avoid late fees.',
-        timestamp: '2024-01-20T10:30:00Z',
-        isRead: false,
-        priority: 'high'
-      },
-      {
-        id: 2,
-        type: 'hold_ready',
-        title: 'Hold Ready for Pickup',
-        message: '"To Kill a Mockingbird" is now available for pickup at the Main Branch.',
-        timestamp: '2024-01-20T09:15:00Z',
-        isRead: false,
-        priority: 'medium'
-      },
-      {
-        id: 3,
-        type: 'overdue',
-        title: 'Overdue Book',
-        message: '"1984" is overdue. Please return immediately to avoid additional fees.',
-        timestamp: '2024-01-19T14:20:00Z',
-        isRead: true,
-        priority: 'high'
-      },
-      {
-        id: 4,
-        type: 'new_arrival',
-        title: 'New Books Available',
-        message: 'New fiction titles have arrived! Check out the latest additions to our collection.',
-        timestamp: '2024-01-19T08:00:00Z',
-        isRead: true,
-        priority: 'low'
-      },
-      {
-        id: 5,
-        type: 'event',
-        title: 'Upcoming Event',
-        message: 'Book Club meeting this Friday at 6 PM. Join us for a discussion of "Pride and Prejudice".',
-        timestamp: '2024-01-18T16:45:00Z',
-        isRead: false,
-        priority: 'medium'
-      },
-      {
-        id: 6,
-        type: 'fine',
-        title: 'Outstanding Fine',
-        message: 'You have an outstanding fine of $5.50. Please pay to continue borrowing.',
-        timestamp: '2024-01-18T11:30:00Z',
-        isRead: true,
-        priority: 'high'
-      },
-      {
-        id: 7,
-        type: 'renewal',
-        title: 'Book Renewed Successfully',
-        message: '"The Catcher in the Rye" has been renewed. New due date: February 15, 2024.',
-        timestamp: '2024-01-17T13:20:00Z',
-        isRead: true,
-        priority: 'low'
-      }
-    ];
-    setNotifications(mockNotifications);
-    setFilteredNotifications(mockNotifications);
-  }, []);
+    if (user?.id) {
+      // Fetch initial notifications
+      fetchNotifications(user.id, page, pageSize).catch(err => {
+        console.error('Failed to fetch notifications:', err);
+      });
+
+      // Connect to WebSocket for real-time updates
+      connectWebSocket(user.id);
+
+      // Cleanup on unmount
+      return () => {
+        disconnectWebSocket();
+      };
+    }
+  }, [user?.id, fetchNotifications, connectWebSocket, disconnectWebSocket, page, pageSize]);
 
   // Filter notifications
   useEffect(() => {
     let filtered = notifications;
-    
+
     switch (filter) {
       case 'unread':
         filtered = notifications.filter(n => !n.isRead);
@@ -96,46 +61,43 @@ const NotificationsPage = () => {
         filtered = notifications.filter(n => n.isRead);
         break;
       case 'high_priority':
-        filtered = notifications.filter(n => n.priority === 'high');
+        filtered = notifications.filter(n => {
+          const config = getNotificationConfig(n.notificationType);
+          return config.priority === 'high';
+        });
         break;
-      case 'due_soon':
-        filtered = notifications.filter(n => n.type === 'due_soon');
-        break;
-      case 'holds':
-        filtered = notifications.filter(n => n.type === 'hold_ready');
-        break;
-      case 'events':
-        filtered = notifications.filter(n => n.type === 'event');
+      case 'NEW_BOOK':
+      case 'NEW_EVENT':
+      case 'REMINDER':
+      case 'OVERDUE':
+        filtered = notifications.filter(n => n.notificationType === filter);
         break;
       default:
         filtered = notifications;
     }
-    
+
     setFilteredNotifications(filtered);
-  }, [notifications, filter]);
+  }, [notifications, filter, getNotificationConfig]);
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'due_soon':
+      case 'NEW_BOOK':
         return <BookFill className={styles.iconDueSoon} />;
-      case 'hold_ready':
-        return <CheckCircleFill className={styles.iconHoldReady} />;
-      case 'overdue':
-        return <ExclamationTriangleFill className={styles.iconOverdue} />;
-      case 'new_arrival':
-        return <InfoCircleFill className={styles.iconNewArrival} />;
-      case 'event':
+      case 'NEW_EVENT':
         return <CalendarEvent className={styles.iconEvent} />;
-      case 'fine':
+      case 'REMINDER':
+        return <ExclamationTriangleFill className={styles.iconOverdue} />;
+      case 'OVERDUE':
         return <ExclamationTriangleFill className={styles.iconFine} />;
-      case 'renewal':
-        return <CheckCircleFill className={styles.iconRenewal} />;
       default:
         return <Bell className={styles.iconDefault} />;
     }
   };
 
-  const getPriorityBadge = (priority) => {
+  const getPriorityBadge = (type) => {
+    const config = getNotificationConfig(type);
+    const priority = config.priority;
+
     switch (priority) {
       case 'high':
         return <Badge bg="danger" className={styles.priorityBadge}>High</Badge>;
@@ -163,33 +125,48 @@ const NotificationsPage = () => {
     }
   };
 
-  const handleMarkAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-    );
-    showAlertMessage('Notification marked as read');
+  const handleMarkAsRead = async (id) => {
+    try {
+      await markAsReadAPI(id);
+      showAlertMessage('Notification marked as read');
+    } catch (error) {
+      showAlertMessage('Failed to mark notification as read');
+      console.error('Error:', error);
+    }
   };
 
-  const handleMarkAsUnread = (id) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, isRead: false } : n)
-    );
-    showAlertMessage('Notification marked as unread');
+  const handleDelete = async (id) => {
+    try {
+      await deleteNotificationAPI(id);
+      showAlertMessage('Notification deleted');
+    } catch (error) {
+      showAlertMessage('Failed to delete notification');
+      console.error('Error:', error);
+    }
   };
 
-  const handleDelete = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    showAlertMessage('Notification deleted');
+  const handleMarkAllAsRead = async () => {
+    try {
+      if (user?.id) {
+        await markAllAsReadAPI(user.id);
+        showAlertMessage('All notifications marked as read');
+      }
+    } catch (error) {
+      showAlertMessage('Failed to mark all notifications as read');
+      console.error('Error:', error);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    showAlertMessage('All notifications marked as read');
-  };
-
-  const handleClearAll = () => {
-    setNotifications([]);
-    showAlertMessage('All notifications cleared');
+  const handleClearAll = async () => {
+    try {
+      if (user?.id) {
+        await deleteAllNotificationsAPI(user.id);
+        showAlertMessage('All notifications have been cleared');
+      }
+    } catch (error) {
+      showAlertMessage('Failed to clear notifications');
+      console.error('Error:', error);
+    }
   };
 
   const showAlertMessage = (message) => {
@@ -250,6 +227,13 @@ const NotificationsPage = () => {
           </Alert>
         )}
 
+        {isLoading && (
+          <Alert variant="info" className={styles.alert}>
+            <Spinner animation="border" size="sm" className="me-2" />
+            Loading notifications...
+          </Alert>
+        )}
+
         {/* Filters */}
         <Row className="mb-4">
           <Col>
@@ -272,14 +256,14 @@ const NotificationsPage = () => {
                     onClick={() => setFilter('unread')}
                     size="sm"
                   >
-                    Unread ({unreadCount})
+                    Unread ({notifications.filter(n => !n.isRead).length})
                   </Button>
                   <Button
                     variant={filter === 'read' ? 'primary' : 'outline-primary'}
                     onClick={() => setFilter('read')}
                     size="sm"
                   >
-                    Read ({notifications.length - unreadCount})
+                    Read ({notifications.filter(n => n.isRead).length})
                   </Button>
                   <Button
                     variant={filter === 'high_priority' ? 'primary' : 'outline-primary'}
@@ -289,25 +273,32 @@ const NotificationsPage = () => {
                     High Priority
                   </Button>
                   <Button
-                    variant={filter === 'due_soon' ? 'primary' : 'outline-primary'}
-                    onClick={() => setFilter('due_soon')}
+                    variant={filter === 'NEW_BOOK' ? 'primary' : 'outline-primary'}
+                    onClick={() => setFilter('NEW_BOOK')}
                     size="sm"
                   >
-                    Due Soon
+                    New Books
                   </Button>
                   <Button
-                    variant={filter === 'holds' ? 'primary' : 'outline-primary'}
-                    onClick={() => setFilter('holds')}
-                    size="sm"
-                  >
-                    Holds
-                  </Button>
-                  <Button
-                    variant={filter === 'events' ? 'primary' : 'outline-primary'}
-                    onClick={() => setFilter('events')}
+                    variant={filter === 'NEW_EVENT' ? 'primary' : 'outline-primary'}
+                    onClick={() => setFilter('NEW_EVENT')}
                     size="sm"
                   >
                     Events
+                  </Button>
+                  <Button
+                    variant={filter === 'REMINDER' ? 'primary' : 'outline-primary'}
+                    onClick={() => setFilter('REMINDER')}
+                    size="sm"
+                  >
+                    Reminders
+                  </Button>
+                  <Button
+                    variant={filter === 'OVERDUE' ? 'primary' : 'outline-primary'}
+                    onClick={() => setFilter('OVERDUE')}
+                    size="sm"
+                  >
+                    Overdue
                   </Button>
                 </ButtonGroup>
               </Card.Body>
@@ -334,14 +325,14 @@ const NotificationsPage = () => {
             ) : (
               <div className={styles.notificationsList}>
                 {filteredNotifications.map(notification => (
-                  <Card 
-                    key={notification.id} 
-                    className={`custom-card ${styles.notificationCard} ${!notification.isRead ? styles.unread : ''}`}
+                  <Card
+                    key={notification.id}
+                    className={`custom-card ${styles.notificationCard} ${notification.isRead ? '' : styles.unread}`}
                   >
                     <Card.Body className={styles.notificationBody}>
                       <div className={styles.notificationContent}>
                         <div className={styles.notificationIcon}>
-                          {getNotificationIcon(notification.type)}
+                          {getNotificationIcon(notification.notificationType)}
                         </div>
                         <div className={styles.notificationDetails}>
                           <div className={styles.notificationHeader}>
@@ -350,9 +341,9 @@ const NotificationsPage = () => {
                               {!notification.isRead && <div className={styles.unreadDot}></div>}
                             </h5>
                             <div className={styles.notificationMeta}>
-                              {getPriorityBadge(notification.priority)}
+                              {getPriorityBadge(notification.notificationType)}
                               <span className={styles.timestamp}>
-                                {formatTimestamp(notification.timestamp)}
+                                {formatTimestamp(notification.createdAt)}
                               </span>
                             </div>
                           </div>
@@ -366,10 +357,10 @@ const NotificationsPage = () => {
                           <Button
                             variant="outline-secondary"
                             size="sm"
-                            onClick={() => handleMarkAsUnread(notification.id)}
+                            disabled
                             className={styles.actionButton}
                           >
-                            Mark Unread
+                            Read
                           </Button>
                         ) : (
                           <Button

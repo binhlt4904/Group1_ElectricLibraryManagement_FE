@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, 
@@ -25,11 +25,26 @@ import {
   CheckCircle,
   ExclamationTriangle
 } from 'react-bootstrap-icons';
+import { Spinner } from 'react-bootstrap';
+import eventAPI from '../../api/event';
 import styles from './EventDetailPage.module.css';
+
+// Backend base URL for image display
+const API_BASE_URL = 'http://localhost:8080';
+
+// Helper function to construct full image URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop';
+  if (imageUrl.startsWith('http')) return imageUrl; // Already a full URL
+  return `${API_BASE_URL}${imageUrl}`; // Prepend base URL for relative paths
+};
 
 const EventDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [event, setEvent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
@@ -40,8 +55,27 @@ const EventDetailPage = () => {
     specialRequests: ''
   });
 
-  // Mock event data - in real app, this would be fetched based on ID
-  const event = {
+  // Fetch event data from API
+  useEffect(() => {
+    fetchEventDetails();
+  }, [id]);
+
+  const fetchEventDetails = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await eventAPI.getEventById(id);
+      setEvent(response.data);
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+      setError('Failed to load event details. The event may not exist.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock event data for fallback
+  const mockEvent = {
     id: parseInt(id) || 1,
     title: "Digital Literacy Workshop",
     description: "Join us for a comprehensive digital literacy workshop designed to help you navigate the modern digital world with confidence. This hands-on session will cover essential skills including internet navigation, email management, online safety, and basic computer troubleshooting.",
@@ -156,8 +190,51 @@ Refreshments will be provided during the break.`,
     }
   };
 
-  const availabilityStatus = getAvailabilityStatus(event.registered, event.capacity);
-  const registrationPercentage = (event.registered / event.capacity) * 100;
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Container fluid className={styles.eventDetailPage}>
+        <Container className="text-center py-5">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3">Loading event details...</p>
+        </Container>
+      </Container>
+    );
+  }
+
+  // Show error state
+  if (error || !event) {
+    return (
+      <Container fluid className={styles.eventDetailPage}>
+        <Container>
+          <Row className="mb-3">
+            <Col>
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/events')}
+                className={styles.backButton}
+              >
+                <ArrowLeft className="me-2" />
+                Back to Events
+              </Button>
+            </Col>
+          </Row>
+          <Alert variant="danger" className="mt-4">
+            <ExclamationTriangle className="me-2" />
+            {error || 'Event not found'}
+          </Alert>
+        </Container>
+      </Container>
+    );
+  }
+
+  // Use real event data or fallback to mock
+  const eventData = event || mockEvent;
+  const availabilityStatus = getAvailabilityStatus(
+    eventData.registered || 0, 
+    eventData.capacity || 1
+  );
+  const registrationPercentage = ((eventData.registered || 0) / (eventData.capacity || 1)) * 100;
 
   return (
     <Container fluid className={styles.eventDetailPage}>
@@ -182,19 +259,25 @@ Refreshments will be provided during the break.`,
             <Card className={styles.mainCard}>
               {/* Event Image */}
               <div className={styles.imageContainer}>
-                <Card.Img 
-                  variant="top" 
-                  src={event.image} 
-                  alt={event.title}
+                <Card.Img
+                  variant="top"
+                  src={getImageUrl(eventData.imageUrl || eventData.image)}
+                  alt={eventData.title}
                   className={styles.eventImage}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop';
+                  }}
                 />
                 <div className={styles.imageOverlay}>
-                  <Badge 
-                    bg={getCategoryColor(event.category)} 
-                    className={styles.categoryBadge}
-                  >
-                    {event.category}
-                  </Badge>
+                  {eventData.category && (
+                    <Badge 
+                      bg={getCategoryColor(eventData.category)} 
+                      className={styles.categoryBadge}
+                    >
+                      {eventData.category}
+                    </Badge>
+                  )}
                   <div className={styles.imageActions}>
                     <Button
                       variant="light"
@@ -219,49 +302,63 @@ Refreshments will be provided during the break.`,
               <Card.Body className={styles.mainCardBody}>
                 {/* Event Header */}
                 <div className={styles.eventHeader}>
-                  <h1 className={styles.eventTitle}>{event.title}</h1>
-                  <Badge 
-                    bg={availabilityStatus.variant}
-                    className={styles.availabilityBadge}
-                  >
-                    {availabilityStatus.text}
-                  </Badge>
+                  <h1 className={styles.eventTitle}>{eventData.title}</h1>
+                  {eventData.capacity && (
+                    <Badge 
+                      bg={availabilityStatus.variant}
+                      className={styles.availabilityBadge}
+                    >
+                      {availabilityStatus.text}
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Event Details */}
                 <div className={styles.eventMeta}>
                   <div className={styles.metaItem}>
                     <Calendar className={styles.metaIcon} />
-                    <span>{formatDate(event.date)}</span>
+                    <span>{formatDate(eventData.eventDate || eventData.date || eventData.createdDate)}</span>
                   </div>
-                  <div className={styles.metaItem}>
-                    <Clock className={styles.metaIcon} />
-                    <span>{event.time}</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <GeoAlt className={styles.metaIcon} />
-                    <span>{event.location}</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <People className={styles.metaIcon} />
-                    <span>{event.registered}/{event.capacity} registered</span>
-                  </div>
+                  {(eventData.startTime || eventData.endTime || eventData.time) && (
+                    <div className={styles.metaItem}>
+                      <Clock className={styles.metaIcon} />
+                      <span>
+                        {eventData.startTime && eventData.endTime
+                          ? `${eventData.startTime} - ${eventData.endTime}`
+                          : eventData.time || 'TBA'}
+                      </span>
+                    </div>
+                  )}
+                  {eventData.location && (
+                    <div className={styles.metaItem}>
+                      <GeoAlt className={styles.metaIcon} />
+                      <span>{eventData.location}</span>
+                    </div>
+                  )}
+                  {eventData.capacity && (
+                    <div className={styles.metaItem}>
+                      <People className={styles.metaIcon} />
+                      <span>{eventData.registered || 0}/{eventData.capacity} registered</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Registration Progress */}
-                <div className={styles.registrationProgress}>
-                  <div className={styles.progressHeader}>
-                    <span className={styles.progressLabel}>Registration Progress</span>
-                    <span className={styles.progressText}>
-                      {event.registered} of {event.capacity} spots filled
-                    </span>
+                {eventData.capacity && (
+                  <div className={styles.registrationProgress}>
+                    <div className={styles.progressHeader}>
+                      <span className={styles.progressLabel}>Registration Progress</span>
+                      <span className={styles.progressText}>
+                        {eventData.registered || 0} of {eventData.capacity} spots filled
+                      </span>
+                    </div>
+                    <ProgressBar 
+                      now={registrationPercentage} 
+                      variant={availabilityStatus.variant}
+                      className={styles.progressBar}
+                    />
                   </div>
-                  <ProgressBar 
-                    now={registrationPercentage} 
-                    variant={availabilityStatus.variant}
-                    className={styles.progressBar}
-                  />
-                </div>
+                )}
 
                 {/* Registration Status */}
                 {isRegistered && (
@@ -275,36 +372,40 @@ Refreshments will be provided during the break.`,
                 <div className={styles.description}>
                   <h3 className={styles.sectionTitle}>About This Event</h3>
                   <div className={styles.descriptionText}>
-                    {event.fullDescription.split('\n').map((paragraph, index) => (
+                    {(eventData.fullDescription || eventData.description || '').split('\n').map((paragraph, index) => (
                       <p key={index}>{paragraph}</p>
                     ))}
                   </div>
                 </div>
 
                 {/* Event Tags */}
-                <div className={styles.tagsSection}>
-                  <h4 className={styles.tagsTitle}>Tags</h4>
-                  <div className={styles.tags}>
-                    {event.tags.map((tag, index) => (
-                      <Badge key={index} bg="light" text="dark" className={styles.tag}>
-                        {tag}
-                      </Badge>
-                    ))}
+                {eventData.tags && eventData.tags.length > 0 && (
+                  <div className={styles.tagsSection}>
+                    <h4 className={styles.tagsTitle}>Tags</h4>
+                    <div className={styles.tags}>
+                      {eventData.tags.map((tag, index) => (
+                        <Badge key={index} bg="light" text="dark" className={styles.tag}>
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Agenda */}
-                <div className={styles.agendaSection}>
-                  <h3 className={styles.sectionTitle}>Event Agenda</h3>
-                  <div className={styles.agenda}>
-                    {event.agenda.map((item, index) => (
-                      <div key={index} className={styles.agendaItem}>
-                        <div className={styles.agendaTime}>{item.time}</div>
-                        <div className={styles.agendaActivity}>{item.activity}</div>
-                      </div>
-                    ))}
+                {eventData.agenda && eventData.agenda.length > 0 && (
+                  <div className={styles.agendaSection}>
+                    <h3 className={styles.sectionTitle}>Event Agenda</h3>
+                    <div className={styles.agenda}>
+                      {eventData.agenda.map((item, index) => (
+                        <div key={index} className={styles.agendaItem}>
+                          <div className={styles.agendaTime}>{item.time}</div>
+                          <div className={styles.agendaActivity}>{item.activity}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </Card.Body>
             </Card>
           </Col>
@@ -317,15 +418,21 @@ Refreshments will be provided during the break.`,
                 <h4 className={styles.sidebarTitle}>Event Registration</h4>
                 
                 <div className={styles.eventInfo}>
-                  <div className={styles.infoItem}>
-                    <strong>Price:</strong> {event.price}
-                  </div>
-                  <div className={styles.infoItem}>
-                    <strong>Age Group:</strong> {event.ageGroup}
-                  </div>
-                  <div className={styles.infoItem}>
-                    <strong>Difficulty:</strong> {event.difficulty}
-                  </div>
+                  {eventData.price && (
+                    <div className={styles.infoItem}>
+                      <strong>Price:</strong> {eventData.price}
+                    </div>
+                  )}
+                  {eventData.ageGroup && (
+                    <div className={styles.infoItem}>
+                      <strong>Age Group:</strong> {eventData.ageGroup}
+                    </div>
+                  )}
+                  {eventData.difficulty && (
+                    <div className={styles.infoItem}>
+                      <strong>Difficulty:</strong> {eventData.difficulty}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.registrationActions}>
@@ -351,36 +458,45 @@ Refreshments will be provided during the break.`,
             </Card>
 
             {/* Organizer Info */}
-            <Card className={styles.sidebarCard}>
-              <Card.Body>
-                <h4 className={styles.sidebarTitle}>Event Organizer</h4>
-                <div className={styles.organizerInfo}>
-                  <div className={styles.organizerHeader}>
-                    <PersonFill className={styles.organizerIcon} />
-                    <div>
-                      <div className={styles.organizerName}>{event.organizer}</div>
-                      <div className={styles.organizerTitle}>{event.organizerTitle}</div>
+            {(eventData.organizerFullName || eventData.organizer || eventData.createdByName) && (
+              <Card className={styles.sidebarCard}>
+                <Card.Body>
+                  <h4 className={styles.sidebarTitle}>Event Organizer</h4>
+                  <div className={styles.organizerInfo}>
+                    <div className={styles.organizerHeader}>
+                      <PersonFill className={styles.organizerIcon} />
+                      <div>
+                        <div className={styles.organizerName}>
+                          {eventData.organizerFullName || eventData.organizer || eventData.createdByName}
+                        </div>
+                        {eventData.organizerTitle && (
+                          <div className={styles.organizerTitle}>{eventData.organizerTitle}</div>
+                        )}
+                      </div>
                     </div>
+                    {eventData.organizerEmail && (
+                      <div className={styles.organizerContact}>
+                        <div>Email: {eventData.organizerEmail}</div>
+                      </div>
+                    )}
                   </div>
-                  <div className={styles.organizerContact}>
-                    <div>Email: {event.organizerEmail}</div>
-                    <div>Phone: {event.organizerPhone}</div>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
+                </Card.Body>
+              </Card>
+            )}
 
             {/* Requirements */}
-            <Card className={styles.sidebarCard}>
-              <Card.Body>
-                <h4 className={styles.sidebarTitle}>Requirements</h4>
-                <ul className={styles.requirementsList}>
-                  {event.requirements.map((requirement, index) => (
-                    <li key={index}>{requirement}</li>
-                  ))}
-                </ul>
-              </Card.Body>
-            </Card>
+            {eventData.requirements && eventData.requirements.length > 0 && (
+              <Card className={styles.sidebarCard}>
+                <Card.Body>
+                  <h4 className={styles.sidebarTitle}>Requirements</h4>
+                  <ul className={styles.requirementsList}>
+                    {eventData.requirements.map((requirement, index) => (
+                      <li key={index}>{requirement}</li>
+                    ))}
+                  </ul>
+                </Card.Body>
+              </Card>
+            )}
           </Col>
         </Row>
       </Container>
@@ -388,7 +504,7 @@ Refreshments will be provided during the break.`,
       {/* Registration Modal */}
       <Modal show={showRegistrationModal} onHide={() => setShowRegistrationModal(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Register for {event.title}</Modal.Title>
+          <Modal.Title>Register for {eventData.title}</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleRegistrationSubmit}>
           <Modal.Body>

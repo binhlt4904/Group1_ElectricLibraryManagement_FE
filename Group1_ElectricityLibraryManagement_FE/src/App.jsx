@@ -1,5 +1,7 @@
 import './App.css'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { UserProvider } from './components/contexts/UserProvider';
 import HomePage from './pages/public/HomePage';
 import BookListPage from './pages/public/BookListPage';
@@ -15,6 +17,7 @@ import NotificationsPage from './pages/user/NotificationsPage';
 import WalletPage from './pages/user/WalletPage';
 import WishlistPage from "./pages/user/WishlistPage";
 import BookReaderPage from './pages/user/BookReaderPage';
+import UserDocumentsPage from './pages/user/UserDocumentsPage';
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
 
@@ -40,17 +43,31 @@ import TestPDF from './pages/admin/book/TestPDF';
 import AddBookContentPage from './pages/admin/book/AddBookContentPage';
 import DepositPage from './pages/user/DepositPage';
 import ReaderReportManagementPage from './pages/user/ReaderReportManager'
+import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
+
 const AppContent = () => {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
 
 
 
-    return (
-        <UserProvider>
-            <div className="app-container">
-                {!isAdminPage && <Header />}
-                <main className="main-content">
+  return (
+    <UserProvider>
+      <div className="app-container">
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+        {!isAdminPage && <Header />}
+        <main className="main-content">
 
                     <Routes>
                         {/* Public Pages */}
@@ -75,6 +92,7 @@ const AppContent = () => {
                         <Route path="/reader-report-history" element={<ReaderReportManagementPage />} />                       
                         <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
                         <Route path="/wishlist" element={<WishlistPage />} />
+                        <Route path="/research" element={<UserDocumentsPage />} />
 
                         {/* Admin Pages */}
                         <Route path="/admin" element={<AdminLayout />}>
@@ -92,6 +110,7 @@ const AppContent = () => {
                             <Route path="user-reports" element={<ReportManagementPage />} />
                             <Route path="documents" element={<DocumentManagementPage />} />
                             <Route path="system-users" element={<StaffManagementPage />} />
+                            <Route path="library-cards" element={<LibraryCardManagementPage />} />
                             <Route path="books/add/:id" element={<AddBookContentPage />} />
                             {/* Default redirect to dashboard */}
                             <Route index element={<DashboardPage />} />

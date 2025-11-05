@@ -1,28 +1,83 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Alert } from 'react-bootstrap';
-import { Download, Printer, QrCode, PersonFill, CalendarFill, CreditCardFill } from 'react-bootstrap-icons';
+import React, { useState, useEffect, useContext } from 'react';
+import { Container, Row, Col, Card, Button, Badge, Alert, Modal, Form, Spinner } from 'react-bootstrap';
+import { Download, Printer, QrCode, PersonFill, CalendarFill, CreditCardFill, ArrowClockwise } from 'react-bootstrap-icons';
+import UserContext from '../../components/contexts/UserContext';
+import libraryCardAPI from '../../api/libraryCard';
 import styles from './LibraryCardPage.module.css';
 
 const LibraryCardPage = () => {
+  const { user } = useContext(UserContext) || {};
+  const [cardData, setCardData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [showDownloadAlert, setShowDownloadAlert] = useState(false);
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [renewalReason, setRenewalReason] = useState('');
+  const [renewalSuccess, setRenewalSuccess] = useState(false);
   
-  // Mock user data - replace with actual user data from context/API
-  const userData = {
-    firstName: 'John',
-    lastName: 'Doe',
-    memberId: 'EL2024001234',
-    card_number: 'EL2024001234', // ERD attribute
-    membershipType: 'Premium',
-    issueDate: '2024-01-15',
-    issue_date: '2024-01-15', // ERD attribute
-    expirationDate: '2025-01-15',
-    expiry_date: '2025-01-15', // ERD attribute
-    status: 'Active', // ERD attribute
-    email: 'john.doe@email.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main Street, City, State 12345',
-    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+  // Fetch library card data
+  useEffect(() => {
+    if (user) {
+      fetchCardData();
+    }
+  }, [user]);
+
+  const fetchCardData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await libraryCardAPI.getMyCard();
+      setCardData(response.data);
+    } catch (err) {
+      console.error('Error fetching library card:', err);
+      setError('Failed to load library card. You may not have a library card yet.');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleRequestRenewal = async () => {
+    if (!renewalReason.trim()) {
+      setError('Please provide a reason for renewal');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      await libraryCardAPI.requestRenewal({ reason: renewalReason });
+      setShowRenewalModal(false);
+      setRenewalReason('');
+      setRenewalSuccess(true);
+      setTimeout(() => setRenewalSuccess(false), 5000);
+    } catch (err) {
+      console.error('Error requesting renewal:', err);
+      setError(err.response?.data?.message || 'Failed to submit renewal request. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Use real card data from API
+  const userData = cardData ? {
+    firstName: cardData.readerName?.split(' ')[0] || 'Member',
+    lastName: cardData.readerName?.split(' ').slice(1).join(' ') || '',
+    memberId: cardData.cardNumber,
+    card_number: cardData.cardNumber,
+    membershipType: 'Standard', // Can be enhanced based on backend data
+    issueDate: cardData.issueDate,
+    issue_date: cardData.issueDate,
+    expirationDate: cardData.expiryDate,
+    expiry_date: cardData.expiryDate,
+    status: cardData.status,
+    email: cardData.email || user?.email || '',
+    phone: cardData.phone || user?.phone || '',
+    address: cardData.address || user?.address || '',
+    photo: cardData.photo || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    daysUntilExpiry: cardData.daysUntilExpiry,
+    readerName: cardData.readerName,
+    readerCode: cardData.readerCode
+  } : null;
 
   const handleDownload = () => {
     // Simulate download functionality
@@ -55,6 +110,7 @@ const LibraryCardPage = () => {
   };
 
   const getStatusBadgeVariant = (status) => {
+    if (!status) return 'secondary';
     switch (status.toLowerCase()) {
       case 'active':
         return 'success';
@@ -70,11 +126,36 @@ const LibraryCardPage = () => {
   };
 
   const isExpiringSoon = () => {
-    const expirationDate = new Date(userData.expirationDate);
+    if (!userData || !userData.expiryDate) return false;
+    if (cardData && cardData.daysUntilExpiry !== null && cardData.daysUntilExpiry !== undefined) {
+      return cardData.daysUntilExpiry <= 30 && cardData.daysUntilExpiry > 0;
+    }
+    const expirationDate = new Date(userData.expiryDate || userData.expirationDate);
     const today = new Date();
     const daysUntilExpiration = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiration <= 30;
+    return daysUntilExpiration <= 30 && daysUntilExpiration > 0;
   };
+
+  const getDaysUntilExpiry = () => {
+    if (!userData || !userData.expiryDate) return null;
+    if (cardData && cardData.daysUntilExpiry !== null && cardData.daysUntilExpiry !== undefined) {
+      return cardData.daysUntilExpiry;
+    }
+    const expirationDate = new Date(userData.expiryDate || userData.expirationDate);
+    const today = new Date();
+    return Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
+  };
+
+  if (isLoading && !cardData) {
+    return (
+      <div className={styles.libraryCardPage}>
+        <Container className="text-center py-5">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3">Loading your library card...</p>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.libraryCardPage}>
@@ -89,23 +170,50 @@ const LibraryCardPage = () => {
           </Col>
         </Row>
 
+        {error && (
+          <Alert variant="danger" className="mb-4" onClose={() => setError(null)} dismissible>
+            {error}
+          </Alert>
+        )}
+
         {showDownloadAlert && (
-          <Alert variant="success" className={styles.alert}>
+          <Alert variant="success" className={styles.alert} onClose={() => setShowDownloadAlert(false)} dismissible>
             Library card downloaded successfully!
+          </Alert>
+        )}
+
+        {renewalSuccess && (
+          <Alert variant="success" className={styles.alert} onClose={() => setRenewalSuccess(false)} dismissible>
+            <strong>Renewal Request Submitted!</strong> Your request has been sent to the library staff for approval.
           </Alert>
         )}
 
         {/* Expiration Warning */}
         {isExpiringSoon() && (
           <Alert variant="warning" className={styles.expirationAlert}>
-            <strong>Card Expiring Soon!</strong> Your library card expires on {formatDate(userData.expirationDate)}. 
-            Please renew your membership to continue accessing library services.
+            <strong>Card Expiring Soon!</strong> Your library card expires on {formatDate(userData.expiryDate || userData.expirationDate)} 
+            ({getDaysUntilExpiry()} days remaining). 
+            <Button 
+              variant="warning" 
+              size="sm" 
+              className="ms-2"
+              onClick={() => setShowRenewalModal(true)}
+            >
+              Request Renewal
+            </Button>
           </Alert>
         )}
 
         <Row className="justify-content-center">
           <Col lg={8} xl={6}>
             {/* Digital Library Card */}
+            {!userData ? (
+              <Alert variant="info" className="text-center">
+                <h4>No Library Card Found</h4>
+                <p>You don't have a library card yet. Please contact the library administration to get your card issued.</p>
+              </Alert>
+            ) : (
+            <>
             <div className={styles.cardContainer}>
               <div className={styles.libraryCard}>
                 {/* Card Front */}
@@ -124,10 +232,10 @@ const LibraryCardPage = () => {
                       </div>
                     </div>
                     <Badge 
-                      bg={getMembershipColor(userData.membershipType)}
+                      bg={getMembershipColor(userData?.membershipType)}
                       className={styles.membershipBadge}
                     >
-                      {userData.membershipType}
+                      {userData?.membershipType}
                     </Badge>
                   </div>
 
@@ -150,8 +258,15 @@ const LibraryCardPage = () => {
                       <div className={styles.memberDetails}>
                         <div className={styles.detailItem}>
                           <CalendarFill className={styles.detailIcon} />
-                          <span>Expires: {formatDate(userData.expirationDate)}</span>
+                          <span>Expires: {formatDate(userData.expiryDate || userData.expirationDate)}</span>
                         </div>
+                        {userData.daysUntilExpiry !== null && userData.daysUntilExpiry !== undefined && (
+                          <div className={styles.detailItem}>
+                            <span className={userData.daysUntilExpiry < 30 ? styles.expiringText : ''}>
+                              {userData.daysUntilExpiry} days remaining
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -218,6 +333,17 @@ const LibraryCardPage = () => {
                 <Printer className="me-2" />
                 Print Card
               </Button>
+              {(isExpiringSoon() || userData.status?.toLowerCase() === 'expired') && (
+                <Button
+                  variant="warning"
+                  size="lg"
+                  onClick={() => setShowRenewalModal(true)}
+                  className={styles.actionButton}
+                >
+                  <ArrowClockwise className="me-2" />
+                  Request Renewal
+                </Button>
+              )}
             </div>
 
             {/* Member Information Card */}
@@ -265,15 +391,18 @@ const LibraryCardPage = () => {
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Status</label>
                       <div className={styles.infoValue}>
-                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status}</Badge>
+                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status || 'N/A'}</Badge>
                       </div>
                     </div>
                   </Col>
                 </Row>
               </Card.Body>
             </Card>
+            </>
+            )}
 
             {/* Digital Wallet Integration */}
+            {userData && (
             <Card className={`custom-card ${styles.walletCard} mt-4`}>
               <Card.Header className={styles.walletCardHeader}>
                 <h4 className={styles.walletCardTitle}>
@@ -295,8 +424,59 @@ const LibraryCardPage = () => {
                 </div>
               </Card.Body>
             </Card>
+            )}
           </Col>
         </Row>
+
+        {/* Renewal Request Modal */}
+        <Modal show={showRenewalModal} onHide={() => setShowRenewalModal(false)} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Request Library Card Renewal</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Please provide a reason for your renewal request:</p>
+            <Form>
+              <Form.Group>
+                <Form.Label>Reason for Renewal *</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  placeholder="e.g., My card is expiring soon and I need to continue borrowing books"
+                  value={renewalReason}
+                  onChange={(e) => setRenewalReason(e.target.value)}
+                  required
+                />
+              </Form.Group>
+            </Form>
+            {userData?.expiryDate && (
+              <Alert variant="info" className="mt-3 mb-0">
+                <small>
+                  <strong>Current Expiry:</strong> {formatDate(userData.expiryDate)}<br />
+                  <strong>Days Remaining:</strong> {getDaysUntilExpiry()} days
+                </small>
+              </Alert>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowRenewalModal(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={handleRequestRenewal}
+              disabled={isLoading || !renewalReason.trim()}
+            >
+              {isLoading ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Request'
+              )}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </div>
   );

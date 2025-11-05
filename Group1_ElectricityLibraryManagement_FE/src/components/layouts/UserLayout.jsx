@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Container, Nav, Navbar, Offcanvas, Button, Dropdown, Badge 
+import {
+  Container, Nav, Navbar, Offcanvas, Button, Dropdown, Badge
 } from 'react-bootstrap';
 import {
   List, X, PersonCircle, ClockHistory, CreditCard, Wallet, Bell,
   BoxArrowRight, House, BookFill
 } from 'react-bootstrap-icons';
 import styles from './UserLayout.module.css';
+import NotificationBell from '../commons/NotificationBell';
+import UserContext from '../contexts/UserContext';
 
 const UserLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user: authUser } = useContext(UserContext) || {};
 
-  // Mock user data - in real app this would come from context/redux
+  // Get user data from context, with fallback to defaults
   const user = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    membershipType: 'Premium',
+    name: authUser?.username || 'User',
+    email: authUser?.email || 'user@example.com',
+    membershipType: authUser?.role ? authUser.role.charAt(0).toUpperCase() + authUser.role.slice(1) : 'Member',
     avatar: null
   };
 
@@ -167,6 +170,7 @@ const UserLayout = () => {
             My Account
           </Navbar.Brand>
           <div className={styles.mobileUserInfo}>
+            <NotificationBell variant="outline-primary" size="sm" />
             <PersonCircle size={32} />
           </div>
         </Container>

@@ -1,0 +1,227 @@
+.userDocumentsPage {
+  padding: 2rem 0;
+  background-color: var(--light-gray);
+  min-height: 100vh;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-green) 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.pageTitle {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.pageSubtitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+}
+
+.documentCard {
+  height: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.documentCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-blue);
+}
+
+.documentIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  background-color: var(--light-gray);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: var(--primary-blue);
+}
+
+.documentTitle {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--dark-charcoal);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.documentDescription {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+.documentMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.documentDate {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.85rem;
+  color: var(--medium-gray);
+}
+
+.documentActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionButton {
+  flex: 1;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+}
+
+.pagination {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageInfo {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.95rem;
+  color: var(--medium-gray);
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .documentCard {
+    margin-bottom: 1rem;
+  }
+
+  .documentTitle {
+    font-size: 1rem;
+  }
+
+  .documentDescription {
+    font-size: 0.85rem;
+  }
+
+  .actionButton {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .userDocumentsPage {
+    padding: 1rem 0;
+  }
+
+  .pageHeader {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.25rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.8rem;
+  }
+
+  .documentCard {
+    margin-bottom: 0.75rem;
+  }
+
+  .documentIcon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .documentTitle {
+    font-size: 0.95rem;
+  }
+
+  .documentDescription {
+    font-size: 0.8rem;
+  }
+
+  .documentMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .documentActions {
+    width: 100%;
+  }
+
+  .actionButton {
+    font-size: 0.75rem;
+    padding: 0.35rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .pageInfo {
+    min-width: 100%;
+    order: 2;
+  }
+}
+

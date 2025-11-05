@@ -303,7 +303,7 @@ const RegisterPage = () => {
                 <div className={styles.footer}>
                   <p>
                     Already have an account?{' '}
-                    <Button variant="link" className={styles.loginLink}>
+                    <Button variant="link" className={styles.loginLink} href="/login">
                       Sign in here
                     </Button>
                   </p>
