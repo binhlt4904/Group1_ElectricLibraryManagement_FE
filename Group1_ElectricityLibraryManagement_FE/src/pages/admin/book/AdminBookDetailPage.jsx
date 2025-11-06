@@ -3,7 +3,7 @@ import axios from "axios";
 import DOMPurify from "dompurify";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./AdminBookDetailPage.module.css";
-import { Button, Alert } from "react-bootstrap";
+import { Button, Alert, Form } from "react-bootstrap";
 import { Eye, Pencil, Trash } from "react-bootstrap-icons";
 import bookApi from "../../../api/book";
 import BookReaderModal from "../../../components/commons/books/BookReaderModal";
@@ -16,11 +16,12 @@ const AdminBookDetailPage = () => {
   const [viewContent, setViewContent] = useState(null); // lưu object thay vì id
   const [editingContentId, setEditingContentId] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
   const [editContentForm, setEditContentForm] = useState({
     chapter: '',
     title: '',
-    file: null, // file content mới (tuỳ chọn)
+    file: null, // file content mới (tuỳ chọn),
+    isDeleted: false,
   });
   const navigate = useNavigate();
 
@@ -58,11 +59,13 @@ const AdminBookDetailPage = () => {
   };
 
   const startEditContent = (content) => {
+    console.log(content)
     setEditingContentId(content.id);
     setEditContentForm({
       chapter: content.chapter ?? '',
       title: content.title ?? '',
       file: null,
+      isDeleted: content.isDeleted || false,
     });
   };
 
@@ -82,15 +85,17 @@ const AdminBookDetailPage = () => {
       form.append('chapter', editContentForm.chapter ?? '');
       form.append('title', editContentForm.title ?? '');
       if (editContentForm.file) form.append('file', editContentForm.file); // tuỳ BE đặt tên field: file/content
-     
+      form.append('isDeleted', editContentForm.isDeleted);
+
+
 
       // TODO: đổi URL theo BE bạn (ví dụ PATCH/PUT)
-      const response = await bookApi.updateBookContent(contentId,form);
+      const response = await bookApi.updateBookContent(contentId, form);
       console.log(response.data)
 
       if (response?.status >= 200 && response?.status < 300) {
         showAlertMessage('Update book content successfully!');
-        
+
       } else {
         throw new Error('Upload failed');
       }
@@ -104,7 +109,7 @@ const AdminBookDetailPage = () => {
     }
   };
 
-   const showAlertMessage = (message) => {
+  const showAlertMessage = (message) => {
     setAlertMessage(message);
     setShowAlert(true);
     setTimeout(() => setShowAlert(false), 3000);
@@ -135,6 +140,13 @@ const AdminBookDetailPage = () => {
             <p><strong>Publisher:</strong> {book.publisher || "N/A"}</p>
             <p><strong>Category:</strong> {book.category || "N/A"}</p>
             <p><strong>Published Date:</strong> {book.publishedDate}</p>
+
+          </div>
+          <div className={styles.bookDescription}>
+            <strong>Description:</strong>{" "}
+            <span style={{ whiteSpace: "pre-line" }}>
+              {book.description || "N/A"}
+            </span>
           </div>
         </div>
       </div>
@@ -154,6 +166,7 @@ const AdminBookDetailPage = () => {
                 <th>#</th>
                 <th>Chapter</th>
                 <th>Title</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -219,6 +232,23 @@ const AdminBookDetailPage = () => {
                         </div>
                       )}
                     </td>
+                    <td>
+                      {!isEditing ? (
+                        <span
+                          className={`badge ${c.isDeleted ? 'bg-secondary' : 'bg-success'}`}
+                        >
+                          {c.isDeleted ? 'Inactive' : 'Active'}
+                        </span>
+                      ) : (
+                        <Form.Check
+                          type="switch"
+                          id={`status-${c.id}`}
+                          label={editContentForm.isDeleted ? 'Inactive' : 'Active'}
+                          checked={!editContentForm.isDeleted} // Active = false
+                          onChange={(e) => onChangeContent('isDeleted', !e.target.checked)}
+                        />
+                      )}
+                    </td>
 
                     {/* Actions */}
                     <td className={styles.actionsCell}>
@@ -229,7 +259,7 @@ const AdminBookDetailPage = () => {
                               variant="outline-primary"
                               size="sm"
                               onClick={() => setViewContent(c)}
-                              className={styles.actionButton}
+                              
                             >
                               <Eye />
                             </Button>
@@ -237,18 +267,11 @@ const AdminBookDetailPage = () => {
                               variant="outline-secondary"
                               size="sm"
                               onClick={() => startEditContent(c)}
-                              className={styles.actionButton}
+                              className="ms-2"
                             >
                               <Pencil />
                             </Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => handleToggleVisibility(c.id, c.hidden)}
-                              className={styles.actionButton}
-                            >
-                              <Trash />
-                            </Button>
+                            
                           </>
                         ) : (
                           <>

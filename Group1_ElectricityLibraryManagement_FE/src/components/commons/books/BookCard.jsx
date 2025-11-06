@@ -10,11 +10,10 @@ const BookCard = ({
   book,
   onWishlistToggle, // optional callback
   showRating = true,
-  showAvailability = true,
   isInWishlist: externalWishlist = false, // hỗ trợ nếu truyền từ ngoài
 }) => {
   const { user } = useContext(UserContext);
-  const { id, title, author, image, isDeleted, category, publishedDate } = book;
+  const { id, title, author, image, isDeleted, category, publishedDate, starRating, reviewCount } = book;
 
   /** ❤️ Kiểm tra sách có trong localStorage không */
   const [isInWishlist, setIsInWishlist] = useState(externalWishlist);
@@ -46,11 +45,10 @@ const BookCard = ({
     }
 
     localStorage.setItem("favorites", JSON.stringify(updated));
-    onWishlistToggle?.(book); // callback ngoài nếu có
+    onWishlistToggle?.(book); 
   };
 
-  /** ⭐ Hiển thị rating giả (4.2 mặc định) */
-  const renderStars = (rating = 4.2) => {
+  const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -106,8 +104,8 @@ const BookCard = ({
           {/* ⭐ Rating */}
           {showRating && (
             <div className={styles.ratingContainer}>
-              <div className={styles.stars}>{renderStars()}</div>
-              <span className={styles.ratingText}>4.2 (123 reviews)</span>
+              <div className={styles.stars}>{renderStars(book.starRating)}</div>
+              <span className={styles.ratingText}>{starRating} ({reviewCount} review)</span>
             </div>
           )}
 
@@ -124,18 +122,15 @@ const BookCard = ({
           </div>
 
           {/* 🔘 Nút hành động */}
-          {showAvailability && (
             <div className={styles.cardActions}>
               <Button
                 variant="primary"
                 size="sm"
                 className={styles.actionButton}
                 disabled={isDeleted === "unavailable"}
-              >
-                {isDeleted === false ? "Out" : "View Details"}
+              > View Details
               </Button>
             </div>
-          )}
         </Card.Body>
       </Card>
     </Link>

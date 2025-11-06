@@ -113,7 +113,7 @@ const Header = () => {
                                             <Wallet className="me-2" />
                                             My Wallet
                                         </Dropdown.Item>
-                                        {user.role === 'admin' && (
+                                        {user.role === 'ADMIN' && (
                                             <>
                                                 <Dropdown.Divider />
                                                 <Dropdown.Item as={Link} to="/admin">
@@ -163,7 +163,7 @@ const Header = () => {
                         {user && (
                             <Nav.Link
                                 as={Link}
-                                to="/user/profile"
+                                to="/profile"
                                 className={`${styles.navLink} ${isActivePage('/user') ? styles.active : ''}`}
                             >
                                 My Account
