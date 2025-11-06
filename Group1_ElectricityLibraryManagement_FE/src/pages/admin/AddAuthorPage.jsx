@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "./AuthorsManagementPage.module.css";
 import authorApi from "../../api/author";
+import { useNavigate } from "react-router-dom";
 
 const AddAuthorPage = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const AddAuthorPage = () => {
     website: "",
     socialLinks: "",
   });
+  const navigate = useNavigate();
 
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
@@ -85,6 +87,9 @@ const AddAuthorPage = () => {
         website: "",
         socialLinks: "",
       });
+      setTimeout(() => {
+        navigate("/admin/authors");
+      }, 800);
       setPreviewAvatar(null);
     } catch (err) {
       console.error("Add author failed:", err);
@@ -103,11 +108,16 @@ const AddAuthorPage = () => {
         </div>
       </div>
 
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
+      {successMessage && (
+        <div className="alert alert-success">{successMessage}</div>
+      )}
       {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
 
       <div className={`card ${styles.authorsCard}`}>
-        <div className={`card-body ${styles.authorsCardBody}`} style={{ padding: "2rem" }}>
+        <div
+          className={`card-body ${styles.authorsCardBody}`}
+          style={{ padding: "2rem" }}
+        >
           <form onSubmit={handleSubmit}>
             {/* Full name */}
             <div className="mb-3">
@@ -228,7 +238,7 @@ const AddAuthorPage = () => {
 
             {/* Avatar */}
             <div className="mb-3">
-              <label className="form-label fw-bold">Avatar (choose file or paste URL)</label>
+              <label className="form-label fw-bold">Avatar (Image URL)</label>
               <input
                 type="text"
                 className="form-control mb-2"
@@ -237,7 +247,7 @@ const AddAuthorPage = () => {
                 onChange={handleChange}
                 placeholder="Paste image URL (optional)"
               />
-              <input
+              {/* <input
                 type="file"
                 className="form-control"
                 name="avatar"
@@ -245,7 +255,7 @@ const AddAuthorPage = () => {
                 onChange={handleChange}
                 disabled={!!formData.avatarUrl}
               />
-              <small className="text-muted">Supported: JPG, PNG, JPEG</small>
+              <small className="text-muted">Supported: JPG, PNG, JPEG</small> */}
 
               {previewAvatar && (
                 <div className="mt-3">

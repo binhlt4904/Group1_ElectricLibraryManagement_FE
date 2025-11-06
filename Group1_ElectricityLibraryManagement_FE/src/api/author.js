@@ -2,7 +2,13 @@ import axiosClient from "./axiosClient";
 
 const authorApi = {
   // ✅ Danh sách tác giả
-  getAll: () => axiosClient.get("/api/v1/public/authors"),
+  getPaged: (page = 0, size = 10, search = "") => {
+    let url = `/api/v1/public/authors?page=${page}&size=${size}`;
+    if (search.trim() !== "") {
+      url += `&search=${encodeURIComponent(search.trim())}`;
+    }
+    return axiosClient.get(url);
+  },
 
   // ✅ Lấy 1 tác giả
   getById: (id) => axiosClient.get(`/api/v1/public/authors/${id}`),

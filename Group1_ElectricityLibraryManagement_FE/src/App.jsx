@@ -45,6 +45,7 @@ import DepositPage from './pages/user/DepositPage';
 import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
 import AddAuthorPage from './pages/admin/AddAuthorPage';
+import AddPublisherPage from './pages/admin/AddPublisherPage';
 
 const AppContent = () => {
     const location = useLocation();
@@ -114,6 +115,7 @@ const AppContent = () => {
                             <Route path="library-cards" element={<LibraryCardManagementPage />} />
                             <Route path="books/add/:id" element={<AddBookContentPage />} />
                             <Route path="authors/add" element={<AddAuthorPage />} />
+                            <Route path="publishers/add" element={<AddPublisherPage />} />
 
                             {/* Default redirect to dashboard */}
                             <Route index element={<DashboardPage />} />

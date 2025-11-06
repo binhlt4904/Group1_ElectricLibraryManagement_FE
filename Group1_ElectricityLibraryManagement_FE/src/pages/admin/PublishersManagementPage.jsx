@@ -1,243 +1,202 @@
-import React, { useState } from 'react';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Table, 
-  Button, 
-  Form, 
-  InputGroup, 
-  Badge, 
+import React, { useState } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Button,
+  Form,
+  InputGroup,
+  Badge,
   Pagination,
   Modal,
-  Alert
-} from 'react-bootstrap';
-import { 
-  Building, 
-  Search, 
-  Plus, 
-  Eye, 
-  PencilSquare, 
-  Trash, 
+  Alert,
+} from "react-bootstrap";
+import {
+  Building,
+  Search,
+  Plus,
+  Eye,
+  PencilSquare,
+  Trash,
   GeoAlt,
   Telephone,
   Envelope,
   Globe,
   BookFill,
-  Calendar
-} from 'react-bootstrap-icons';
-import styles from './PublishersManagementPage.module.css';
+  Calendar,
+} from "react-bootstrap-icons";
+import styles from "./PublishersManagementPage.module.css";
+import publisherApi from "../../api/publisher";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const PublishersManagementPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [publisherToDelete, setPublisherToDelete] = useState(null);
-  const publishersPerPage = 10;
+  const ITEMS_PER_PAGE = 5;
 
-  // Mock publishers data
-  const mockPublishers = [
-    {
-      id: 1,
-      name: "Penguin Random House",
-      country: "United States",
-      city: "New York",
-      address: "1745 Broadway, New York, NY 10019",
-      phone: "+1 (212) 782-9000",
-      email: "info@penguinrandomhouse.com",
-      website: "www.penguinrandomhouse.com",
-      foundedYear: 1927,
-      totalBooks: 1250,
-      activeBooks: 1180,
-      status: "active",
-      description: "One of the world's largest English-language publishers, formed by the merger of Penguin and Random House.",
-      specialties: ["Fiction", "Non-fiction", "Children's Books", "Academic"]
-    },
-    {
-      id: 2,
-      name: "HarperCollins Publishers",
-      country: "United States",
-      city: "New York",
-      address: "195 Broadway, New York, NY 10007",
-      phone: "+1 (212) 207-7000",
-      email: "contact@harpercollins.com",
-      website: "www.harpercollins.com",
-      foundedYear: 1989,
-      totalBooks: 890,
-      activeBooks: 825,
-      status: "active",
-      description: "A major English-language publisher headquartered in New York City.",
-      specialties: ["Literary Fiction", "Biography", "History", "Religion"]
-    },
-    {
-      id: 3,
-      name: "Macmillan Publishers",
-      country: "United Kingdom",
-      city: "London",
-      address: "The Smithson, 6 Briset Street, London EC1M 5NR",
-      phone: "+44 20 7833 4000",
-      email: "info@macmillan.com",
-      website: "www.macmillan.com",
-      foundedYear: 1843,
-      totalBooks: 650,
-      activeBooks: 598,
-      status: "active",
-      description: "A British publishing company founded in London by Daniel and Alexander Macmillan.",
-      specialties: ["Academic", "Science", "Technology", "Medical"]
-    },
-    {
-      id: 4,
-      name: "Scholastic Corporation",
-      country: "United States",
-      city: "New York",
-      address: "557 Broadway, New York, NY 10012",
-      phone: "+1 (212) 343-6100",
-      email: "info@scholastic.com",
-      website: "www.scholastic.com",
-      foundedYear: 1920,
-      totalBooks: 1100,
-      activeBooks: 1050,
-      status: "active",
-      description: "American multinational publishing, education and media company.",
-      specialties: ["Children's Books", "Educational", "Young Adult", "Reference"]
-    },
-    {
-      id: 5,
-      name: "Oxford University Press",
-      country: "United Kingdom",
-      city: "Oxford",
-      address: "Great Clarendon Street, Oxford OX2 6DP",
-      phone: "+44 1865 556767",
-      email: "enquiry@oup.com",
-      website: "www.oup.com",
-      foundedYear: 1586,
-      totalBooks: 2100,
-      activeBooks: 1980,
-      status: "active",
-      description: "The largest university press in the world and the second oldest after Cambridge University Press.",
-      specialties: ["Academic", "Reference", "Dictionaries", "Journals"]
-    },
-    {
-      id: 6,
-      name: "Vintage Books",
-      country: "United States",
-      city: "New York",
-      address: "1745 Broadway, New York, NY 10019",
-      phone: "+1 (212) 751-2600",
-      email: "info@vintage-books.com",
-      website: "www.vintage-books.com",
-      foundedYear: 1954,
-      totalBooks: 420,
-      activeBooks: 385,
-      status: "active",
-      description: "American publishing imprint owned by Random House.",
-      specialties: ["Literary Fiction", "Classics", "Contemporary Fiction", "Essays"]
-    },
-    {
-      id: 7,
-      name: "Bloomsbury Publishing",
-      country: "United Kingdom",
-      city: "London",
-      address: "50 Bedford Square, London WC1B 3DP",
-      phone: "+44 20 7631 5600",
-      email: "contact@bloomsbury.com",
-      website: "www.bloomsbury.com",
-      foundedYear: 1986,
-      totalBooks: 380,
-      activeBooks: 350,
-      status: "active",
-      description: "British worldwide publishing house of fiction and non-fiction.",
-      specialties: ["Fiction", "Non-fiction", "Children's Books", "Academic"]
-    },
-    {
-      id: 8,
-      name: "Wiley Publishing",
-      country: "United States",
-      city: "Hoboken",
-      address: "111 River Street, Hoboken, NJ 07030",
-      phone: "+1 (201) 748-6000",
-      email: "info@wiley.com",
-      website: "www.wiley.com",
-      foundedYear: 1807,
-      totalBooks: 750,
-      activeBooks: 680,
-      status: "active",
-      description: "American multinational publishing company specializing in academic publishing.",
-      specialties: ["Academic", "Professional", "Technical", "Scientific"]
-    },
-    {
-      id: 9,
-      name: "Thames & Hudson",
-      country: "United Kingdom",
-      city: "London",
-      address: "181A High Holborn, London WC1V 7QX",
-      phone: "+44 20 7845 5000",
-      email: "mail@thameshudson.co.uk",
-      website: "www.thamesandhudson.com",
-      foundedYear: 1949,
-      totalBooks: 290,
-      activeBooks: 265,
-      status: "active",
-      description: "British publisher of illustrated books on art, architecture, design, and visual culture.",
-      specialties: ["Art", "Architecture", "Design", "Photography"]
-    },
-    {
-      id: 10,
-      name: "Chronicle Books",
-      country: "United States",
-      city: "San Francisco",
-      address: "680 Second Street, San Francisco, CA 94107",
-      phone: "+1 (415) 537-4200",
-      email: "frontdesk@chroniclebooks.com",
-      website: "www.chroniclebooks.com",
-      foundedYear: 1967,
-      totalBooks: 320,
-      activeBooks: 295,
-      status: "inactive",
-      description: "American publisher of books, stationery, and gifts.",
-      specialties: ["Art", "Design", "Food", "Pop Culture"]
+
+  const [publishers, setPublishers] = useState([]);
+  const navigate = useNavigate();
+
+  // 🔹 Modal View / Edit state
+  const [showView, setShowView] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [selectedPublisher, setSelectedPublisher] = useState(null);
+  const [editData, setEditData] = useState({});
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // ✅ Gọi BE phân trang
+  const loadPublishers = async (page = 1, search = "") => {
+    try {
+      const res = await publisherApi.getPaged(page - 1, ITEMS_PER_PAGE, search);
+      setPublishers(res.data.content || []);
+      setTotalPages(res.data.totalPages || 1);
+      setTotalElements(res.data.totalElements || 0);
+    } catch (e) {
+      console.error("Failed to load publishers:", e);
     }
-  ];
+  };
 
-  const countries = ['all', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France'];
-  const statuses = ['all', 'active', 'inactive'];
+  // Lần đầu
+  useEffect(() => {
+    loadPublishers(1, "");
+  }, []);
 
-  // Filter publishers based on search and filters
-  const filteredPublishers = mockPublishers.filter(publisher => {
-    const matchesSearch = publisher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         publisher.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         publisher.specialties.some(specialty => 
-                           specialty.toLowerCase().includes(searchTerm.toLowerCase())
-                         );
-    const matchesCountry = selectedCountry === 'all' || publisher.country === selectedCountry;
-    const matchesStatus = selectedStatus === 'all' || publisher.status === selectedStatus;
-    
-    return matchesSearch && matchesCountry && matchesStatus;
+  // ✅ Debounce search: gọi BE sau 400ms
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setCurrentPage(1);
+      loadPublishers(1, searchTerm);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  // Đổi trang
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      loadPublishers(page, searchTerm);
+    }
+  };
+
+  // 🔹 (Tùy chọn) Lọc trạng thái/country client-side
+  const uiFilteredPublishers = publishers.filter((p) => {
+    const matchesStatus =
+      selectedStatus === "all" ||
+      (p.isDeleted ? "inactive" : "active") === selectedStatus;
+
+    const matchesCountry =
+      selectedCountry === "all" ||
+      (p.address || "").toLowerCase().includes(selectedCountry.toLowerCase());
+
+    return matchesStatus && matchesCountry;
   });
 
-  // Pagination
-  const indexOfLastPublisher = currentPage * publishersPerPage;
-  const indexOfFirstPublisher = indexOfLastPublisher - publishersPerPage;
-  const currentPublishers = filteredPublishers.slice(indexOfFirstPublisher, indexOfLastPublisher);
-  const totalPages = Math.ceil(filteredPublishers.length / publishersPerPage);
+  const countries = [
+    "all",
+    "United States",
+    "United Kingdom",
+    "Canada",
+    "Australia",
+    "Germany",
+    "France",
+  ];
+  const statuses = ["all", "active", "inactive"];
+
+  // Filter publishers based on search and filters
+  const filteredPublishers = publishers.filter((publisher) => {
+    const matchesSearch =
+      publisher.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      publisher.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      publisher.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      selectedStatus === "all" ||
+      (publisher.isDeleted ? "inactive" : "active") === selectedStatus;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  /** 🔹 View + Edit logic */
+  const handleView = (publisher) => {
+    setSelectedPublisher(publisher);
+    setShowView(true);
+  };
+
+  const handleEdit = (publisher) => {
+    setEditData(publisher);
+    setShowEdit(true);
+  };
+
+  const handleCloseModals = () => {
+    setShowView(false);
+    setShowEdit(false);
+    setSelectedPublisher(null);
+    setEditData({});
+    setSuccess("");
+    setError("");
+  };
+
+  /** 🔹 Handle edit input */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditData({ ...editData, [name]: value });
+  };
+
+  /** 🔹 Save edit */
+  const handleSave = async () => {
+    try {
+      await publisherApi.update(editData.id, editData);
+      setSuccess("✅ Updated successfully!");
+      loadPublishers(currentPage, searchTerm);
+      setTimeout(handleCloseModals, 1200);
+    } catch (err) {
+      console.error("Update failed:", err);
+      setError("❌ Failed to update publisher.");
+    }
+  };
+
+  // ✅ Pagination logic
+
 
   const handleDeleteClick = (publisher) => {
     setPublisherToDelete(publisher);
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
-    // Handle delete logic here
-    console.log('Deleting publisher:', publisherToDelete);
-    setShowDeleteModal(false);
-    setPublisherToDelete(null);
+  const handleDeleteConfirm = async () => {
+    if (!publisherToDelete) return;
+
+    try {
+      const updatedPublisher = {
+        ...publisherToDelete,
+        isDeleted: true, // 🔹 soft delete
+      };
+
+      await publisherApi.update(publisherToDelete.id, updatedPublisher);
+
+      setShowDeleteModal(false);
+      setPublisherToDelete(null);
+      setSuccess("✅ Publisher marked as inactive!");
+      loadPublishers(currentPage, searchTerm);
+    } catch (error) {
+      console.error("❌ Soft delete failed:", error);
+      setError("Failed to delete publisher. Please try again.");
+    }
   };
 
   const getStatusVariant = (status) => {
-    return status === 'active' ? 'success' : 'secondary';
+    return status === "active" ? "success" : "secondary";
   };
 
   return (
@@ -256,7 +215,11 @@ const PublishersManagementPage = () => {
               </p>
             </div>
             <div className={styles.headerActions}>
-              <Button variant="primary" className={styles.addButton}>
+              <Button
+                variant="primary"
+                className={styles.addButton}
+                onClick={() => navigate("/admin/publishers/add")}
+              >
                 <Plus className="me-2" />
                 Add Publisher
               </Button>
@@ -281,35 +244,40 @@ const PublishersManagementPage = () => {
             />
           </InputGroup>
         </Col>
-        <Col lg={3} className="mb-3">
+        {/* <Col lg={3} className="mb-3">
           <Form.Select
             value={selectedCountry}
             onChange={(e) => setSelectedCountry(e.target.value)}
             className={styles.filterSelect}
           >
-            {countries.map(country => (
+            {countries.map((country) => (
               <option key={country} value={country}>
-                {country === 'all' ? 'All Countries' : country}
+                {country === "all" ? "All Countries" : country}
               </option>
             ))}
           </Form.Select>
-        </Col>
+        </Col> */}
         <Col lg={3} className="mb-3">
           <Form.Select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className={styles.filterSelect}
           >
-            {statuses.map(status => (
+            {statuses.map((status) => (
               <option key={status} value={status}>
-                {status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
+                {status === "all"
+                  ? "All Status"
+                  : status.charAt(0).toUpperCase() + status.slice(1)}
               </option>
             ))}
           </Form.Select>
         </Col>
+        {/* Thay thống kê kết quả */}
         <Col lg={2} className="mb-3">
           <div className={styles.resultsInfo}>
-            {filteredPublishers.length} publishers
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+            {Math.min(currentPage * ITEMS_PER_PAGE, totalElements)} of{" "}
+            {totalElements} publishers
           </div>
         </Col>
       </Row>
@@ -323,117 +291,144 @@ const PublishersManagementPage = () => {
                 <Table responsive hover className={styles.publishersTable}>
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Publisher</th>
-                      <th>Location</th>
                       <th>Contact</th>
-                      <th>Books</th>
+                      <th>Address</th>
                       <th>Founded</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
+
                   <tbody>
-                    {currentPublishers.map(publisher => (
-                      <tr key={publisher.id} className={styles.publisherRow}>
-                        <td className={styles.publisherCell}>
-                          <div className={styles.publisherInfo}>
-                            <div className={styles.publisherIcon}>
-                              <Building />
-                            </div>
-                            <div className={styles.publisherDetails}>
-                              <div className={styles.publisherName}>{publisher.name}</div>
-                              <div className={styles.publisherSpecialties}>
-                                {publisher.specialties.slice(0, 2).map((specialty, index) => (
-                                  <Badge key={index} bg="light" text="dark" className={styles.specialtyBadge}>
-                                    {specialty}
-                                  </Badge>
-                                ))}
-                                {publisher.specialties.length > 2 && (
-                                  <Badge bg="light" text="dark" className={styles.specialtyBadge}>
-                                    +{publisher.specialties.length - 2} more
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className={styles.locationCell}>
-                          <div className={styles.locationInfo}>
-                            <div className={styles.locationItem}>
-                              <GeoAlt className={styles.locationIcon} />
-                              <span>{publisher.city}, {publisher.country}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className={styles.contactCell}>
-                          <div className={styles.contactInfo}>
-                            <div className={styles.contactItem}>
-                              <Envelope className={styles.contactIcon} />
-                              <span className={styles.contactText}>{publisher.email}</span>
-                            </div>
-                            <div className={styles.contactItem}>
-                              <Telephone className={styles.contactIcon} />
-                              <span className={styles.contactText}>{publisher.phone}</span>
-                            </div>
-                            <div className={styles.contactItem}>
-                              <Globe className={styles.contactIcon} />
-                              <span className={styles.contactText}>{publisher.website}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className={styles.booksCell}>
-                          <div className={styles.booksInfo}>
-                            <div className={styles.booksCount}>
-                              <BookFill className={styles.booksIcon} />
-                              <span className={styles.totalBooks}>{publisher.totalBooks}</span>
-                            </div>
-                            <div className={styles.activeBooks}>
-                              {publisher.activeBooks} active
-                            </div>
-                          </div>
-                        </td>
-                        <td className={styles.foundedCell}>
-                          <div className={styles.foundedInfo}>
-                            <Calendar className={styles.foundedIcon} />
-                            <span>{publisher.foundedYear}</span>
-                          </div>
-                        </td>
-                        <td className={styles.statusCell}>
-                          <Badge bg={getStatusVariant(publisher.status)} className={styles.statusBadge}>
-                            {publisher.status.charAt(0).toUpperCase() + publisher.status.slice(1)}
-                          </Badge>
-                        </td>
-                        <td className={styles.actionsCell}>
-                          <div className={styles.actionButtons}>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className={styles.actionButton}
-                              title="View Details"
-                            >
-                              <Eye />
-                            </Button>
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              className={styles.actionButton}
-                              title="Edit Publisher"
-                            >
-                              <PencilSquare />
-                            </Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              className={styles.actionButton}
-                              title="Delete Publisher"
-                              onClick={() => handleDeleteClick(publisher)}
-                            >
-                              <Trash />
-                            </Button>
-                          </div>
+                    {uiFilteredPublishers.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="text-center text-muted">
+                          No publishers found.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      uiFilteredPublishers.map((publisher, index) => (
+                        <tr key={publisher.id}>
+                          <td>
+                            {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                          </td>
+
+                          {/* Publisher name + website */}
+                          <td className={styles.publisherCell}>
+                            <div className={styles.publisherInfo}>
+                              <div className={styles.publisherIcon}>
+                                {publisher.avatarUrl ? (
+                                  <img
+                                    src={publisher.avatarUrl}
+                                    alt="logo"
+                                    style={{
+                                      width: "36px",
+                                      height: "36px",
+                                      borderRadius: "50%",
+                                      objectFit: "cover",
+                                      boxShadow:
+                                        "0 0 3px rgba(216, 203, 203, 0.2)",
+                                    }}
+                                  />
+                                ) : (
+                                  <Building
+                                    size={28}
+                                    className="text-secondary"
+                                  />
+                                )}
+                              </div>
+
+                              <div className={styles.publisherDetails}>
+                                <div className={styles.publisherName}>
+                                  {publisher.companyName}
+                                </div>
+                                <div className={styles.publisherWebsite}>
+                                  {publisher.website ? (
+                                    <a
+                                      href={publisher.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      {publisher.website}
+                                    </a>
+                                  ) : (
+                                    <span className="text-muted">—</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Contact */}
+                          <td className={styles.contactCell}>
+                            <div>
+                              <div>
+                                <Envelope className="me-2 text-muted" />
+                                {publisher.email || "—"}
+                              </div>
+                              <div>
+                                <Telephone className="me-2 text-muted" />
+                                {publisher.phone || "—"}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Address */}
+                          <td className={styles.addressCell}>
+                            <GeoAlt className="me-2 text-muted" />
+                            {publisher.address || "—"}
+                          </td>
+
+                          {/* Founded Year */}
+                          <td>
+                            <Calendar className="me-2 text-muted" />
+                            {publisher.establishedYear || "—"}
+                          </td>
+
+                          {/* Status (isDeleted) */}
+                          <td>
+                            <Badge
+                              bg={publisher.isDeleted ? "secondary" : "success"}
+                              className={styles.statusBadge}
+                            >
+                              {publisher.isDeleted ? "Inactive" : "Active"}
+                            </Badge>
+                          </td>
+
+                          {/* Actions */}
+                          <td className={styles.actionsCell}>
+                            <div className={styles.actionButtons}>
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                title="View Details"
+                                onClick={() => handleView(publisher)}
+                              >
+                                <Eye />
+                              </Button>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                title="Edit Publisher"
+                                onClick={() => handleEdit(publisher)}
+                              >
+                                <PencilSquare />
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                title="Delete Publisher"
+                                onClick={() => handleDeleteClick(publisher)}
+                              >
+                                <Trash />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </Table>
               </div>
@@ -444,67 +439,364 @@ const PublishersManagementPage = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <Row>
-          <Col>
-            <div className={styles.paginationContainer}>
-              <Pagination>
-                <Pagination.First 
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                />
-                <Pagination.Prev 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                />
-                
-                {[...Array(totalPages)].map((_, index) => (
-                  <Pagination.Item
-                    key={index + 1}
-                    active={index + 1 === currentPage}
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </Pagination.Item>
-                ))}
-                
-                <Pagination.Next 
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                />
-                <Pagination.Last 
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                />
-              </Pagination>
-            </div>
-          </Col>
-        </Row>
+        <div className={styles.paginationContainer}>
+          <Pagination>
+            <Pagination.First
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            />
+            <Pagination.Prev
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            />
+            {[...Array(totalPages)].map((_, i) => (
+              <Pagination.Item
+                key={i + 1}
+                active={i + 1 === currentPage}
+                onClick={() => handlePageChange(i + 1)}
+              >
+                {i + 1}
+              </Pagination.Item>
+            ))}
+            <Pagination.Next
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            />
+            <Pagination.Last
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+            />
+          </Pagination>
+        </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+      {/* 🔹 View Publisher Modal (Styled like Author Details) */}
+      <Modal show={showView} onHide={handleCloseModals} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Publisher Details</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          {selectedPublisher && (
+            <div className="p-3">
+              {/* Avatar + Name */}
+              <div className="text-center mb-4">
+                <img
+                  src={selectedPublisher.avatarUrl || "/default-publisher.png"}
+                  alt="logo"
+                  className="rounded-circle mb-3 shadow"
+                  style={{
+                    width: 130,
+                    height: 130,
+                    objectFit: "cover",
+                    border: "2px solid #eee",
+                  }}
+                />
+                <h4 className="fw-bold mb-0">
+                  {selectedPublisher.companyName}
+                </h4>
+                {selectedPublisher.address && (
+                  <p className="text-muted mt-1">
+                    <GeoAlt className="me-1" />
+                    {selectedPublisher.address}
+                  </p>
+                )}
+              </div>
+
+              {/* Basic Info */}
+              <Row className="mb-3">
+                <Col md={6}>
+                  <p>
+                    <b>Email:</b> {selectedPublisher.email || "—"}
+                  </p>
+                  <p>
+                    <b>Phone:</b> {selectedPublisher.phone || "—"}
+                  </p>
+                  <p>
+                    <b>Founded:</b> {selectedPublisher.establishedYear || "—"}
+                  </p>
+                </Col>
+                <Col md={6}>
+                  <p>
+                    <b>Website:</b>{" "}
+                    {selectedPublisher.website ? (
+                      <a
+                        href={selectedPublisher.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {selectedPublisher.website}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </p>
+                  <p>
+                    <b>Status:</b>{" "}
+                    <Badge
+                      bg={selectedPublisher.isDeleted ? "secondary" : "success"}
+                    >
+                      {selectedPublisher.isDeleted ? "Inactive" : "Active"}
+                    </Badge>
+                  </p>
+                  {/* <p>
+                    <b>Total Books:</b> {selectedPublisher.totalBooks ?? "—"}
+                  </p> */}
+                </Col>
+              </Row>
+
+              {/* Description / Extra Info */}
+              <div className="mb-3">
+                <h6 className="fw-bold">About</h6>
+                <p
+                  style={{
+                    whiteSpace: "pre-line",
+                    textAlign: "justify",
+                  }}
+                >
+                  {selectedPublisher.description ||
+                    "No additional information provided."}
+                </p>
+              </div>
+
+              {/* Created Date */}
+              {selectedPublisher.createdDate && (
+                <div className="text-end text-muted">
+                  <small>
+                    <i>
+                      Created on:{" "}
+                      {new Date(
+                        selectedPublisher.createdDate
+                      ).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </i>
+                  </small>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModals}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* 🔹 Edit Modal */}
+      <Modal show={showEdit} onHide={handleCloseModals} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Publisher</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          {success && <Alert variant="success">{success}</Alert>}
+          {error && <Alert variant="danger">{error}</Alert>}
+
+          {editData && (
+            <Form>
+              {/* Company Name */}
+              <Form.Group className="mb-3">
+                <Form.Label>Company Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="companyName"
+                  value={editData.companyName || ""}
+                  onChange={handleChange}
+                  placeholder="Enter company name"
+                />
+              </Form.Group>
+
+              {/* Email & Phone */}
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={editData.email || ""}
+                      onChange={handleChange}
+                      placeholder="publisher@email.com"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Phone</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="phone"
+                      value={editData.phone || ""}
+                      onChange={handleChange}
+                      placeholder="+84 123 456 789"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Address & Website */}
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      name="address"
+                      value={editData.address || ""}
+                      onChange={handleChange}
+                      placeholder="Enter address"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Website</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="website"
+                      value={editData.website || ""}
+                      onChange={handleChange}
+                      placeholder="https://example.com"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Established Year */}
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Established Year</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="establishedYear"
+                      value={editData.establishedYear || ""}
+                      onChange={handleChange}
+                      placeholder="e.g. 1995"
+                    />
+                  </Form.Group>
+                </Col>
+
+                {/* Status */}
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Status</Form.Label>
+                    <Form.Select
+                      name="isDeleted"
+                      value={editData.isDeleted ? "true" : "false"}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          isDeleted: e.target.value === "true",
+                        })
+                      }
+                    >
+                      <option value="false">Active</option>
+                      <option value="true">Inactive</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Avatar URL + Preview */}
+              <Row className="align-items-center">
+                <Col md={8}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Logo URL (optional)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="avatarUrl"
+                      value={editData.avatarUrl || ""}
+                      onChange={handleChange}
+                      placeholder="Paste logo URL or leave empty"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4} className="text-center">
+                  <img
+                    src={editData.avatarUrl || "/default-publisher.png"}
+                    alt="preview"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      boxShadow: "0 0 5px rgba(0,0,0,0.2)",
+                    }}
+                  />
+                </Col>
+              </Row>
+
+              {/* Description */}
+              <Form.Group className="mb-3">
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  name="description"
+                  value={editData.description || ""}
+                  onChange={handleChange}
+                  placeholder="Short description about the publisher..."
+                />
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModals}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Delete Publisher</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
           {publisherToDelete && (
             <div>
               <Alert variant="warning">
                 <strong>Warning:</strong> This action cannot be undone.
               </Alert>
-              <p>Are you sure you want to delete the publisher <strong>{publisherToDelete.name}</strong>?</p>
+
+              <p>
+                Are you sure you want to delete publisher{" "}
+                <strong>{publisherToDelete.companyName}</strong>?
+              </p>
+
               <div className={styles.deletePublisherInfo}>
                 <strong>Publisher Details:</strong>
-                <br />• Name: {publisherToDelete.name}
-                <br />• Location: {publisherToDelete.city}, {publisherToDelete.country}
-                <br />• Total Books: {publisherToDelete.totalBooks}
-                <br />• Status: {publisherToDelete.status}
-                <br /><br />
-                <strong>Note:</strong> All books associated with this publisher will need to be reassigned to another publisher or marked as independent publications.
+                <br />• Name: {publisherToDelete.companyName}
+                <br />• Email: {publisherToDelete.email || "—"}
+                <br />• Address: {publisherToDelete.address || "—"}
+                <br />• Founded: {publisherToDelete.establishedYear || "—"}
+                <br />• Status:{" "}
+                {publisherToDelete.isDeleted ? "Inactive" : "Active"}
+                <br />
+                <br />
+                <strong>Note:</strong> This will mark the publisher as inactive,
+                not remove it permanently.
               </div>
             </div>
           )}
         </Modal.Body>
+
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel

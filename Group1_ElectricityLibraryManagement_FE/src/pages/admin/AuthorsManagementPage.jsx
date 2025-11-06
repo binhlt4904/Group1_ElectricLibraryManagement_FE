@@ -39,26 +39,39 @@ const AuthorsManagementPage = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const navigate = useNavigate();
+  const ITEMS_PER_PAGE = 5;
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // ⬇️ thêm các state này
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const [editForm, setEditForm] = useState({});
+  
+  const loadAuthors = async (page = 1, search = "") => {
+    try {
+      const res = await authorApi.getPaged(page - 1, ITEMS_PER_PAGE, search);
+      setAuthors(res.data.content || []);
 
-  // Mock authors data
+      setTotalPages(res.data.totalPages);
+      setTotalElements(res.data.totalElements);
+    } catch (err) {
+      console.error("Failed to load authors:", err);
+    }
+  };
+
   useEffect(() => {
-    const loadAuthors = async () => {
-      try {
-        const res = await authorApi.getAll();
-        setAuthors(res.data);
-        setFilteredAuthors(res.data);
-      } catch (error) {
-        console.error("Failed to load authors:", error);
-      }
-    };
-    loadAuthors();
+    loadAuthors(1, "");
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setCurrentPage(1);
+      loadAuthors(1, searchTerm);
+    }, 400);
+
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   // ✅ Search logic (đã sửa)
   useEffect(() => {
@@ -141,8 +154,9 @@ const AuthorsManagementPage = () => {
       setShowEditModal(false);
       showAlertMessage("✅ Author updated successfully!");
       // reload list
-      const res = await authorApi.getAll();
-      setAuthors(res.data);
+      loadAuthors(currentPage, searchTerm);
+
+      
     } catch (err) {
       console.error("Update failed:", err);
       showAlertMessage("❌ Failed to update author.");
@@ -168,7 +182,8 @@ const AuthorsManagementPage = () => {
       );
 
       // 🔹 Reload danh sách từ backend để có dữ liệu mới (isDeleted=true)
-      const res = await authorApi.getAll();
+      loadAuthors(currentPage, searchTerm);
+
       setAuthors(res.data);
     } catch (err) {
       console.error("Delete failed:", err);
@@ -191,12 +206,6 @@ const AuthorsManagementPage = () => {
     setTimeout(() => setShowAlert(false), 3000);
   };
 
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredAuthors.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredAuthors.length / itemsPerPage);
-
   return (
     <div className={styles.authorsManagementPage}>
       {/* Page Header */}
@@ -213,14 +222,14 @@ const AuthorsManagementPage = () => {
               </p>
             </div>
             <div className={styles.headerActions}>
-              <Button
+              {/* <Button
                 variant="outline-primary"
                 onClick={handleExport}
                 className="me-2"
               >
                 <Download className="me-1" />
                 Export
-              </Button>
+              </Button> */}
               <Button variant="primary" onClick={handleAddNew}>
                 <Plus className="me-1" />
                 Add New Author
@@ -254,9 +263,10 @@ const AuthorsManagementPage = () => {
         </Col>
         <Col lg={6} className="mb-3">
           <div className={styles.resultsInfo}>
-            Showing {indexOfFirstItem + 1}-
-            {Math.min(indexOfLastItem, filteredAuthors.length)} of{" "}
-            {filteredAuthors.length} authors
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} -
+            {Math.min(currentPage * ITEMS_PER_PAGE, totalElements)} of{" "}
+            {totalElements} authors
+            
           </div>
         </Col>
       </Row>
@@ -280,7 +290,7 @@ const AuthorsManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentItems.map((author) => (
+                {authors.map((author) => (
                   <tr key={author.id} className={styles.authorRow}>
                     {/* Avatar + Name */}
                     <td className={styles.authorCell}>
@@ -495,12 +505,12 @@ const AuthorsManagementPage = () => {
               {/* Books Count / Created Date */}
               <Row>
                 <Col md={6}>
-                  <p>
+                  {/* <p>
                     <b>Total Books:</b>{" "}
                     {selectedAuthor.booksCount ??
                       selectedAuthor.books?.length ??
                       0}
-                  </p>
+                  </p> */}
                 </Col>
                 <Col md={6}>
                   <p>
