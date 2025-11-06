@@ -67,87 +67,6 @@ const WalletPage = () => {
 }, [userId, currentPage, searchTerm, filterType]);
 
 
-  const walletData = {
-    balance: 25.50,
-    outstandingFines: 12.75,
-    totalPaid: 156.25,
-    paymentMethods: [
-      { id: 1, type: 'credit', last4: '4532', brand: 'Visa', isDefault: true },
-      { id: 2, type: 'debit', last4: '8901', brand: 'Mastercard', isDefault: false }
-    ]
-  };
-
-  const outstandingFines = [
-    {
-      id: 1,
-      bookTitle: '1984',
-      type: 'overdue',
-      amount: 5.50,
-      dueDate: '2024-01-15',
-      daysOverdue: 5
-    },
-    {
-      id: 2,
-      bookTitle: 'The Catcher in the Rye',
-      type: 'damage',
-      amount: 7.25,
-      reportDate: '2024-01-18',
-      description: 'Water damage to pages 45-50'
-    }
-  ];
-
-  useEffect(() => {
-    const mockTransactions = [
-      {
-        id: 1,
-        date: '2024-01-20',
-        type: 'payment',
-        description: 'Fine payment - The Great Gatsby',
-        amount: -3.50,
-        status: 'completed',
-        method: 'Credit Card (*4532)'
-      },
-      {
-        id: 2,
-        date: '2024-01-18',
-        type: 'fine',
-        description: 'Late return fine - 1984',
-        amount: 5.50,
-        status: 'pending',
-        method: null
-      },
-      {
-        id: 3,
-        date: '2024-01-15',
-        type: 'payment',
-        description: 'Account credit added',
-        amount: -25.00,
-        status: 'completed',
-        method: 'Debit Card (*8901)'
-      },
-      {
-        id: 4,
-        date: '2024-01-10',
-        type: 'fine',
-        description: 'Damage fee - The Catcher in the Rye',
-        amount: 7.25,
-        status: 'pending',
-        method: null
-      },
-      {
-        id: 5,
-        date: '2024-01-08',
-        type: 'payment',
-        description: 'Fine payment - Pride and Prejudice',
-        amount: -2.00,
-        status: 'completed',
-        method: 'Credit Card (*4532)'
-      }
-    ];
-    setTransactions(mockTransactions);
-    setFilteredTransactions(mockTransactions);
-  }, []);
-
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -383,48 +302,7 @@ const WalletPage = () => {
       // accountNumber="06159974001"
       // accountName="Le Tien Binh"
       />
-      {/* Payment Modal */}
-      <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Pay Outstanding Fines</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className={styles.paymentSummary}>
-            <h5>Payment Summary</h5>
-            <div className={styles.summaryItem}>
-              <span>Outstanding Fines:</span>
-              <span>${walletData.outstandingFines.toFixed(2)}</span>
-            </div>
-            <div className={styles.summaryItem}>
-              <span>Processing Fee:</span>
-              <span>$0.00</span>
-            </div>
-            <hr />
-            <div className={`${styles.summaryItem} ${styles.total}`}>
-              <span><strong>Total:</strong></span>
-              <span><strong>${walletData.outstandingFines.toFixed(2)}</strong></span>
-            </div>
-          </div>
-          <Form.Group className="mt-3">
-            <Form.Label>Payment Method</Form.Label>
-            <Form.Select>
-              {walletData.paymentMethods.map(method => (
-                <option key={method.id} value={method.id}>
-                  {method.brand} **** {method.last4} {method.isDefault ? '(Default)' : ''}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPaymentModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handlePaymentSubmit}>
-            Pay ${walletData.outstandingFines.toFixed(2)}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      
     </div>
   );
 };

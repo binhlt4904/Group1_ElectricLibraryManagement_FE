@@ -38,5 +38,16 @@ const borrowalReaderHistoryApi = {
             throw error;          
         }
     },
+    getActiveBorrowedBookIds: async (userId) => {
+        try {
+            const response = await axiosClient.get(`/api/v1/borrow/active`, {
+                params: { userId },
+            });
+            return response.data;
+        } catch (error) {
+            alert("Error in get active borrowed book ids: " + (error.response?.data?.message || error.message));
+            throw error;          
+        }
+    },
 }
 export default borrowalReaderHistoryApi;

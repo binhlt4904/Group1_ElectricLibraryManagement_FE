@@ -3,6 +3,11 @@
 .bookDetailPage {
   padding: var(--section-padding);
   min-height: 80vh;
+   position: relative;
+}
+
+.toasterAnchor {
+  position: relative; /* neo cụ thể quanh TabSection */
 }
 
 .loading {
