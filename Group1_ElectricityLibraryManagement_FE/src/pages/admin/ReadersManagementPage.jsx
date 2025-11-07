@@ -15,28 +15,24 @@ function parseFieldErrors(err) {
   const map = {};
   const data = err?.response?.data ?? err?.data ?? err;
 
-  // 1) { errors: { username: "exists", email: "invalid", ... } }
   if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) {
     Object.entries(data.errors).forEach(([k, v]) => {
       map[k] = Array.isArray(v) ? v[0] : String(v);
     });
   }
 
-  // 2) { fieldErrors: [{ field: "email", message: "invalid" }, ...] }
   if (Array.isArray(data?.fieldErrors)) {
     data.fieldErrors.forEach(e => {
       if (e?.field) map[e.field] = e?.message || 'Invalid';
     });
   }
 
-  // 3) { violations: [{ fieldName: "email", message: "..." }]}
   if (Array.isArray(data?.violations)) {
     data.violations.forEach(v => {
       if (v?.fieldName) map[v.fieldName] = v?.message || 'Invalid';
     });
   }
 
-  // 4) { details: [{ propertyPath: "email", message: "..." }]}
   if (Array.isArray(data?.details)) {
     data.details.forEach(d => {
       const key = d?.field || d?.propertyPath;
@@ -44,27 +40,24 @@ function parseFieldErrors(err) {
     });
   }
 
-  // 5) { message: "..." } lỗi chung
   if (!Object.keys(map).length && data?.message) {
     map._common = String(data.message);
   }
 
-  // Alias tên field (nếu BE dùng snake_case)
   if (map['full_name'] && !map['fullName']) map['fullName'] = map['full_name'];
 
   return map;
 }
 
-/** Helper: kiểm tra status DELETED (case-insensitive) */
 const isDeletedStatus = (s) => String(s || '').toUpperCase() === 'DELETED';
 
 const ReadersManagementPage = () => {
   // filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL'); // ALL | ACTIVE | INACTIVE | DELETED
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   // paging
-  const [currentPage, setCurrentPage] = useState(1); // UI 1-based
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
   // data
@@ -96,23 +89,21 @@ const ReadersManagementPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // ===== Detail modal (VIEW) =====
+  // detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState('');
-  const [detail, setDetail] = useState(null); // { email, fullName, username, phone, status, readerCode }
+  const [detail, setDetail] = useState(null);
 
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [importFile, setImportFile] = useState(null);
+  // ===== LOAD DATA =====
   const loadData = async () => {
     setLoading(true);
     setErr('');
     try {
       const res = await accountManagementApi.findReaders({
         full_name: searchTerm,
-        status: statusFilter === 'ALL' ? '' : statusFilter, // ALL => không gửi status
-        page: currentPage - 1,   // BE 0-based
+        status: statusFilter === 'ALL' ? '' : statusFilter,
+        page: currentPage - 1,
         size: PAGE_SIZE,
       });
       const pageData = res?.data ?? { content: [], totalPages: 0 };
@@ -139,11 +130,19 @@ const ReadersManagementPage = () => {
     loadData();
   };
 
+  const toast = (variant, message) => {
+    setAlertVariant(variant);
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 2500);
+  };
+
+  // ===== CRUD =====
   const openEdit = (u) => {
-    if (isDeletedStatus(u?.status)) return; // guard nếu record đã DELETED
+    if (isDeletedStatus(u?.status)) return;
     setEditErrors({});
     setEditForm({
-      id: u.id,                // accountId
+      id: u.id,
       username: u.username ?? '',
       fullName: u.fullName ?? '',
       email: u.email ?? '',
@@ -188,7 +187,7 @@ const ReadersManagementPage = () => {
   };
 
   const openDelete = (u) => {
-    if (isDeletedStatus(u?.status)) return; // guard nếu record đã DELETED
+    if (isDeletedStatus(u?.status)) return;
     setDeleteTarget(u);
     setShowDeleteModal(true);
   };
@@ -214,7 +213,6 @@ const ReadersManagementPage = () => {
     }
   };
 
-  // ====== OPEN VIEW DETAIL ======
   const openDetail = async (accountId) => {
     if (!accountId) return;
     setShowDetailModal(true);
@@ -232,28 +230,20 @@ const ReadersManagementPage = () => {
     }
   };
 
-  const toast = (variant, message) => {
-    setAlertVariant(variant);
-    setAlertMessage(message);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 2500);
-  };
-
+  // ===== RENDER =====
   return (
     <div className={styles.readersManagementPage}>
-      {/* Page Header */}
+      {/* Header */}
       <Row className="mb-4">
         <Col>
           <div className={styles.pageHeader}>
-            <div>
-              <h1 className={styles.pageTitle}>
-                <People className="me-3" />
-                Readers Management
-              </h1>
-              <p className={styles.pageSubtitle}>
-                Manage reader accounts and status
-              </p>
-            </div>
+            <h1 className={styles.pageTitle}>
+              <People className="me-3" />
+              Readers Management
+            </h1>
+            <p className={styles.pageSubtitle}>
+              Manage reader accounts and status
+            </p>
           </div>
         </Col>
       </Row>
@@ -264,7 +254,7 @@ const ReadersManagementPage = () => {
         </Alert>
       )}
 
-      {/* Filters (search fullName + status với ALL) */}
+      {/* Filters */}
       <Row className="mb-4">
         <Col lg={6} className="mb-3">
           <Form onSubmit={onSearch}>
@@ -297,14 +287,9 @@ const ReadersManagementPage = () => {
             <option value="DELETED">DELETED</option>
           </Form.Select>
         </Col>
-        <Col lg={3} className="mb-3 text-end">
-          <Button variant="primary" size="lg" onClick={() => setShowImportModal(true)}>
-            Import Excel
-          </Button>
-        </Col>
       </Row>
 
-      {/* Readers Table */}
+      {/* Table */}
       <Card className={`custom-card ${styles.readersCard}`}>
         <Card.Body className={styles.readersCardBody}>
           {loading ? (
@@ -319,13 +304,13 @@ const ReadersManagementPage = () => {
               <Table responsive className={styles.readersTable}>
                 <thead>
                   <tr>
-                    <th style={{ width: 70 }}>#</th>
-                    <th style={{ minWidth: 140 }}>Username</th>
-                    <th style={{ minWidth: 180 }}>Full name</th>
-                    <th style={{ minWidth: 220 }}>Email</th>
-                    <th style={{ minWidth: 150 }}>Phone</th>
-                    <th style={{ minWidth: 140 }}>Status</th>
-                    <th style={{ width: 140 }}>Actions</th>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Full name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -337,25 +322,12 @@ const ReadersManagementPage = () => {
                     rows.map((u, idx) => {
                       const isDel = isDeletedStatus(u.status);
                       return (
-                        <tr key={u.id ?? idx} className={styles.readerRow}>
+                        <tr key={u.id ?? idx}>
                           <td>{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
-
                           <td>{u.username ?? '—'}</td>
-
                           <td>{u.fullName ?? '—'}</td>
-
-                          <td>
-                            <div className="d-flex align-items-center gap-2">
-                              <Envelope /> <span>{u.email ?? '—'}</span>
-                            </div>
-                          </td>
-
-                          <td>
-                            <div className="d-flex align-items-center gap-2">
-                              <Telephone /> <span>{u.phone ?? '—'}</span>
-                            </div>
-                          </td>
-
+                          <td><Envelope /> {u.email ?? '—'}</td>
+                          <td><Telephone /> {u.phone ?? '—'}</td>
                           <td>
                             <span
                               className={[
@@ -368,21 +340,14 @@ const ReadersManagementPage = () => {
                               {u.status ?? '—'}
                             </span>
                           </td>
-
                           <td>
                             <div className="d-flex gap-2">
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                title="View"
-                                onClick={() => openDetail(u.id)} // vẫn cho View
-                              >
+                              <Button variant="outline-primary" size="sm" onClick={() => openDetail(u.id)}>
                                 <Eye />
                               </Button>
                               <Button
                                 variant="outline-secondary"
                                 size="sm"
-                                title={isDel ? 'Cannot edit a deleted account' : 'Edit'}
                                 disabled={isDel}
                                 onClick={() => !isDel && openEdit(u)}
                               >
@@ -391,7 +356,6 @@ const ReadersManagementPage = () => {
                               <Button
                                 variant="outline-danger"
                                 size="sm"
-                                title={isDel ? 'Already deleted' : 'Delete'}
                                 disabled={isDel}
                                 onClick={() => !isDel && openDelete(u)}
                               >
@@ -408,89 +372,54 @@ const ReadersManagementPage = () => {
             </div>
           )}
 
-          {/* Pagination (server-side) */}
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className={styles.paginationContainer}>
               <Pagination>
-                <Pagination.First
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                />
-                <Pagination.Prev
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                />
+                <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+                <Pagination.Prev onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} />
                 {[...Array(totalPages)].map((_, i) => {
                   const n = i + 1;
                   return (
-                    <Pagination.Item
-                      key={n}
-                      active={n === currentPage}
-                      onClick={() => setCurrentPage(n)}
-                    >
+                    <Pagination.Item key={n} active={n === currentPage} onClick={() => setCurrentPage(n)}>
                       {n}
                     </Pagination.Item>
                   );
                 })}
-                <Pagination.Next
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                />
-                <Pagination.Last
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                />
+                <Pagination.Next onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} />
+                <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
               </Pagination>
             </div>
           )}
         </Card.Body>
       </Card>
 
-      {/* ===== Detail Modal (VIEW) ===== */}
+      {/* Detail Modal */}
       <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Reader detail</Modal.Title>
-        </Modal.Header>
+        <Modal.Header closeButton><Modal.Title>Reader detail</Modal.Title></Modal.Header>
         <Modal.Body>
-          {detailLoading && (
+          {detailLoading ? (
             <div className="d-flex align-items-center gap-2">
-              <Spinner animation="border" size="sm" />
-              <span>Loading…</span>
+              <Spinner animation="border" size="sm" /><span>Loading…</span>
             </div>
-          )}
-          {!detailLoading && detailError && (
+          ) : detailError ? (
             <div className="text-danger">{detailError}</div>
-          )}
-          {!detailLoading && !detailError && detail && (
+          ) : detail ? (
             <div className="vstack gap-2">
-              <div><span className="fw-semibold">Full name: </span>{detail.fullName}</div>
-              <div><span className="fw-semibold">Email: </span>{detail.email}</div>
-              <div><span className="fw-semibold">Username: </span>{detail.username}</div>
-              <div><span className="fw-semibold">Phone: </span>{detail.phone}</div>
-              <div>
-                <span className="fw-semibold">Status: </span>
-                <span
-                  className={[
-                    styles.statusPill,
-                    (detail.status === 'ACTIVE' && styles.statusActive) ||
-                    (detail.status === 'INACTIVE' && styles.statusInactive) ||
-                    styles.statusDeleted
-                  ].filter(Boolean).join(' ')}
-                >
-                  {detail.status}
-                </span>
-              </div>
-              <div><span className="fw-semibold">Reader code: </span>{detail.readerCode}</div>
+              <div><b>Full name:</b> {detail.fullName}</div>
+              <div><b>Email:</b> {detail.email}</div>
+              <div><b>Username:</b> {detail.username}</div>
+              <div><b>Phone:</b> {detail.phone}</div>
+              <div><b>Status:</b> {detail.status}</div>
+              <div><b>Reader code:</b> {detail.readerCode}</div>
             </div>
-          )}
+          ) : null}
         </Modal.Body>
       </Modal>
 
       {/* Edit Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Reader</Modal.Title>
-        </Modal.Header>
+        <Modal.Header closeButton><Modal.Title>Edit Reader</Modal.Title></Modal.Header>
         <Modal.Body>
           {editErrors._common && <Alert variant="danger">{editErrors._common}</Alert>}
           <Form>
@@ -501,11 +430,8 @@ const ReadersManagementPage = () => {
                   value={editForm.username}
                   isInvalid={!!editErrors.username}
                   onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                  placeholder="reader01"
                 />
-                <Form.Control.Feedback type="invalid">
-                  {editErrors.username}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{editErrors.username}</Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Label>Full name</Form.Label>
@@ -513,11 +439,8 @@ const ReadersManagementPage = () => {
                   value={editForm.fullName}
                   isInvalid={!!editErrors.fullName}
                   onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                  placeholder="Nguyen Van A"
                 />
-                <Form.Control.Feedback type="invalid">
-                  {editErrors.fullName}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{editErrors.fullName}</Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Label>Email</Form.Label>
@@ -526,11 +449,8 @@ const ReadersManagementPage = () => {
                   value={editForm.email}
                   isInvalid={!!editErrors.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  placeholder="reader@library.com"
                 />
-                <Form.Control.Feedback type="invalid">
-                  {editErrors.email}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{editErrors.email}</Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Label>Phone</Form.Label>
@@ -538,14 +458,9 @@ const ReadersManagementPage = () => {
                   value={editForm.phone}
                   isInvalid={!!editErrors.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  placeholder="0900000000"
                 />
-                <Form.Control.Feedback type="invalid">
-                  {editErrors.phone}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{editErrors.phone}</Form.Control.Feedback>
               </Col>
-
-              {/* Password mới (tùy chọn) */}
               <Col md={6}>
                 <Form.Label>Password</Form.Label>
                 <Form.Control
@@ -553,14 +468,10 @@ const ReadersManagementPage = () => {
                   value={editForm.password}
                   isInvalid={!!editErrors.password}
                   onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                  placeholder="New Password"
+                  placeholder="New password (optional)"
                 />
-                <Form.Control.Feedback type="invalid">
-                  {editErrors.password}
-                </Form.Control.Feedback>
-                <Form.Text muted>Let empty if not change</Form.Text>
+                <Form.Control.Feedback type="invalid">{editErrors.password}</Form.Control.Feedback>
               </Col>
-
               <Col md={6}>
                 <Form.Label>Status</Form.Label>
                 <Form.Select
@@ -571,17 +482,13 @@ const ReadersManagementPage = () => {
                   <option value="ACTIVE">ACTIVE</option>
                   <option value="INACTIVE">INACTIVE</option>
                 </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  {editErrors.status}
-                </Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{editErrors.status}</Form.Control.Feedback>
               </Col>
             </Row>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editing}>
-            Cancel
-          </Button>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editing}>Cancel</Button>
           <Button variant="primary" onClick={submitEdit} disabled={editing}>
             {editing ? 'Saving…' : 'Save changes'}
           </Button>
@@ -591,91 +498,29 @@ const ReadersManagementPage = () => {
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>
-            <ExclamationTriangleFill className="me-2 text-danger" />
-            Confirm Delete
-          </Modal.Title>
+          <Modal.Title><ExclamationTriangleFill className="me-2 text-danger" />Confirm Delete</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {deleteTarget && (
             <>
               <p>Are you sure you want to delete this reader?</p>
-              <div className={styles.deleteReaderInfo}>
-                <strong>Username:</strong> {deleteTarget.username}<br />
-                <strong>Full name:</strong> {deleteTarget.fullName}<br />
-                <strong>Email:</strong> {deleteTarget.email}<br />
-                <strong>Phone:</strong> {deleteTarget.phone}
+              <div>
+                <b>Username:</b> {deleteTarget.username}<br />
+                <b>Full name:</b> {deleteTarget.fullName}<br />
+                <b>Email:</b> {deleteTarget.email}<br />
+                <b>Phone:</b> {deleteTarget.phone}
               </div>
-              <p className="text-danger mt-2">
-                <small>This action cannot be undone.</small>
-              </p>
+              <p className="text-danger mt-2"><small>This action cannot be undone.</small></p>
             </>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
-            Cancel
-          </Button>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>Cancel</Button>
           <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
             {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </Modal.Footer>
       </Modal>
-
-      {/* ===== Import Readers Modal ===== */}
-      <Modal show={showImportModal} onHide={() => setShowImportModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Import Readers from Excel</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group controlId="formFile" className="mb-3">
-            <Form.Label>Select Excel file (.xlsx)</Form.Label>
-            <Form.Control
-              type="file"
-              accept=".xlsx, .xls"
-              onChange={(e) => setImportFile(e.target.files[0])}
-            />
-          </Form.Group>
-          <p className="text-muted small mb-0">
-            File should contain reader details like: username, fullName, email, phone, etc.
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowImportModal(false)}
-            disabled={importing}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={async () => {
-              if (!importFile) {
-                toast('danger', 'Please select a file first.');
-                return;
-              }
-              setImporting(true);
-              try {
-                await accountManagementApi.importReaders(importFile);
-                toast('success', 'Readers imported successfully!');
-                setShowImportModal(false);
-                setImportFile(null);
-                loadData(); // reload list
-              } catch (e) {
-                console.error(e);
-                toast('danger', 'Import failed. Please check file format.');
-              } finally {
-                setImporting(false);
-              }
-            }}
-            disabled={importing}
-          >
-            {importing ? 'Uploading…' : 'Upload'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
     </div>
   );
 };
