@@ -64,7 +64,7 @@ const AppContent = () => {
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/test" element={<TestPDF />} />
 
-           
+          
 
                         {/* Individual User Pages (outside layout) */}
                         <Route path="/profile" element={<ProfilePage />} />
