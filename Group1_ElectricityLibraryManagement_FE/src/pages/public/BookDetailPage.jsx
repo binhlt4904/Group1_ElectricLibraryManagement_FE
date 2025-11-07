@@ -306,6 +306,7 @@ const BookDetailPage = () => {
   };
 
   const handleReportConfirm = async (reportType, reportDescription) => {
+    console.log("reportType: "+reportType)
 
     const params = {
       bookId: book.id,
@@ -434,7 +435,7 @@ const BookDetailPage = () => {
               <Form.Label>Report Type: </Form.Label>
               <Form.Select
                 value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
+                onChange={(e) =>  setReportType(e.target.value)}
                 className={styles.filterSelect}
               >
                 {types.map(status => (

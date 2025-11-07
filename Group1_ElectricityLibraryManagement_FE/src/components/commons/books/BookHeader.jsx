@@ -5,6 +5,7 @@ import styles from '../../../pages/public/BookDetailPage.module.css';
 const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, handleReportIssue, user, showLockOverlay,
   canReadContents
 }) => {
+  console.log(user)
   return (
     <div>
       <Row className="mb-4">
@@ -54,7 +55,7 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
                 >
                   {book.copiesAvailable > 0 ? 'Borrow Now' : 'Join Waitlist'}
                 </Button> */}
-              {!canReadContents && (
+              {(!canReadContents) && (
                 <Button
                   variant="primary"
                   size="lg"
@@ -62,10 +63,12 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
 
                   onClick={(e) => {
                     e.preventDefault();
-                    if (user) {
+                    if (user && user.role === 'READER') {
                       handleBorrow();
-                    } else {
+                    } else if(!user) {
                       showLockOverlay("Please login to borrow book", e.currentTarget);
+                    } else if(user && user.role !== 'READER') {
+                      showLockOverlay("Only readers can borrow books", e.currentTarget);
                     }
                   }}
                 >
@@ -76,7 +79,16 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
                 variant="outline-primary"
                 size="lg"
                 className="me-3"
-                onClick={handleWishlistToggle}
+                onClick={(e) => {
+                    e.preventDefault();
+                    if (user && user.role === 'READER') {
+                      handleWishlistToggle(e);
+                    } else if(!user) {
+                      showLockOverlay("Please login to add book to wishlist", e.currentTarget);
+                    } else if(user && user.role !== 'READER') {
+                      showLockOverlay("Only readers can report books", e.currentTarget);
+                    }
+                  }}
               >
                 {isInWishlist ? <HeartFill className="me-2" /> : <Heart className="me-2" />}
                 {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
@@ -87,10 +99,12 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
                 size="lg"
                 onClick={(e) => {
                     e.preventDefault();
-                    if (user) {
+                    if (user && user.role === 'READER') {
                       handleReportIssue();
-                    } else {
+                    } else if(!user) {
                       showLockOverlay("Please login to report book", e.currentTarget);
+                    } else if(user && user.role !== 'READER') {
+                      showLockOverlay("Only readers can report books", e.currentTarget);
                     }
                   }}
               >

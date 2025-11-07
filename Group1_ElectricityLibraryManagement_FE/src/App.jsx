@@ -47,29 +47,31 @@ import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
 import AddAuthorPage from './pages/admin/AddAuthorPage';
 import AddPublisherPage from './pages/admin/AddPublisherPage';
 
+import { ProtectedRoute } from './routes/ProtectedRoute';
+
 const AppContent = () => {
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
 
 
 
-  return (
-    <UserProvider>
-      <div className="app-container">
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-        {!isAdminPage && <Header />}
-        <main className="main-content">
+    return (
+        <UserProvider>
+            <div className="app-container">
+                <ToastContainer
+                    position="top-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                />
+                {!isAdminPage && <Header />}
+                <main className="main-content">
 
                     <Routes>
                         {/* Public Pages */}
@@ -83,21 +85,34 @@ const AppContent = () => {
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/test" element={<TestPDF />} />
 
-           
+
 
                         {/* Individual User Pages (outside layout) */}
-                        <Route path="/profile" element={<ProfilePage />} />
-                        <Route path="/borrow-history" element={<BorrowHistoryPage />} />
-                        <Route path="/library-card" element={<LibraryCardPage />} />
-                        <Route path="/notifications" element={<NotificationsPage />} />
-                        <Route path="/wallet" element={<WalletPage />} />
-                        <Route path="/reader-report-history" element={<ReaderReportManagementPage />} />                       
-                        <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
-                        <Route path="/wishlist" element={<WishlistPage />} />
-                        <Route path="/research" element={<UserDocumentsPage />} />
+                        <Route path="/user" element={
+                            //<PrivateRoute isAuthenticate = {true}>
+                            <ProtectedRoute allowedRoles={["READER"]}>
+                                <UserLayout />
+                            </ProtectedRoute>
+                            //</PrivateRoute>
+                        }>
+                            {/* Các route con KHÔNG có / ở đầu */}
+                            <Route path="profile" element={<ProfilePage />} />
+                            <Route path="borrow-history" element={<BorrowHistoryPage />} />
+                            <Route path="library-card" element={<LibraryCardPage />} />
+                            <Route path="notifications" element={<NotificationsPage />} />
+                            <Route path="wallet" element={<WalletPage />} />
+                            <Route path="reader-report-history" element={<ReaderReportManagementPage />} />
+                            <Route path="book-reader/:bookId/:chapter" element={<BookReaderPage />} />
+                            <Route path="wishlist" element={<WishlistPage />} />
+                            <Route path="research" element={<UserDocumentsPage />} />
+                        </Route>
+
 
                         {/* Admin Pages */}
-                        <Route path="/admin" element={<AdminLayout />}>
+                        <Route path="/admin" element={
+                            <ProtectedRoute allowedRoles={["ADMIN"]}>
+                                <AdminLayout />
+                            </ProtectedRoute>}>
                             <Route path="dashboard" element={<DashboardPage />} />
                             <Route path="categories" element={<CategoryManagementPage />} />
                             <Route path="books" element={<BooksManagementPage />} />

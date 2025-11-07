@@ -89,37 +89,7 @@ const UserLayout = () => {
       </div>
 
       {/* Navigation Menu */}
-      <Nav className={`${styles.sidebarNav} flex-column`}>
-        {navigationItems.map((item) => {
-          const IconComponent = item.icon;
-          const isActive = isActivePage(item.path);
-          
-          return (
-            <Nav.Link
-              key={item.path}
-              href={item.path}
-              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(item.path);
-                handleCloseSidebar();
-              }}
-            >
-              <div className={styles.navItemContent}>
-                <div className={styles.navItemLeft}>
-                  <IconComponent className={styles.navIcon} />
-                  <span className={styles.navLabel}>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <Badge bg="danger" className={styles.navBadge}>
-                    {item.badge}
-                  </Badge>
-                )}
-              </div>
-            </Nav.Link>
-          );
-        })}
-      </Nav>
+      
 
       {/* Quick Actions */}
       <div className={styles.quickActions}>
@@ -177,10 +147,6 @@ const UserLayout = () => {
       </Navbar>
 
       <div className={styles.layoutContainer}>
-        {/* Desktop Sidebar */}
-        <div className={`${styles.sidebar} d-none d-lg-block`}>
-          <SidebarContent />
-        </div>
 
         {/* Mobile Sidebar */}
         <Offcanvas 

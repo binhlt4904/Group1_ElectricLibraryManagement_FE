@@ -78,11 +78,11 @@ const WalletPage = () => {
 
   const getTransactionIcon = (type) => {
     switch (type) {
-      case 'IN PROGRESS':
+      case 'INCREASE':
         return <CheckCircleFill className={styles.iconPayment} />;
       case 'DECREASE':
         return <ExclamationTriangleFill className={styles.iconFine} />;
-      case 'INCREASE':
+      case 'IN PROGRESS':
         return <CashCoin className={styles.iconRefund} />;
       default:
         return <Receipt className={styles.iconDefault} />;
@@ -100,18 +100,6 @@ const WalletPage = () => {
       default:
         return <Badge bg="secondary">Unknown</Badge>;
     }
-  };
-
-  const handlePayFines = () => {
-    setShowPaymentModal(true);
-  };
-
-  const handlePaymentSubmit = () => {
-    setShowPaymentModal(false);
-    setAlertMessage('Payment processed successfully!');
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-    // Here you would typically process the payment
   };
 
   const handleAddFunds = () => {
@@ -256,7 +244,7 @@ const WalletPage = () => {
                           </td>
                           <td className={styles.amountCell}>
                             <span className={`${styles.amount} ${transaction.type === "INCREASE" ? styles.credit : styles.debit}`}>
-                              {transaction.type === "DECREASE" ? '-' : '+'}${Math.abs(transaction.amount).toFixed(2)}
+                              {(transaction.status === "DONE") && (transaction.type === "DECREASE" ? '-' : '+')}${Math.abs(transaction.amount).toFixed(2)}
                             </span>
                           </td>
                           <td className={styles.statusCell}>

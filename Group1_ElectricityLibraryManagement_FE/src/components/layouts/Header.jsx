@@ -11,8 +11,6 @@ const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    // Mock user authentication state - in real app this would come from context/redux
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const { user, setUserContext } = useContext(UserContext);
 
     const handleSearch = (e) => {
@@ -73,7 +71,6 @@ const Header = () => {
                     <Nav className="ms-auto">
                         {!user ? (
                             <>
-                                <Nav.Link as={Link} to="/register" className={styles.topNavLink}>Join</Nav.Link>
                                 <Nav.Link as={Link} to="/login" className={styles.topNavLink}>Login</Nav.Link>
                                 <Nav.Link href="#contact" className={styles.topNavLink}>Contact</Nav.Link>
                             </>
@@ -95,29 +92,34 @@ const Header = () => {
                                             </div>
                                         </Dropdown.Header>
                                         <Dropdown.Divider />
-                                        <Dropdown.Item as={Link} to="/profile">
-                                            <PersonCircle className="me-2" />
-                                            My Profile
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/wishlist">
-                                            <Heart className="me-2" />
-                                            My Wishlist
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/borrow-history">
-                                            <ClockHistory className="me-2" />
-                                            Borrowing History
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/library-card">
-                                            <CreditCard className="me-2" />
-                                            Library Card
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/wallet">
-                                            <Wallet className="me-2" />
-                                            My Wallet
-                                        </Dropdown.Item>
+                                        {user.role === 'READER' && (
+                                            <>
+                                                <Dropdown.Item as={Link} to="/user/profile">
+                                                    <PersonCircle className="me-2" />
+                                                    My Profile
+                                                </Dropdown.Item>
+                                                <Dropdown.Item as={Link} to="/user/wishlist">
+                                                    <Heart className="me-2" />
+                                                    My Wishlist
+                                                </Dropdown.Item>
+                                                <Dropdown.Item as={Link} to="/user/borrow-history">
+                                                    <ClockHistory className="me-2" />
+                                                    Borrowing History
+                                                </Dropdown.Item>
+                                                <Dropdown.Item as={Link} to="/user/library-card">
+                                                    <CreditCard className="me-2" />
+                                                    Library Card
+                                                </Dropdown.Item>
+                                                <Dropdown.Item as={Link} to="/user/wallet">
+                                                    <Wallet className="me-2" />
+                                                    My Wallet
+                                                </Dropdown.Item>
+                                            </>
+                                        )}
+
+                                        {/* Nếu user là ADMIN thì hiển thị link tới Admin Panel */}
                                         {user.role === 'ADMIN' && (
                                             <>
-                                                <Dropdown.Divider />
                                                 <Dropdown.Item as={Link} to="/admin">
                                                     <PersonFill className="me-2" />
                                                     Admin Panel
@@ -162,36 +164,17 @@ const Header = () => {
                         >
                             Research
                         </Nav.Link>
-                        {user && (
+                        {(user?.role === "READER") && (
                             <Nav.Link
                                 as={Link}
-                                to="/profile"
+                                to="/user/profile"
                                 className={`${styles.navLink} ${isActivePage('/user') ? styles.active : ''}`}
                             >
                                 My Account
                             </Nav.Link>
                         )}
                     </Nav>
-                    <div className={styles.searchSection}>
-                        <Form onSubmit={handleSearch}>
-                            <InputGroup className={styles.searchGroup}>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Search books, authors, topics..."
-                                    className={styles.searchInput}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                                <Button
-                                    variant="primary"
-                                    className={styles.searchButton}
-                                    type="submit"
-                                >
-                                    <Search />
-                                </Button>
-                            </InputGroup>
-                        </Form>
-                    </div>
+                    
                 </Container>
             </Navbar>
         </>

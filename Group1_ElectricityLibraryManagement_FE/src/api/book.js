@@ -8,21 +8,21 @@ const bookApi = {
         return await axiosClient.get("/api/v1/public/books/list-book");
     },
     findAllAdmin: async (params) => {
-        return await axiosClient.get("/api/v1/public/admin/books/",{params});
+        return await axiosClient.get("/api/v1/admin/books/",{params});
     },
     addBook: async (data) => {
-        return await axiosClient.post("/api/v1/public/admin/books/", data, {
+        return await axiosClient.post("/api/v1/admin/books/", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
     findBookAdminById: async (id) => {
-        return await axiosClient.get(`/api/v1/public/admin/books/${id}`);
+        return await axiosClient.get(`/api/v1/admin/books/${id}`);
     },
     findBookUserById: async (id) => {
         return await axiosClient.get(`/api/v1/public/books/${id}`);
     },
     findBookContentsById: async (id) => {
-        return await axiosClient.get(`/api/v1/public/admin/books/${id}/contents`);
+        return await axiosClient.get(`/api/v1/admin/books/${id}/contents`);
     },
     findBookContentsUserById: async (id) => {
         return await axiosClient.get(`/api/v1/public/book-contents/${id}/contents`);
@@ -35,13 +35,13 @@ const bookApi = {
         return await axiosClient.get(`/api/v1/public/books/${bookId}/contents/user`)
     },
     createBookContent: async (formData, config) => {
-        return await axiosClient.post("/api/v1/public/admin/book-contents", formData, {
+        return await axiosClient.post("/api/v1/admin/book-contents", formData, {
             headers: { "Content-Type": "multipart/form-data" },
             ...config,
         });
     },
     updateBookContent: async (contentId, formData) => {
-        return await axiosClient.patch(`/api/v1/public/admin/book-contents/${contentId}`, formData, {
+        return await axiosClient.patch(`/api/v1/admin/book-contents/${contentId}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
     },
@@ -53,7 +53,7 @@ const bookApi = {
     },
     update : async (bookId, data) => {
         console.log(data);
-        return await axiosClient.patch(`/api/v1/public/admin/books/${bookId}`, data);
+        return await axiosClient.patch(`/api/v1/admin/books/${bookId}`, data);
     },
 };
 

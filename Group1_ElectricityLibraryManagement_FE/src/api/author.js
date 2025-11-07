@@ -30,6 +30,8 @@ const authorApi = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+  findAll: async () => { return await axiosClient.get('/api/v1/public/authors/') },
+
 };
 
 export default authorApi;

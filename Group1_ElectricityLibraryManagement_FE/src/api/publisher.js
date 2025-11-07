@@ -32,6 +32,7 @@ const publisherApi = {
   delete: async (id) => {
     return await axiosClient.delete(`/api/v1/public/publishers/${id}`);
   },
+  findAll: async () => { return await axiosClient.get('/api/v1/public/publishers/') },
 };
 
 export default publisherApi;

@@ -17,7 +17,8 @@ const AdminLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loading } = useContext(UserContext);
+  const { user, loading, setUserContext } = useContext(UserContext);
+  
 
   useEffect(() => {
     if (!loading && !user) {
@@ -72,7 +73,7 @@ const AdminLayout = () => {
       path: '/admin/borrowals',
       icon: ClipboardData,
       label: 'Borrowals Management',
-      badge: '45'
+      badge: null
     },
     {
       path: '/admin/events',
@@ -87,16 +88,10 @@ const AdminLayout = () => {
       badge: null
     },
     {
-      path: '/admin/reports',
-      icon: BarChart,
-      label: 'Reports',
-      badge: null
-    },
-    {
       path: '/admin/user-reports',
       icon: ExclamationTriangle,
       label: 'User Reports',
-      badge: '3'
+      badge: null
     },
     {
       path: '/admin/documents',
@@ -111,10 +106,18 @@ const AdminLayout = () => {
     setShowSidebar(false);
   };
 
-  const handleLogout = () => {
-    console.log('Admin logout');
-    navigate('/login');
-  };
+  const handleLogout = async () => {
+        try {
+            await auth.logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        localStorage.removeItem('accessToken');
+        const test = localStorage.getItem("accessToken");
+        console.log("If have acsess token is false: ", test);
+        setUserContext(null);
+        navigate('/');
+    };
 
   const isActiveRoute = (path) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');

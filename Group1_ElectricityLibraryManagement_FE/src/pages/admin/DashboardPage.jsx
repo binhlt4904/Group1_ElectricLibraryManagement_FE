@@ -363,6 +363,8 @@ const DashboardPage = () => {
           overdueItems: toNumber(overdueRes?.data?.overdueItems, 0),
         };
 
+        console.log(stats)
+
         const popularBooks = Array.isArray(popularRes?.data)
           ? popularRes.data.map((b, i) => ({
             id: b.bookId ?? i,
