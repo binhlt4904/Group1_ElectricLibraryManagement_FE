@@ -61,10 +61,7 @@ const BookDetailPage = () => {
     setIsInWishlist(saved.includes(Number(bookId)));
   }, [bookId]);
 
-
-  useEffect(() => {
-    // chỉ chạy khi đã có user
-    const fetchActive = async () => {
+const fetchActive = async () => {
       try {
         if (!user) {
           setActiveBorrowBookIds(new Set());
@@ -102,6 +99,9 @@ const BookDetailPage = () => {
       }
     };
 
+  useEffect(() => {
+    // chỉ chạy khi đã có user
+    
     fetchActive();
   }, [user, bookId]);
 
@@ -295,7 +295,11 @@ const BookDetailPage = () => {
       console.log('Borrowed book:', book.id, 'Due:', dueDate);
       setBorrowSuccess('Book borrowed successfully!');
       setBorrowError('');
-      setTimeout(() => setShowBorrowModal(false), 1200);
+      setTimeout(() => {
+        setShowBorrowModal(false);
+        fetchActive();
+      }, 1200);
+      
     } catch (err) {
       console.log("error is", err?.response?.data?.message);
       setBorrowError('Failed to borrow the book. ' + err?.response?.data?.message);
