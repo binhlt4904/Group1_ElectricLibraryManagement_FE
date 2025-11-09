@@ -126,6 +126,14 @@ const Header = () => {
                                                 </Dropdown.Item>
                                             </>
                                         )}
+                                        {user.role === 'LIBRARIAN' && (
+                                            <>
+                                                <Dropdown.Item as={Link} to="/admin">
+                                                    <PersonFill className="me-2" />
+                                                    Librarian Panel
+                                                </Dropdown.Item>
+                                            </>
+                                        )}
                                         <Dropdown.Divider />
                                         <Dropdown.Item onClick={handleLogout}>
                                             <BoxArrowRight className="me-2" />

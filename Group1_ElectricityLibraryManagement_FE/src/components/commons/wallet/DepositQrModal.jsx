@@ -48,7 +48,7 @@ const DepositQrModal = ({
           setTransactionCode("");
         }
       } catch (e) {
-        setErrorMsg("Không thể kiểm tra giao dịch đang chờ. Vui lòng thử lại.");
+        setErrorMsg("Unable to check pending transaction. Please try again..");
       }
     };
 
@@ -82,7 +82,7 @@ const DepositQrModal = ({
 
     const value = Number(amount);
     if (!value || value <= 0) {
-      alert("Vui lòng nhập số tiền hợp lệ.");
+      alert("Please enter a valid amount.");
       return;
     }
 
@@ -112,14 +112,14 @@ const DepositQrModal = ({
           setSubmitted(true);
           setTimestamp(Date.now());
         } else {
-          setErrorMsg("Bạn đã có giao dịch đang chờ xử lý.");
+          setErrorMsg("You have a pending transaction.");
         }
       } else {
-        setErrorMsg(res.data?.message || "Không thể tạo giao dịch nạp tiền.");
+        setErrorMsg(res.data?.message || "Unable to create deposit transaction.");
       }
     } catch (err) {
       console.error(err);
-      setErrorMsg("Có lỗi xảy ra khi tạo mã QR. Vui lòng thử lại.");
+      setErrorMsg("An error occurred while generating the QR code. Please try again..");
     } finally {
       setLoading(false);
     }
@@ -147,12 +147,12 @@ const DepositQrModal = ({
   const saveNewAmount = async () => {
     const v = Number(newAmount);
     if (!v || v <= 0) {
-      alert("Vui lòng nhập số tiền hợp lệ.");
+      alert("Please enter a valid amount.");
       return;
     }
     console.log(existingPending)
     if (!existingPending?.id) {
-      alert("Không tìm thấy giao dịch đang chờ.");
+      alert("No pending transactions found.");
       return;
     }
     try {
@@ -164,7 +164,7 @@ const DepositQrModal = ({
       setEditAmountMode(false);
       setTimestamp(Date.now()); // reload ảnh QR
     } catch (e) {
-      alert("Không thể cập nhật số tiền. Vui lòng thử lại.");
+      alert("Amount could not be updated. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -185,7 +185,7 @@ const DepositQrModal = ({
       setNewAmount("");
       setTimestamp(Date.now());
     } catch (e) {
-      alert("Không thể hủy giao dịch. Vui lòng thử lại.");
+      alert("Transaction could not be canceled. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -194,7 +194,7 @@ const DepositQrModal = ({
   return (
     <Modal show={show} onHide={onHide} centered size="md">
       <Modal.Header closeButton>
-        <Modal.Title>Nạp tiền vào ví</Modal.Title>
+        <Modal.Title>Top up your wallet</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
@@ -206,8 +206,8 @@ const DepositQrModal = ({
 
         {existingPending && submitted && (
           <Alert variant="warning" className="mb-3">
-            Bạn đang có một giao dịch <strong>PENDING</strong>. Đây là mã QR của giao dịch đó.
-            Vui lòng hoàn tất chuyển khoản hoặc cập nhật số tiền nếu cần.
+            You have a <strong>PENDING</strong> transaction. Here is the QR code for that transaction.
+            Please complete the transfer or update the amount if necessary.
           </Alert>
         )}
 
@@ -222,26 +222,26 @@ const DepositQrModal = ({
                 step="1000"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="Nhập số tiền (ví dụ 100000)"
+                placeholder="Enter amount (e.g 100000)"
                 required
               />
             </InputGroup>
             <div className="d-flex justify-content-end">
               <Button type="submit" disabled={loading || submitted || !!existingPending}>
-                {loading ? "Đang tạo..." : "Tạo mã QR"}
+                {loading ? "Creating..." : "Create QR Code"}
               </Button>
             </div>
           </Form>
         ) : (
           <>
             <div className="p-3 bg-light rounded mb-3">
-              <div><strong>Ngân hàng:</strong> TP Bank</div>
-              <div><strong>Số tài khoản:</strong> {accountNumber}</div>
-              <div><strong>Chủ tài khoản:</strong> {accountName}</div>
+              <div><strong>Bank:</strong> TP Bank</div>
+              <div><strong>Account Number:</strong> {accountNumber}</div>
+              <div><strong>Account Owner:</strong> {accountName}</div>
 
               {!editAmountMode ? (
                 <div className="d-flex align-items-center gap-2">
-                  <strong>Số tiền:</strong>
+                  <strong>Amount:</strong>
                   <span>{Number(amount).toLocaleString()} VNĐ</span>
                   <Button
                     variant="link"
@@ -249,7 +249,7 @@ const DepositQrModal = ({
                     onClick={startEditAmount}
                     disabled={!existingPending}
                   >
-                    Đổi số tiền
+                    Change amount
                   </Button>
                 </div>
               ) : (
@@ -263,21 +263,21 @@ const DepositQrModal = ({
                     style={{ maxWidth: 180 }}
                   />
                   <Button size="sm" onClick={saveNewAmount} disabled={loading}>
-                    Lưu
+                    Save
                   </Button>
                   <Button size="sm" variant="outline-secondary" onClick={cancelEditAmount}>
-                    Hủy
+                    Cancel
                   </Button>
                 </div>
               )}
 
               <div className="d-flex align-items-center gap-2 mt-2">
-                <strong>Nội dung:</strong>
+                <strong>Content:</strong>
                 <code className="text-primary">{transactionCode}</code>
                 <Button variant="link" size="sm" onClick={copyContent}>Copy</Button>
               </div>
               <small className="text-muted">
-                Mã QR tự làm mới mỗi 60 giây (không tạo giao dịch mới).
+                QR code refreshes every 60 seconds (no new transaction created).
               </small>
             </div>
 
@@ -290,7 +290,7 @@ const DepositQrModal = ({
               />
               <div className="mt-2">
                 <small className="text-muted">
-                  Quét bằng app ngân hàng, nhập đúng nội dung để hệ thống tự ghi nhận.
+                  Scan with the banking app, enter the correct content for the system to automatically record.
                 </small>
               </div>
             </div>
@@ -308,12 +308,12 @@ const DepositQrModal = ({
               variant="danger"
               onClick={cancelPending}
               disabled={!existingPending || loading}
-              title="Hủy giao dịch đang chờ để nhập lại số tiền và tạo QR mới"
+              title="Cancel pending transaction to re-enter amount and generate new QR"
             >
-              Hủy giao dịch
+              Cancel transaction
             </Button>
 
-            <Button onClick={onHide}>Xong</Button>
+            <Button onClick={onHide}>Done</Button>
           </>
         )}
       </Modal.Footer>

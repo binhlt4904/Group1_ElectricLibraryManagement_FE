@@ -267,7 +267,6 @@ const BorrowHistoryPage = () => {
                     <th>Due Date</th>
                     <th>Return Date</th>
                     <th>Status</th>
-                    <th>Renewals</th>
                     <th>Fine</th>
                     <th>Actions</th>
                   </tr>

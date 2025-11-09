@@ -37,6 +37,7 @@ const BookDetailPage = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportType, setReportType] = useState(null);
   const [reportDescription, setReportDescription] = useState(null);
+  const [hideBorrowButton, setHideBorrowButton] = useState(false);
 
   const [activeBorrowBookIds, setActiveBorrowBookIds] = useState(new Set());
 
@@ -83,6 +84,7 @@ const BookDetailPage = () => {
 
         const allowed = setIds.has(Number(bookId));
         setCanReadContents(allowed);
+        setHideBorrowButton(allowed);
 
         console.log(allowed)
 
@@ -95,7 +97,8 @@ const BookDetailPage = () => {
         console.error(e);
         setActiveBorrowBookIds(new Set());
         setCanReadContents(false);
-        setLockMsg("Unable to check borrow status. Please try again.");
+        setHideBorrowButton(true);
+        setLockMsg(e?.response?.data?.message || "");
       }
     };
 
@@ -294,8 +297,8 @@ const BookDetailPage = () => {
       setBorrowError('');
       setTimeout(() => setShowBorrowModal(false), 1200);
     } catch (err) {
-      console.log("error is", err.message);
-      setBorrowError('Failed to borrow the book.' + err.message);
+      console.log("error is", err?.response?.data?.message);
+      setBorrowError('Failed to borrow the book. ' + err?.response?.data?.message);
     }
   };
 
@@ -375,7 +378,7 @@ const BookDetailPage = () => {
 
         {/* Book Header */}
         <BookHeader book={book} handleBorrow={handleBorrow} handleWishlistToggle={handleWishlistToggle} isInWishlist={isInWishlist} handleReportIssue={handleReportIssue}
-          user={user} showLockOverlay={showLockOverlay} canReadContents={canReadContents}/>
+          user={user} showLockOverlay={showLockOverlay} canReadContents={canReadContents} hideBorrowButton={hideBorrowButton}/>
         {/* Tabs Section */}
         <TabSection activeTab={activeTab} setActiveTab={setActiveTab} contents={contents} reviews={reviews} book={book} renderStars={renderStars} relatedBooks={relatedBooks}
           handleAddReview={handleAddReview} newReview={newReview} setNewReview={setNewReview} editingReview={editingReview} setEditingReview={setEditingReview} editNote={editNote}

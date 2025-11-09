@@ -83,8 +83,7 @@ const AppContent = () => {
                         <Route path="/events/:id" element={<EventDetailPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/test" element={<TestPDF />} />
-
+                        <Route path="research" element={<UserDocumentsPage />} />
 
           
 
@@ -105,13 +104,13 @@ const AppContent = () => {
                             <Route path="reader-report-history" element={<ReaderReportManagementPage />} />
                             <Route path="book-reader/:bookId/:chapter" element={<BookReaderPage />} />
                             <Route path="wishlist" element={<WishlistPage />} />
-                            <Route path="research" element={<UserDocumentsPage />} />
+                            
                         </Route>
 
 
                         {/* Admin Pages */}
                         <Route path="/admin" element={
-                            <ProtectedRoute allowedRoles={["ADMIN"]}>
+                            <ProtectedRoute allowedRoles={["ADMIN","LIBRARIAN"]}>
                                 <AdminLayout />
                             </ProtectedRoute>}>
                             <Route path="dashboard" element={<DashboardPage />} />

@@ -50,7 +50,7 @@ const TabSection = ({ activeTab, setActiveTab, contents, reviews, book, renderSt
                           onClick={(e) => {
                             e.preventDefault();
                             if (canReadContents) {
-                              navigate(`/book-reader/${book.id}/${content.chapter}`);
+                              navigate(`/user/book-reader/${book.id}/${content.chapter}`);
                             } else {
                               // 👇 gửi phần tử click (e.currentTarget) cho Overlay bám vào
                               showLockOverlay(lockMsg || "Bạn cần mượn sách để đọc chương này.", e.currentTarget);

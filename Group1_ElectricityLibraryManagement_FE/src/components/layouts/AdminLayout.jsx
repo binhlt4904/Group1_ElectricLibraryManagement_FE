@@ -1,105 +1,73 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Container, Row, Col, Nav, Navbar, Offcanvas, Button, Dropdown, Badge
+  Container, Nav, Navbar, Offcanvas, Button, Dropdown, Badge
 } from 'react-bootstrap';
 import {
-  List, X, House, BookFill, PersonFill, Building, People, Tags,
-  ClipboardData, CalendarEvent, BarChart, ExclamationTriangle, FileEarmark,
+  List, House, BookFill, PersonFill, Building, People, Tags,
+  ClipboardData, CalendarEvent, ExclamationTriangle, FileEarmark,
   Gear, BoxArrowRight, PersonCircle, CreditCard
 } from 'react-bootstrap-icons';
 import styles from './AdminLayout.module.css';
-import { useContext } from 'react';
 import UserContext from '../contexts/UserContext';
 import NotificationBell from '../commons/NotificationBell';
+
+const ALL_ITEMS = {
+  dashboard:      { path: '/admin/dashboard',     icon: House,           label: 'Dashboard' },
+  categories:     { path: '/admin/categories',    icon: Tags,            label: 'Category Management' },
+  books:          { path: '/admin/books',         icon: BookFill,        label: 'Books Management' },
+  authors:        { path: '/admin/authors',       icon: PersonFill,      label: 'Authors Management' },
+  publishers:     { path: '/admin/publishers',    icon: Building,        label: 'Publishers Management' },
+  readers:        { path: '/admin/readers',       icon: People,          label: 'Readers Management' },
+  staff:          { path: '/admin/system-users',  icon: People,          label: 'Staff Management' },
+  borrowals:      { path: '/admin/borrowals',     icon: ClipboardData,   label: 'Borrowals Management' },
+  events:         { path: '/admin/events',        icon: CalendarEvent,   label: 'Events Management' },
+  libraryCards:   { path: '/admin/library-cards', icon: CreditCard,      label: 'Library Cards' },
+  userReports:    { path: '/admin/user-reports',  icon: ExclamationTriangle, label: 'User Reports' },
+  documents:      { path: '/admin/documents',     icon: FileEarmark,     label: 'Documents' },
+};
+
+// Role -> danh sách key của ALL_ITEMS hiển thị
+const VISIBLE_BY_ROLE = {
+  ADMIN: [
+    'dashboard', 'staff', 'readers', 'libraryCards',
+    
+  ],
+  LIBRARIAN: [
+    // “các phần còn lại” + Dashboard
+    'dashboard',
+    'categories', 'books', 'authors', 'publishers',
+    'borrowals', 'events', 'documents', 'userReports',
+    // Librarian KHÔNG có: staff, readers, libraryCards (theo mô tả của bạn)
+  ],
+};
+
+const PANEL_TITLE_BY_ROLE = {
+  ADMIN: 'Admin Panel',
+  LIBRARIAN: 'Librarian Panel',
+};
+const MENU_TITLE_BY_ROLE = {
+  ADMIN: 'Admin Menu',
+  LIBRARIAN: 'Librarian Menu',
+};
 
 const AdminLayout = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading, setUserContext } = useContext(UserContext);
-  
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/login');
-    }
+    if (!loading && !user) navigate('/login');
   }, [user, loading, navigate]);
 
-  const navigationItems = [
-    {
-      path: '/admin/dashboard',
-      icon: House,
-      label: 'Dashboard',
-      badge: null
-    },
-     {
-      path: '/admin/categories',
-      icon: Tags,                // icon mới
-      label: 'Category Management',
-      badge: null
-    },
-    {
-      path: '/admin/books',
-      icon: BookFill,
-      label: 'Books Management',
-      badge: null
-    },
-    {
-      path: '/admin/authors',
-      icon: PersonFill,
-      label: 'Authors Management',
-      badge: null
-    },
-    {
-      path: '/admin/publishers',
-      icon: Building,
-      label: 'Publishers Management',
-      badge: null
-    },
-    {
-      path: '/admin/readers',
-      icon: People,
-      label: 'Readers Management',
-      badge: null
-    },
-    {
-      path: '/admin/system-users',
-      icon: People,
-      label: 'Staff Management',
-      badge: null
-    },
-    {
-      path: '/admin/borrowals',
-      icon: ClipboardData,
-      label: 'Borrowals Management',
-      badge: null
-    },
-    {
-      path: '/admin/events',
-      icon: CalendarEvent,
-      label: 'Events Management',
-      badge: null
-    },
-    {
-      path: '/admin/library-cards',
-      icon: CreditCard,
-      label: 'Library Cards',
-      badge: null
-    },
-    {
-      path: '/admin/user-reports',
-      icon: ExclamationTriangle,
-      label: 'User Reports',
-      badge: null
-    },
-    {
-      path: '/admin/documents',
-      icon: FileEarmark,
-      label: 'Documents',
-      badge: null
-    },
-  ];
+  const role = user?.role || 'GUEST';
+  console.log(role)
+
+  const navigationItems = useMemo(() => {
+    const keys = VISIBLE_BY_ROLE[role] || [];
+    return keys.map(k => ALL_ITEMS[k]);
+  }, [role]);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -107,21 +75,18 @@ const AdminLayout = () => {
   };
 
   const handleLogout = async () => {
-        try {
-            await auth.logout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-        localStorage.removeItem('accessToken');
-        const test = localStorage.getItem("accessToken");
-        console.log("If have acsess token is false: ", test);
-        setUserContext(null);
-        navigate('/');
-    };
-
-  const isActiveRoute = (path) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    try {
+      await auth.logout?.();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    localStorage.removeItem('accessToken');
+    setUserContext(null);
+    navigate('/');
   };
+
+  const isActiveRoute = (path) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   const SidebarContent = () => (
     <div className={styles.sidebarContent}>
@@ -135,7 +100,9 @@ const AdminLayout = () => {
           </div>
           <div className={styles.logoText}>
             <div className={styles.logoTitle}>ELECTRICITY</div>
-            <div className={styles.logoSubtitle}>LIBRARY ADMIN</div>
+            <div className={styles.logoSubtitle}>
+              {role === 'ADMIN' ? 'ADMIN' : 'LIBRARIAN'}
+            </div>
           </div>
         </div>
       </div>
@@ -144,13 +111,12 @@ const AdminLayout = () => {
       <Nav className={`flex-column ${styles.sidebarNav}`}>
         {navigationItems.map((item) => {
           const IconComponent = item.icon;
-          const isActive = isActiveRoute(item.path);
-
+          const active = isActiveRoute(item.path);
           return (
             <Nav.Link
               key={item.path}
               onClick={() => handleNavigation(item.path)}
-              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+              className={`${styles.navItem} ${active ? styles.active : ''}`}
             >
               <div className={styles.navItemContent}>
                 <div className={styles.navItemLeft}>
@@ -170,6 +136,9 @@ const AdminLayout = () => {
     </div>
   );
 
+  const panelTitle = PANEL_TITLE_BY_ROLE[role] || 'Admin Panel';
+  const menuTitle  = MENU_TITLE_BY_ROLE[role]  || 'Admin Menu';
+
   return (
     <div className={styles.adminLayout}>
       {/* Top Navigation Bar */}
@@ -184,15 +153,12 @@ const AdminLayout = () => {
               <List />
             </Button>
             <Navbar.Brand className={styles.pageTitle}>
-              Admin Panel
+              {panelTitle}
             </Navbar.Brand>
           </div>
 
           <div className={styles.topNavRight}>
-            {/* Notifications */}
             <NotificationBell variant="outline-secondary" size="md" />
-
-            {/* Admin User Dropdown */}
             <Dropdown align="end">
               <Dropdown.Toggle
                 variant="link"
@@ -200,21 +166,13 @@ const AdminLayout = () => {
                 id="admin-user-dropdown"
               >
                 <div className={styles.userInfo}>
-                  <div className={styles.userName}>{user?.username || "Loading..."}</div>
-                  <div className={styles.userRole}>{user?.role || ""}</div>
+                  <div className={styles.userName}>{user?.username || 'Loading...'}</div>
+                  <div className={styles.userRole}>{user?.role || ''}</div>
                 </div>
               </Dropdown.Toggle>
 
               <Dropdown.Menu className={styles.userMenu}>
-                <Dropdown.Item className={styles.userMenuItem}>
-                  <PersonCircle className="me-2" />
-                  Profile Settings
-                </Dropdown.Item>
-                <Dropdown.Item className={styles.userMenuItem}>
-                  <Gear className="me-2" />
-                  System Settings
-                </Dropdown.Item>
-                <Dropdown.Divider />
+                
                 <Dropdown.Item
                   className={`${styles.userMenuItem} ${styles.logoutItem}`}
                   onClick={handleLogout}
@@ -228,7 +186,6 @@ const AdminLayout = () => {
         </Container>
       </Navbar>
 
-
       {/* Mobile Sidebar */}
       <Offcanvas
         show={showSidebar}
@@ -237,7 +194,7 @@ const AdminLayout = () => {
         className={styles.mobileSidebar}
       >
         <Offcanvas.Header closeButton className={styles.offcanvasHeader}>
-          <Offcanvas.Title>Admin Menu</Offcanvas.Title>
+          <Offcanvas.Title>{menuTitle}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className={styles.offcanvasBody}>
           <SidebarContent />

@@ -3,9 +3,9 @@ import { Row, Col, Button, Badge } from 'react-bootstrap';
 import { Heart, HeartFill, BookmarkPlus, Share } from 'react-bootstrap-icons';
 import styles from '../../../pages/public/BookDetailPage.module.css';
 const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, handleReportIssue, user, showLockOverlay,
-  canReadContents
+  canReadContents , hideBorrowButton
 }) => {
-  console.log(user)
+  console.log(canReadContents)
   return (
     <div>
       <Row className="mb-4">
@@ -55,7 +55,7 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
                 >
                   {book.copiesAvailable > 0 ? 'Borrow Now' : 'Join Waitlist'}
                 </Button> */}
-              {(!canReadContents) && (
+              {(!hideBorrowButton) && (
                 <Button
                   variant="primary"
                   size="lg"

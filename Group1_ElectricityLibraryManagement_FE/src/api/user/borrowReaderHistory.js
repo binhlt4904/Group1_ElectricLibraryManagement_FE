@@ -34,7 +34,6 @@ const borrowalReaderHistoryApi = {
             console.log("Post borrow successfully")
             return response.data;
         } catch (error) {
-            alert("Error in borrow book: " + (error.response?.data?.message || error.message));
             throw error;          
         }
     },
@@ -45,7 +44,7 @@ const borrowalReaderHistoryApi = {
             });
             return response.data;
         } catch (error) {
-            alert("Error in get active borrowed book ids: " + (error.response?.data?.message || error.message));
+           
             throw error;          
         }
     },
