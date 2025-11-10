@@ -35,7 +35,7 @@ const VISIBLE_BY_ROLE = {
   ],
   LIBRARIAN: [
     // “các phần còn lại” + Dashboard
-    'dashboard',
+    'dashboard', 'readers', 'libraryCards',
     'categories', 'books', 'authors', 'publishers',
     'borrowals', 'events', 'documents', 'userReports',
     // Librarian KHÔNG có: staff, readers, libraryCards (theo mô tả của bạn)
