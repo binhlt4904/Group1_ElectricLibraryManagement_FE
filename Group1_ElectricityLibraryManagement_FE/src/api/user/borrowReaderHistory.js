@@ -34,7 +34,17 @@ const borrowalReaderHistoryApi = {
             console.log("Post borrow successfully")
             return response.data;
         } catch (error) {
-            alert("Error in borrow book: " + (error.response?.data?.message || error.message));
+            throw error;          
+        }
+    },
+    getActiveBorrowedBookIds: async (userId) => {
+        try {
+            const response = await axiosClient.get(`/api/v1/borrow/active`, {
+                params: { userId },
+            });
+            return response.data;
+        } catch (error) {
+           
             throw error;          
         }
     },

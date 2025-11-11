@@ -1,7 +1,10 @@
-import React, { useState, useEffect,useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Badge, Nav, Tab, Card, ProgressBar, Modal, Form, Alert } from 'react-bootstrap';
 import { Heart, HeartFill, Star, StarFill, Share, BookmarkPlus, ArrowLeft } from 'react-bootstrap-icons';
+import { ToastContainer, Toast } from 'react-bootstrap';
+import { Overlay, Popover } from "react-bootstrap";
+import { useRef } from "react";
 import styles from './BookDetailPage.module.css';
 import bookApi from '../../api/book';
 import reviewApi from "../../api/review"; // thêm file này như mình đã hướng dẫn ở trên
@@ -34,6 +37,18 @@ const BookDetailPage = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportType, setReportType] = useState(null);
   const [reportDescription, setReportDescription] = useState(null);
+  const [hideBorrowButton, setHideBorrowButton] = useState(false);
+
+  const [activeBorrowBookIds, setActiveBorrowBookIds] = useState(new Set());
+
+  const [canReadContents, setCanReadContents] = useState(false);
+  const [lockMsg, setLockMsg] = useState("");
+
+  const [ovShow, setOvShow] = useState(false);
+  const [ovMsg, setOvMsg] = useState("");
+  const [ovTarget, setOvTarget] = useState(null);
+  const containerRef = useRef(null); // container để popper biết vùng cuộn (optional)
+
   // const [reportBook, setReportBook] = useState(null);
   const handleClose = () => setShowBorrowModal(false);
   // const handleShow = () => setShowBorrowModal(true);
@@ -45,6 +60,59 @@ const BookDetailPage = () => {
     const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsInWishlist(saved.includes(Number(bookId)));
   }, [bookId]);
+
+const fetchActive = async () => {
+      try {
+        if (!user) {
+          setActiveBorrowBookIds(new Set());
+          setCanReadContents(false);
+          setLockMsg("Please login to check read permissions.");
+          return;
+        }
+
+        // Ưu tiên libraryCardId; nếu bạn đang lưu trong user là field khác thì thay cho đúng
+        const userId = user.accountId;
+
+        const res = await borrowalReaderHistoryApi.getActiveBorrowedBookIds(userId);
+        console.log(res)
+        const ids = res || [];
+        const setIds = new Set(ids.map(Number));
+        setActiveBorrowBookIds(setIds);
+
+        const allowed = setIds.has(Number(bookId));
+        setCanReadContents(allowed);
+        setHideBorrowButton(allowed);
+
+        console.log(allowed)
+
+        setLockMsg(
+          allowed
+            ? ""
+            : "You have not borrowed this book. Please borrow the book to open the chapter."
+        );
+      } catch (e) {
+        console.error(e);
+        setActiveBorrowBookIds(new Set());
+        setCanReadContents(false);
+        setHideBorrowButton(true);
+        setLockMsg(e?.response?.data?.message || "");
+      }
+    };
+
+  useEffect(() => {
+    // chỉ chạy khi đã có user
+    
+    fetchActive();
+  }, [user, bookId]);
+
+
+  const showLockOverlay = (msg, targetEl) => {
+    setOvMsg(msg);
+    setOvTarget(targetEl);
+    setOvShow(true);
+    // auto-hide sau 2.5s
+    setTimeout(() => setOvShow(false), 2500);
+  };
 
   const handleAddReview = async () => {
     if (!user) {
@@ -127,12 +195,12 @@ const BookDetailPage = () => {
   };
 
   const fetchBookDetail = async () => {
-      try {
-        const bookRes = await bookApi.findBookUserById(bookId);
+    try {
+      const bookRes = await bookApi.findBookUserById(bookId);
 
-        const contentsRes = await bookApi.findBookContentsUserById(bookId);
-        console.log(contentsRes.data)
-        const reviewsRes = await bookApi.findReviewsByBookId(bookId);
+      const contentsRes = await bookApi.findBookContentsUserById(bookId);
+      console.log(contentsRes.data)
+      const reviewsRes = await bookApi.findReviewsByBookId(bookId);
 
       setBook(bookRes.data);
       setContents(contentsRes.data);
@@ -182,6 +250,11 @@ const BookDetailPage = () => {
   };
 
   const handleBorrow = () => {
+    if (!user) {
+
+      setLockMsg("Please login to check read permissions.");
+      return;
+    }
     console.log('Borrow book:', book.id);
     setBorrowedBook(book);
     setShowBorrowModal(true);
@@ -222,10 +295,14 @@ const BookDetailPage = () => {
       console.log('Borrowed book:', book.id, 'Due:', dueDate);
       setBorrowSuccess('Book borrowed successfully!');
       setBorrowError('');
-      setTimeout(() => setShowBorrowModal(false), 1200);
+      setTimeout(() => {
+        setShowBorrowModal(false);
+        fetchActive();
+      }, 1200);
+      
     } catch (err) {
-      console.log("error is", err.message);
-      setBorrowError('Failed to borrow the book.' + err.message);
+      console.log("error is", err?.response?.data?.message);
+      setBorrowError('Failed to borrow the book. ' + err?.response?.data?.message);
     }
   };
 
@@ -236,6 +313,7 @@ const BookDetailPage = () => {
   };
 
   const handleReportConfirm = async (reportType, reportDescription) => {
+    console.log("reportType: "+reportType)
 
     const params = {
       bookId: book.id,
@@ -273,7 +351,8 @@ const BookDetailPage = () => {
   }
 
   return (
-    <div className={styles.bookDetailPage}>
+    <div ref={containerRef} className={styles.bookDetailPage}>
+      
       <Container>
         {/* Back Button */}
         <Row className="mb-3">
@@ -289,14 +368,30 @@ const BookDetailPage = () => {
             </Button>
           </Col>
         </Row>
+        <Overlay
+          target={ovTarget}
+          show={ovShow}
+          placement="top"
+          container={containerRef.current || undefined} // optional, cho chuẩn vùng cuộn
+        >
+          <Popover>
+            <Popover.Header as="h6">⚠️ Warning</Popover.Header>
+            <Popover.Body>{ovMsg}</Popover.Body>
+          </Popover>
+        </Overlay>
 
         {/* Book Header */}
-        <BookHeader book={book} handleBorrow={handleBorrow} handleWishlistToggle={handleWishlistToggle} isInWishlist={isInWishlist} handleReportIssue={handleReportIssue} />
+        <BookHeader book={book} handleBorrow={handleBorrow} handleWishlistToggle={handleWishlistToggle} isInWishlist={isInWishlist} handleReportIssue={handleReportIssue}
+          user={user} showLockOverlay={showLockOverlay} canReadContents={canReadContents} hideBorrowButton={hideBorrowButton}/>
         {/* Tabs Section */}
-        <TabSection activeTab={activeTab} setActiveTab={setActiveTab} contents={contents} reviews={reviews} book={book} renderStars={renderStars} relatedBooks={relatedBooks} 
-        handleAddReview={handleAddReview} newReview={newReview} setNewReview={setNewReview} editingReview={editingReview} setEditingReview={setEditingReview} editNote={editNote}
-        setEditNote={setEditNote} editRate={editRate} setEditRate={setEditRate} handleEditReview={handleEditReview} handleDeleteReview={handleDeleteReview} handleSaveEdit={handleSaveEdit} user={user}/>
+        <TabSection activeTab={activeTab} setActiveTab={setActiveTab} contents={contents} reviews={reviews} book={book} renderStars={renderStars} relatedBooks={relatedBooks}
+          handleAddReview={handleAddReview} newReview={newReview} setNewReview={setNewReview} editingReview={editingReview} setEditingReview={setEditingReview} editNote={editNote}
+          setEditNote={setEditNote} editRate={editRate} setEditRate={setEditRate} handleEditReview={handleEditReview} handleDeleteReview={handleDeleteReview} handleSaveEdit={handleSaveEdit} user={user}
+          canReadContents={canReadContents} lockMsg={lockMsg} showLockOverlay={showLockOverlay} />
+
+
       </Container>
+
       <Modal show={showBorrowModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Book Borrowal Information</Modal.Title>
@@ -347,7 +442,7 @@ const BookDetailPage = () => {
               <Form.Label>Report Type: </Form.Label>
               <Form.Select
                 value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
+                onChange={(e) =>  setReportType(e.target.value)}
                 className={styles.filterSelect}
               >
                 {types.map(status => (
@@ -368,6 +463,7 @@ const BookDetailPage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
     </div>
   );
 };

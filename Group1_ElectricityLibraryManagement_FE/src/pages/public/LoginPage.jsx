@@ -131,9 +131,6 @@ const LoginPage = () => {
                       label="Remember me"
                       className={styles.checkbox}
                     />
-                    <Button variant="link" className={styles.forgotPassword}>
-                      Forgot password?
-                    </Button>
                   </div>
 
                   <Button
@@ -145,14 +142,7 @@ const LoginPage = () => {
                     {isSuccess ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </Form>
-                <div className={styles.footer}>
-                  <p>
-                    Don't have an account?{' '}
-                    <Button variant="link" className={styles.signupLink} href="/register">
-                      Sign up here
-                    </Button>
-                  </p>
-                </div>
+                
               </Card.Body>
             </Card>
           </Col>

@@ -132,9 +132,10 @@ const BooksManagementPage = () => {
       title: bk.title ?? '',
       author: bk.author ?? '',
       category: bk.category ?? '',
-      isDeleted: bk.isDeleted === 'true',
+      isDeleted: bk.isDeleted,
       publisher: bk.publisher ?? '',
-      publishedDate: bk.publishedDate ?? ''
+      publishedDate: bk.publishedDate ?? '',
+      description: bk.description ?? '',
     });
   };
 
@@ -156,7 +157,8 @@ const BooksManagementPage = () => {
         category: editForm.category,
         isDeleted: !!editForm.isDeleted,
         publisher: editForm.publisher?.trim(),
-        publishedDate: editForm.publishedDate
+        publishedDate: editForm.publishedDate,
+        description: editForm.description?.trim(),
       };
       console.log(payload)
 
@@ -290,6 +292,7 @@ const BooksManagementPage = () => {
                   <th>Book</th>
                   <th>Author</th>
                   <th>Category</th>
+                  <th>Description</th>
                   <th>Status</th>
                   <th>Added Date</th>
                   <th>Actions</th>
@@ -380,6 +383,24 @@ const BooksManagementPage = () => {
                           </Form.Select>
                         )}
                       </td>
+                      <td style={{ minWidth: "250px" }}>
+                        {!isEditing ? (
+                          <span className={styles.bookDesc}>
+                            {book.description?.length > 50
+                              ? book.description.slice(0, 50) + "..."
+                              : book.description || "—"}
+                          </span>
+                        ) : (
+                          <Form.Control
+                            as="textarea"
+                            rows={2}
+                            size="sm"
+                            value={editForm.description}
+                            onChange={(e) => handleChange("description", e.target.value)}
+                            placeholder="Enter description"
+                          />
+                        )}
+                      </td>
                       <td>
                         {!isEditing ? (
                           getStatusBadge(book.isDeleted)
@@ -405,7 +426,7 @@ const BooksManagementPage = () => {
                               <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(book.id)}>
                                 <Pencil />
                               </Button>
-                              
+
                             </>
                           ) : (
                             <>
@@ -458,7 +479,7 @@ const BooksManagementPage = () => {
         </Card.Body>
       </Card>
 
-     
+
     </div>
   );
 };

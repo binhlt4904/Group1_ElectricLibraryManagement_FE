@@ -45,6 +45,10 @@ import AddBookContentPage from './pages/admin/book/AddBookContentPage';
 import DepositPage from './pages/user/DepositPage';
 import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
+import AddAuthorPage from './pages/admin/AddAuthorPage';
+import AddPublisherPage from './pages/admin/AddPublisherPage';
+
+import { ProtectedRoute } from './routes/ProtectedRoute';
 
 const AppContent = () => {
     const location = useLocation();
@@ -52,24 +56,23 @@ const AppContent = () => {
 
 
 
-  return (
-    <UserProvider>
-      <NotificationProvider>
-        <div className="app-container">
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
-        {!isAdminPage && <Header />}
-        <main className="main-content">
+    return (
+        <UserProvider>
+            <div className="app-container">
+                <ToastContainer
+                    position="top-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="light"
+                />
+                {!isAdminPage && <Header />}
+                <main className="main-content">
 
                     <Routes>
                         {/* Public Pages */}
@@ -81,23 +84,36 @@ const AppContent = () => {
                         <Route path="/events/:id" element={<EventDetailPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/test" element={<TestPDF />} />
+                        <Route path="research" element={<UserDocumentsPage />} />
 
-           
+          
 
                         {/* Individual User Pages (outside layout) */}
-                        <Route path="/profile" element={<ProfilePage />} />
-                        <Route path="/borrow-history" element={<BorrowHistoryPage />} />
-                        <Route path="/library-card" element={<LibraryCardPage />} />
-                        <Route path="/notifications" element={<NotificationsPage />} />
-                        <Route path="/wallet" element={<WalletPage />} />
-                        <Route path="/reader-report-history" element={<ReaderReportManagementPage />} />                       
-                        <Route path="/book-reader/:bookId/:chapter" element={<BookReaderPage />} />
-                        <Route path="/wishlist" element={<WishlistPage />} />
-                        <Route path="/research" element={<UserDocumentsPage />} />
+                        <Route path="/user" element={
+                            //<PrivateRoute isAuthenticate = {true}>
+                            <ProtectedRoute allowedRoles={["READER"]}>
+                                <UserLayout />
+                            </ProtectedRoute>
+                            //</PrivateRoute>
+                        }>
+                            {/* Các route con KHÔNG có / ở đầu */}
+                            <Route path="profile" element={<ProfilePage />} />
+                            <Route path="borrow-history" element={<BorrowHistoryPage />} />
+                            <Route path="library-card" element={<LibraryCardPage />} />
+                            <Route path="notifications" element={<NotificationsPage />} />
+                            <Route path="wallet" element={<WalletPage />} />
+                            <Route path="reader-report-history" element={<ReaderReportManagementPage />} />
+                            <Route path="book-reader/:bookId/:chapter" element={<BookReaderPage />} />
+                            <Route path="wishlist" element={<WishlistPage />} />
+                            
+                        </Route>
+
 
                         {/* Admin Pages */}
-                        <Route path="/admin" element={<AdminLayout />}>
+                        <Route path="/admin" element={
+                            <ProtectedRoute allowedRoles={["ADMIN","LIBRARIAN"]}>
+                                <AdminLayout />
+                            </ProtectedRoute>}>
                             <Route path="dashboard" element={<DashboardPage />} />
                             <Route path="categories" element={<CategoryManagementPage />} />
                             <Route path="books" element={<BooksManagementPage />} />
@@ -114,6 +130,9 @@ const AppContent = () => {
                             <Route path="system-users" element={<StaffManagementPage />} />
                             <Route path="library-cards" element={<LibraryCardManagementPage />} />
                             <Route path="books/add/:id" element={<AddBookContentPage />} />
+                            <Route path="authors/add" element={<AddAuthorPage />} />
+                            <Route path="publishers/add" element={<AddPublisherPage />} />
+
                             {/* Default redirect to dashboard */}
                             <Route index element={<DashboardPage />} />
                         </Route>
