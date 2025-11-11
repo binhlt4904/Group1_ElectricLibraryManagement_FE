@@ -297,7 +297,6 @@ const EventManagementPage = () => {
       if (newEvent.location) formData.append('location', newEvent.location);
       if (newEvent.category) formData.append('category', newEvent.category);
       if (newEvent.capacity) formData.append('capacity', parseInt(newEvent.capacity));
-      if (newEvent.status) formData.append('status', newEvent.status);
       
       // Append image file if selected
       if (newEvent.image) {
@@ -489,9 +488,6 @@ const EventManagementPage = () => {
       }
       if (editingEvent.capacity) {
         formData.append('capacity', editingEvent.capacity);
-      }
-      if (editingEvent.status) {
-        formData.append('status', editingEvent.status);
       }
 
       // Add image file if a new one was selected
@@ -1303,22 +1299,7 @@ const EventManagementPage = () => {
               </Col>
             </Row>
 
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
-                  <Form.Select
-                    value={newEvent.status}
-                    onChange={(e) => setNewEvent({ ...newEvent, status: e.target.value })}
-                  >
-                    <option value="upcoming">Upcoming</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
+            {/* Status is auto-managed by backend (upcoming -> ongoing -> completed). Field removed from form. */}
 
             <Row>
               <Col md={12}>
@@ -1479,20 +1460,7 @@ const EventManagementPage = () => {
               </Row>
 
               <Row>
-                <Col md={12}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Status</Form.Label>
-                    <Form.Select
-                      value={editingEvent.status}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
-                    >
-                      <option value="upcoming">Upcoming</option>
-                      <option value="ongoing">Ongoing</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
+                {/* Status is auto-managed by backend; not editable here. */}
               </Row>
 
               <Row>

@@ -65,7 +65,7 @@ class WebSocketService {
         this.reconnectAttempts = 0;
         
         // Subscribe to user-specific notifications
-        this.subscribe(userId, onConnect);
+        this.subscribe(userId);
         
         if (onConnect) {
           onConnect();
@@ -110,7 +110,7 @@ class WebSocketService {
       return;
     }
 
-    const subscriptionPath = `/user/${userId}/queue/notifications`;
+    const subscriptionPath = `/user/queue/notifications`;
     
     // Avoid duplicate subscriptions
     if (this.subscriptions.has(subscriptionPath)) {

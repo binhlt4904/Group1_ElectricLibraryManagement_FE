@@ -82,10 +82,16 @@ const NotificationItem = ({ notification, onClick }) => {
   };
 
   return (
-    <ListGroup.Item
-      action
+    <div
       onClick={handleClick}
-      className={`${styles.notificationItem} ${!notification.isRead ? styles.unread : ''}`}
+      className={`${styles.notificationItem} ${!notification.isRead ? styles.unread : ''} list-group-item`}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleClick();
+        }
+      }}
     >
       <div className={styles.iconContainer} style={{ color: getIconColor(notification.notificationType) }}>
         {getIcon(notification.notificationType)}
@@ -105,7 +111,7 @@ const NotificationItem = ({ notification, onClick }) => {
           <Trash size={14} />
         </button>
       </div>
-    </ListGroup.Item>
+    </div>
   );
 };
 

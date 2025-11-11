@@ -60,8 +60,8 @@ const LibraryCardPage = () => {
 
   // Use real card data from API
   const userData = cardData ? {
-    firstName: cardData.readerName?.split(' ')[0] || 'Member',
-    lastName: cardData.readerName?.split(' ').slice(1).join(' ') || '',
+    firstName: user?.fullName?.split(' ')[0] || 'Member',
+    lastName: user?.fullName?.split(' ').slice(1).join(' ') || '',
     memberId: cardData.cardNumber,
     card_number: cardData.cardNumber,
     membershipType: 'Standard', // Can be enhanced based on backend data
@@ -70,10 +70,10 @@ const LibraryCardPage = () => {
     expirationDate: cardData.expiryDate,
     expiry_date: cardData.expiryDate,
     status: cardData.status,
-    email: cardData.email || user?.email || '',
-    phone: cardData.phone || user?.phone || '',
-    address: cardData.address || user?.address || '',
-    photo: cardData.photo || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    photo: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     daysUntilExpiry: cardData.daysUntilExpiry,
     readerName: cardData.readerName,
     readerCode: cardData.readerCode
@@ -110,7 +110,6 @@ const LibraryCardPage = () => {
   };
 
   const getStatusBadgeVariant = (status) => {
-    if (!status) return 'secondary';
     switch (status.toLowerCase()) {
       case 'active':
         return 'success';
@@ -213,7 +212,6 @@ const LibraryCardPage = () => {
                 <p>You don't have a library card yet. Please contact the library administration to get your card issued.</p>
               </Alert>
             ) : (
-            <>
             <div className={styles.cardContainer}>
               <div className={styles.libraryCard}>
                 {/* Card Front */}
@@ -312,6 +310,7 @@ const LibraryCardPage = () => {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Card Actions */}
             <div className={styles.cardActions}>
@@ -391,15 +390,14 @@ const LibraryCardPage = () => {
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Status</label>
                       <div className={styles.infoValue}>
-                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status || 'N/A'}</Badge>
+                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status}</Badge>
                       </div>
                     </div>
                   </Col>
                 </Row>
               </Card.Body>
             </Card>
-            </>
-            )}
+
 
             {/* Digital Wallet Integration */}
             {userData && (
@@ -448,7 +446,7 @@ const LibraryCardPage = () => {
                 />
               </Form.Group>
             </Form>
-            {userData?.expiryDate && (
+            {userData.expiryDate && (
               <Alert variant="info" className="mt-3 mb-0">
                 <small>
                   <strong>Current Expiry:</strong> {formatDate(userData.expiryDate)}<br />

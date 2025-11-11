@@ -12,57 +12,6 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
 
-  // Fetch notifications on mount and when user changes
-  useEffect(() => {
-    if (user && user.accountId) {
-      fetchNotifications();
-      fetchUnreadCount();
-      connectWebSocket();
-    }
-
-    return () => {
-      if (webSocketService.isConnectedStatus()) {
-        webSocketService.disconnect();
-      }
-    };
-  }, [user]);
-
-  // Connect to WebSocket for real-time notifications
-  const connectWebSocket = useCallback(() => {
-    if (!user || !user.accountId) {
-      console.log('No user found, skipping WebSocket connection');
-      return;
-    }
-
-    if (webSocketService.isConnectedStatus()) {
-      console.log('WebSocket already connected');
-      return;
-    }
-
-    console.log('Connecting to WebSocket for user:', user.accountId);
-
-    webSocketService.connect(
-      user.accountId,
-      () => {
-        console.log('WebSocket connected successfully');
-        setConnected(true);
-      },
-      (error) => {
-        console.error('WebSocket connection error:', error);
-        setConnected(false);
-        
-        // Show error toast
-        toast.error('Failed to connect to notification service. Retrying...', {
-          position: 'top-right',
-          autoClose: 3000
-        });
-      }
-    );
-
-    // Register message handler for new notifications
-    webSocketService.onMessage('notification', handleNewNotification);
-  }, [user]);
-
   // Handle incoming WebSocket notifications
   const handleNewNotification = useCallback((notification) => {
     console.log('🔔 [NotificationProvider] New notification received:', notification);
@@ -119,6 +68,57 @@ export const NotificationProvider = ({ children }) => {
         toast.info(toastMessage, toastOptions);
     }
   }, []);
+
+  // Connect to WebSocket for real-time notifications
+  const connectWebSocket = useCallback(() => {
+    if (!user || !user.accountId) {
+      console.log('No user found, skipping WebSocket connection');
+      return;
+    }
+
+    if (webSocketService.isConnectedStatus()) {
+      console.log('WebSocket already connected');
+      return;
+    }
+
+    console.log('Connecting to WebSocket for user:', user.accountId);
+
+    webSocketService.connect(
+      user.accountId,
+      () => {
+        console.log('WebSocket connected successfully');
+        setConnected(true);
+      },
+      (error) => {
+        console.error('WebSocket connection error:', error);
+        setConnected(false);
+        
+        // Show error toast
+        toast.error('Failed to connect to notification service. Retrying...', {
+          position: 'top-right',
+          autoClose: 3000
+        });
+      }
+    );
+
+    // Register message handler for new notifications
+    webSocketService.onMessage('notification', handleNewNotification);
+  }, [user, handleNewNotification]);
+
+  // Fetch notifications on mount and when user changes
+  useEffect(() => {
+    if (user && user.accountId) {
+      fetchNotifications();
+      fetchUnreadCount();
+      connectWebSocket();
+    }
+
+    return () => {
+      if (webSocketService.isConnectedStatus()) {
+        webSocketService.disconnect();
+      }
+    };
+  }, [user, connectWebSocket]);
 
   // Handle notification click
   const handleNotificationClick = useCallback((notification) => {
