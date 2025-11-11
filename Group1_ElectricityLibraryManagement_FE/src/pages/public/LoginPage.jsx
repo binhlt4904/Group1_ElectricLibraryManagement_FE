@@ -1,6 +1,6 @@
 import React, { useState, useContext} from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
-import { Eye, EyeSlash, PersonFill, LockFill } from 'react-bootstrap-icons';
+import { PersonFill, LockFill } from 'react-bootstrap-icons';
 import styles from './LoginPage.module.css';
 import auth from '../../api/auth';
 import { jwtDecode } from 'jwt-decode';
@@ -14,24 +14,6 @@ const LoginPage = () => {
   const {setUserContext} = useContext(UserContext);
 
   const navigate = useNavigate();
-
-  // const validateForm = () => {
-  //   const newErrors = {};
-
-  //   if (!formData.email) {
-  //     newErrors.email = 'Email is required';
-  //   } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-  //     newErrors.email = 'Email is invalid';
-  //   }
-
-  //   if (!formData.password) {
-  //     newErrors.password = 'Password is required';
-  //   } else if (formData.password.length < 6) {
-  //     newErrors.password = 'Password must be at least 6 characters';
-  //   }
-
-  //   return newErrors;
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -124,14 +106,12 @@ const LoginPage = () => {
                     </Form.Control.Feedback> */}
                   </Form.Group>
 
-                  <div className={styles.formOptions}>
-                    <Form.Check
-                      type="checkbox"
-                      id="remember-me"
-                      label="Remember me"
-                      className={styles.checkbox}
-                    />
-                  </div>
+                    <div className={`${styles.formOptions} d-flex justify-content-end`}>
+                        <Button variant="link" className={styles.forgotPassword} onClick={() => navigate("/forget-password")}>
+                        Forgot password?
+                        </Button>
+                    </div>
+
 
                   <Button
                     type="submit"

@@ -22,5 +22,19 @@ import axiosClient, {axiosRefresh} from "./axiosClient";
             throw error;
         }
     },
+    forgetPassword: async (forgetPasswordRequest) => {
+        try {
+            return await axiosClient.post("/api/v1/accounts/forget-password", forgetPasswordRequest);
+        } catch (error) {
+            throw error;
+        }
+    },
+    resetPassword: async (token, resetPasswordRequest) => {
+        try {
+            return await axiosClient.post(`/api/v1/accounts/reset-password?token=${token}`, resetPasswordRequest);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 export default auth;
