@@ -7,6 +7,8 @@ import HomePage from './pages/public/HomePage';
 import BookListPage from './pages/public/BookListPage';
 import BookDetailPage from './pages/public/BookDetailPage';
 import LoginPage from './pages/public/LoginPage';
+import ForgetPage from './pages/public/ForgetPage';
+import ResetPasswordPage from './pages/public/ResetPasswordPage';
 import RegisterPage from './pages/public/RegisterPage';
 import EventsListPage from './pages/public/EventsListPage';
 import EventDetailPage from './pages/public/EventDetailPage';
@@ -75,13 +77,15 @@ const AppContent = () => {
 
                     <Routes>
                         {/* Public Pages */}
-                        <Route path="/abc" element={<ImportExcel />} />
+                        {/* <Route path="/abc" element={<ImportExcel />} /> */}
                         <Route path="/" element={<HomePage />} />
                         <Route path="/books" element={<BookListPage />} />
                         <Route path="/books/:id" element={<BookDetailPage />} />
                         <Route path="/events" element={<EventsListPage />} />
                         <Route path="/events/:id" element={<EventDetailPage />} />
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/forget-password" element={<ForgetPage />} />
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="research" element={<UserDocumentsPage />} />
 
