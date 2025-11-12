@@ -80,7 +80,7 @@ const AddBookPage = () => {
     try {
       await bookApi.addBook(data);
 
-      setSuccessMessage("✅ Thêm sách thành công!");
+      setSuccessMessage("Add Book Successfully!");
       setFormData({
         bookCode: "",
         title: "",
@@ -94,7 +94,7 @@ const AddBookPage = () => {
       setPreviewImage(null);
     } catch (err) {
       console.error(err);
-      setErrorMessage("❌ Thêm sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setErrorMessage("Thêm sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
     }
   };
 

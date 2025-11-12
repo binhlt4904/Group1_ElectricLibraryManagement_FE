@@ -45,10 +45,9 @@ const LoginPage = () => {
       setIsSuccess(true);
       setMessage("Login successful!");
 
-      //navigate home page
       navigate("/")
     } catch (error) {
-      setMessage(error.message);
+      setMessage("Login failed. Please check your username and password.");
       setIsSuccess(false);
     }
   };

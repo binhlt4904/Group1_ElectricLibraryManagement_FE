@@ -117,7 +117,7 @@ const Header = () => {
                                             </>
                                         )}
 
-                                        {/* Nếu user là ADMIN thì hiển thị link tới Admin Panel */}
+                                        
                                         {user.role === 'ADMIN' && (
                                             <>
                                                 <Dropdown.Item as={Link} to="/admin">

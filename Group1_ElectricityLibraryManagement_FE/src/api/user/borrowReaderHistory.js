@@ -23,7 +23,7 @@ const borrowalReaderHistoryApi = {
             const response = await axiosClient.post(`/api/v1/return/${id}`);
             return response;
         } catch (error) {
-            alert("Error in return book: ", error.response.data.message)
+            throw error;
         }
     },
     borrowBook: async (bookId, dueDate) => {

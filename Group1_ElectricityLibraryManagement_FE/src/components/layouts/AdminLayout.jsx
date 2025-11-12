@@ -27,18 +27,15 @@ const ALL_ITEMS = {
   documents:      { path: '/admin/documents',     icon: FileEarmark,     label: 'Documents' },
 };
 
-// Role -> danh sách key của ALL_ITEMS hiển thị
 const VISIBLE_BY_ROLE = {
   ADMIN: [
     'dashboard', 'staff', 'readers', 'libraryCards',
     
   ],
   LIBRARIAN: [
-    // “các phần còn lại” + Dashboard
     'dashboard', 'readers', 'libraryCards',
     'categories', 'books', 'authors', 'publishers',
     'borrowals', 'events', 'documents', 'userReports',
-    // Librarian KHÔNG có: staff, readers, libraryCards (theo mô tả của bạn)
   ],
 };
 

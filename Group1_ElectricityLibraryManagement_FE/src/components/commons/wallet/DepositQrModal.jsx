@@ -66,7 +66,6 @@ const DepositQrModal = ({
     const a = Number(amount) || 0;
     const info = encodeURIComponent(transactionCode || "");
     const name = encodeURIComponent(accountName);
-    // timestamp chỉ để tránh cache, KHÔNG làm đổi transactionCode
     return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact.png?amount=${a}&addInfo=${info}&accountName=${name}&t=${timestamp}`;
   }, [amount, bankCode, accountNumber, accountName, transactionCode, timestamp]);
 
@@ -74,7 +73,6 @@ const DepositQrModal = ({
     e.preventDefault();
     setErrorMsg("");
 
-    // Nếu đã có pending (khôi phục được), không cho tạo mới
     if (existingPending) {
       setSubmitted(true);
       return;
@@ -93,7 +91,6 @@ const DepositQrModal = ({
       const res = await walletApi.handleTransaction(userId, value, code);
 
       if (res.status === 201 || res.status === 200) {
-        // Tạo thành công -> refetch pending để lấy dữ liệu chuẩn từ server
         const p = await walletApi.getPendingTransactions(userId);
         const tx = p.data ?? { amount: value, transactionCode: code };
         setExistingPending(tx);
@@ -102,7 +99,6 @@ const DepositQrModal = ({
         setSubmitted(true);
         setTimestamp(Date.now());
       } else if (res.status === 409) {
-        // Đã có pending -> khôi phục giao dịch đang chờ
         const p = await walletApi.getPendingTransactions(userId);
         const tx = p.data;
         if (tx) {
@@ -129,11 +125,9 @@ const DepositQrModal = ({
     try {
       await navigator.clipboard.writeText(transactionCode);
     } catch {
-      /* noop */
     }
   };
 
-  // --- Đổi số tiền (PATCH amount, giữ nguyên transactionCode) ---
   const startEditAmount = () => {
     setNewAmount(String(amount || ""));
     setEditAmountMode(true);
@@ -213,7 +207,7 @@ const DepositQrModal = ({
 
         {!submitted ? (
           <Form onSubmit={handleCreateQr}>
-            <Form.Label>Số tiền muốn nạp (VNĐ)</Form.Label>
+            <Form.Label>Amount of money (VNĐ)</Form.Label>
             <InputGroup className="mb-3">
               <InputGroup.Text>₫</InputGroup.Text>
               <Form.Control

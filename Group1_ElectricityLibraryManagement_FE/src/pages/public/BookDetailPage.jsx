@@ -47,7 +47,9 @@ const BookDetailPage = () => {
   const [ovShow, setOvShow] = useState(false);
   const [ovMsg, setOvMsg] = useState("");
   const [ovTarget, setOvTarget] = useState(null);
-  const containerRef = useRef(null); // container để popper biết vùng cuộn (optional)
+  const containerRef = useRef(null); 
+  const [reportError, setReportError] = useState('');
+  const [reportsuccess, setReportSuccess] = useState('');
 
   // const [reportBook, setReportBook] = useState(null);
   const handleClose = () => setShowBorrowModal(false);
@@ -194,6 +196,8 @@ const fetchActive = async () => {
     }
   };
 
+  console.log(user);
+
   const fetchBookDetail = async () => {
     try {
       const bookRes = await bookApi.findBookUserById(bookId);
@@ -201,6 +205,7 @@ const fetchActive = async () => {
       const contentsRes = await bookApi.findBookContentsUserById(bookId);
       console.log(contentsRes.data)
       const reviewsRes = await bookApi.findReviewsByBookId(bookId);
+      console.log(contentsRes.data)
 
       setBook(bookRes.data);
       setContents(contentsRes.data);
@@ -313,6 +318,13 @@ const fetchActive = async () => {
   };
 
   const handleReportConfirm = async (reportType, reportDescription) => {
+     if (reportType == null || reportDescription == null || reportDescription.trim() === "") {
+      setReportError("Please fill in all report fields.");
+      setReportSuccess('');
+      return;
+    }
+
+      
     console.log("reportType: "+reportType)
 
     const params = {
@@ -323,10 +335,22 @@ const fetchActive = async () => {
 
     try {
       const response = await reportApi.createReport(params);
-      setShowReportModal(false);
+      setReportSuccess("Report submitted successfully!");
+      setReportError('');
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportSuccess('');
+        
+        setReportDescription('');
+      setReportType(null);
+      }, 2000);
+      
+      
+      
     } catch (error) {
-      alert('Error in reporting issue:', error.message);
       console.error('Failed to report issue:', error);
+      setReportError("Failed to submit report. " + (error?.response?.data?.message || ""));
+      setReportSuccess('');
     }
   }
   const renderStars = (rating) => {
@@ -427,6 +451,8 @@ const fetchActive = async () => {
           <Modal.Title>Information for report</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+           {reportError && <Alert variant="danger">{reportError}</Alert>}
+          {reportsuccess && <Alert variant="success">{reportsuccess}</Alert>}
           <Form>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Description: </Form.Label>
@@ -445,6 +471,7 @@ const fetchActive = async () => {
                 onChange={(e) =>  setReportType(e.target.value)}
                 className={styles.filterSelect}
               >
+                <option value="" >Select report type</option>
                 {types.map(status => (
                   <option key={status} value={status}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}

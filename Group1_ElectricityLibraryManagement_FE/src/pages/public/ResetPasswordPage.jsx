@@ -104,7 +104,7 @@ const ResetPasswordPage = () => {
                         size="lg"
                         disabled={isSuccess}
                       >
-                        {isSuccess ? 'Processing...' : 'Search'}
+                        {isSuccess ? 'Processing...' : 'Change'}
                     </Button>
                 </Form>
                 

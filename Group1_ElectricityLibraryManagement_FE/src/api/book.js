@@ -46,6 +46,7 @@ const bookApi = {
         });
     },
     getBookContentByBookIdAndChapter: async(bookId, chapter) =>{
+        console.log("dã goi detail cua bookId "+ bookId + " chapter " + chapter);
         return await axiosClient.get(`/api/v1/public/book-contents/${bookId}/${chapter}`);
     },
     getRelatedBooks: async (bookId) => {

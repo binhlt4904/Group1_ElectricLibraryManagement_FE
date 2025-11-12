@@ -150,7 +150,6 @@ const BooksManagementPage = () => {
 
   const handleSaveEdit = async (bookId) => {
     try {
-      // Chuẩn hóa payload theo backend của bạn
       const payload = {
         title: editForm.title?.trim(),
         author: editForm.author?.trim(),
@@ -164,7 +163,6 @@ const BooksManagementPage = () => {
 
       await bookApi.update(bookId, payload);
 
-      // Cập nhật optimistically trên client
       setBooks(prev =>
         prev.map(b =>
           b.id === bookId ? { ...b, ...payload } : b
@@ -203,7 +201,6 @@ const BooksManagementPage = () => {
 
   return (
     <div className={styles.booksManagementPage}>
-      {/* Header */}
       <Row className="mb-4">
         <Col>
           <div className={styles.pageHeader}>
@@ -227,7 +224,6 @@ const BooksManagementPage = () => {
 
       {showAlert && <Alert variant="success" className={styles.alert}>{alertMessage}</Alert>}
 
-      {/* 🔹 Filters */}
       <Row className="mb-4">
         <Col lg={4} className="mb-3">
           <Form onSubmit={handleSearch}>
@@ -282,7 +278,6 @@ const BooksManagementPage = () => {
         </Col>
       </Row>
 
-      {/* 🔹 Table */}
       <Card className={`custom-card ${styles.booksCard}`}>
         <Card.Body className={styles.booksCardBody}>
           <div className={styles.tableContainer}>
@@ -327,7 +322,6 @@ const BooksManagementPage = () => {
                                   placeholder="Title"
                                 />
                                 <InputGroup size="sm">
-                                  {/* ✅ Publisher dropdown */}
                                   <Form.Select
                                     value={editForm.publisher}
                                     onChange={(e) => handleChange('publisher', e.target.value)}
@@ -358,7 +352,6 @@ const BooksManagementPage = () => {
                             value={editForm.author}
                             onChange={(e) => handleChange('author', e.target.value)}
                           >
-                            {/* 🔹 bạn có thể thay danh sách authors động ở đây */}
                             {authorsList.map((a) => (
                               <option key={a.id} value={a.fullName}>{a.fullName}</option>
                             ))}
@@ -366,7 +359,6 @@ const BooksManagementPage = () => {
                         )}
                       </td>
 
-                      {/* Category (dropdown khi edit) */}
                       <td>
                         {!isEditing ? (
                           <Badge bg="info">{book.category}</Badge>

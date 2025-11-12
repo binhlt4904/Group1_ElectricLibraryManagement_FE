@@ -200,16 +200,7 @@ const LibraryCardManagementPage = () => {
                 Manage library cards, create new cards, and update card status
               </p>
             </div>
-            <div className={styles.headerActions}>
-              <Button 
-                variant="primary" 
-                className={styles.addButton}
-                onClick={() => setShowCreateModal(true)}
-              >
-                <Plus className="me-2" />
-                Create Library Card
-              </Button>
-            </div>
+            
           </div>
         </Col>
       </Row>
