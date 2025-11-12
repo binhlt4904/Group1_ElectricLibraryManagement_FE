@@ -34,6 +34,10 @@ const BookDetailPage = () => {
   const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [borrowError, setBorrowError] = useState('');
   const [borrowsuccess, setBorrowSuccess] = useState('');
+
+  const [reportError, setReportError] = useState('');
+  const [reportsuccess, setReportSuccess] = useState('');
+
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportType, setReportType] = useState(null);
   const [reportDescription, setReportDescription] = useState(null);
@@ -55,7 +59,7 @@ const BookDetailPage = () => {
 
   const types = ['Content Issue', 'Access Issue', 'Other Issue'];
 
-  /** ❤️ Kiểm tra sách có trong localStorage không */
+  /**  Kiểm tra sách có trong localStorage không */
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsInWishlist(saved.includes(Number(bookId)));
@@ -125,7 +129,7 @@ const fetchActive = async () => {
       user.role.toLowerCase() !== "user" &&
       user.role.toLowerCase() !== "reader"
     ) {
-      alert("❌ Only readers can write reviews.");
+      alert("Only readers can write reviews.");
       return;
     }
 
@@ -315,6 +319,12 @@ const fetchActive = async () => {
   const handleReportConfirm = async (reportType, reportDescription) => {
     console.log("reportType: "+reportType)
 
+    if (reportType == null || reportDescription == null || reportDescription.trim() === "") {
+      setReportError("Please fill in all report fields.");
+      setReportSuccess('');
+      return;
+    }
+
     const params = {
       bookId: book.id,
       reportType: reportType,
@@ -323,7 +333,11 @@ const fetchActive = async () => {
 
     try {
       const response = await reportApi.createReport(params);
-      setShowReportModal(false);
+      setReportSuccess("Report submitted successfully!");
+      setTimeout(() => {
+        setShowReportModal(false);
+      }, 2000);
+      
     } catch (error) {
       alert('Error in reporting issue:', error.message);
       console.error('Failed to report issue:', error);
@@ -427,6 +441,8 @@ const fetchActive = async () => {
           <Modal.Title>Information for report</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {reportError && <Alert variant="danger">{reportError}</Alert>}
+          {reportsuccess && <Alert variant="success">{reportsuccess}</Alert>}
           <Form>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Description: </Form.Label>

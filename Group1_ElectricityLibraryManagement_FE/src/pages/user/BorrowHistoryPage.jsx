@@ -86,11 +86,11 @@ const BorrowHistoryPage = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'borrowed':
+      case 'Borrowed':
         return <BookFill className={styles.statusIcon} />;
-      case 'returned':
+      case 'Returned':
         return <CheckCircleFill className={styles.statusIcon} />;
-      case 'overdue':
+      case 'Overdue':
         return <ExclamationTriangleFill className={styles.statusIcon} />;
       case 'returned_late':
         return <Clock className={styles.statusIcon} />;
