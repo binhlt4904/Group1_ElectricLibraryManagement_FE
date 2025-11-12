@@ -12,14 +12,12 @@ import walletApi from '../../api/wallet';
 const WalletPage = () => {
   const [wallet, setWallet] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(4);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [showDeposit, setShowDeposit] = useState(false);
@@ -27,14 +25,11 @@ const WalletPage = () => {
   console.log(user?.accountId)
   const userId = user?.accountId;
 
-
-  // Mock data
   useEffect(() => {
 
     const fetchWalletData = async () => {
       if (!userId) return;
       const res = await walletApi.getWalletByUserId(userId);
-      console.log("aaaaa")
       console.log(res.data);
       setWallet(res.data);
     }
@@ -45,7 +40,7 @@ const WalletPage = () => {
     if (!userId) return;
     try {
       const params = {
-        page: currentPage - 1, // backend dùng page = 0-based
+        page: currentPage - 1, 
         size: itemsPerPage,
         userId: userId
       };
@@ -108,7 +103,6 @@ const WalletPage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log("aaa")
     setCurrentPage(1);
     fetchTransactions();
   };
@@ -116,7 +110,6 @@ const WalletPage = () => {
   return (
     <div className={styles.walletPage}>
       <Container>
-        {/* Header */}
         <Row className="mb-4">
           <Col>
             <h1 className={styles.pageTitle}>
@@ -135,7 +128,6 @@ const WalletPage = () => {
           </Alert>
         )}
 
-        {/* Balance Cards */}
         <Row className="mb-4">
           <Col md={6} className="mb-3">
             <Card className={`custom-card ${styles.balanceCard} ${styles.balancePositive}`}>
@@ -176,8 +168,6 @@ const WalletPage = () => {
         </Row>
 
         
-
-        {/* Transaction History */}
         <Row className="mb-4">
           <Col>
             <Card className={`custom-card ${styles.transactionsCard}`}>
@@ -285,10 +275,6 @@ const WalletPage = () => {
         show={showDeposit}
         onHide={() => setShowDeposit(false)}
         userId={user?.accountId}
-      // Bạn có thể override thông tin ngân hàng ở đây nếu cần:
-      // bankCode="TPB"
-      // accountNumber="06159974001"
-      // accountName="Le Tien Binh"
       />
       
     </div>

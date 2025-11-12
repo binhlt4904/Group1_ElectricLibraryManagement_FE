@@ -49,6 +49,7 @@ import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
 import AddAuthorPage from './pages/admin/AddAuthorPage';
 import AddPublisherPage from './pages/admin/AddPublisherPage';
+import ReaderReportManager from './pages/user/ReaderReportManager';
 
 import { ProtectedRoute } from './routes/ProtectedRoute';
 
@@ -77,17 +78,42 @@ const AppContent = () => {
                     {!isAdminPage && <Header />}
                     <main className="main-content">
 
-                        <Routes>
-                            {/* Public Pages */}
-                            <Route path="/abc" element={<ImportExcel />} />
-                            <Route path="/" element={<HomePage />} />
-                            <Route path="/books" element={<BookListPage />} />
-                            <Route path="/books/:id" element={<BookDetailPage />} />
-                            <Route path="/events" element={<EventsListPage />} />
-                            <Route path="/events/:id" element={<EventDetailPage />} />
-                            <Route path="/login" element={<LoginPage />} />
-                            <Route path="/register" element={<RegisterPage />} />
-                            <Route path="research" element={<UserDocumentsPage />} />
+                    <Routes>
+                        {/* Public Pages */}
+                        {/* <Route path="/abc" element={<ImportExcel />} /> */}
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/books" element={<BookListPage />} />
+                        <Route path="/books/:id" element={<BookDetailPage />} />
+                        <Route path="/events" element={<EventsListPage />} />
+                        <Route path="/events/:id" element={<EventDetailPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/forget-password" element={<ForgetPage />} />
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="research" element={<UserDocumentsPage />} />
+
+          
+
+                        {/* Individual User Pages (outside layout) */}
+                        <Route path="/user" element={
+                            //<PrivateRoute isAuthenticate = {true}>
+                            <ProtectedRoute allowedRoles={["READER"]}>
+                                <UserLayout />
+                            </ProtectedRoute>
+                            //</PrivateRoute>
+                        }>
+                            {/* Các route con KHÔNG có / ở đầu */}
+                            <Route path="report" element={<ReaderReportManager />} />
+                            <Route path="profile" element={<ProfilePage />} />
+                            <Route path="borrow-history" element={<BorrowHistoryPage />} />
+                            <Route path="library-card" element={<LibraryCardPage />} />
+                            <Route path="notifications" element={<NotificationsPage />} />
+                            <Route path="wallet" element={<WalletPage />} />
+                            <Route path="reader-report-history" element={<ReaderReportManagementPage />} />
+                            <Route path="book-reader/:bookId/:chapter" element={<BookReaderPage />} />
+                            <Route path="wishlist" element={<WishlistPage />} />
+                            
+                        </Route>
 
 
 

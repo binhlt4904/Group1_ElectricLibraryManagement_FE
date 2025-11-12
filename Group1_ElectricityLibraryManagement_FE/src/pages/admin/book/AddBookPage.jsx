@@ -92,7 +92,7 @@ const AddBookPage = () => {
         // Don't fail the book creation if notification fails
       }
 
-      setSuccessMessage("✅ Thêm sách thành công!");
+      setSuccessMessage("Add Book Successfully!");
       setFormData({
         bookCode: "",
         title: "",
@@ -106,7 +106,7 @@ const AddBookPage = () => {
       setPreviewImage(null);
     } catch (err) {
       console.error(err);
-      setErrorMessage("❌ Thêm sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setErrorMessage("Thêm sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
     }
   };
 

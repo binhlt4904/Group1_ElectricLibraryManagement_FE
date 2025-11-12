@@ -13,14 +13,14 @@ const AdminBookDetailPage = () => {
   const { id } = useParams();
   const [book, setBook] = useState(null);
   const [contents, setContents] = useState([]);
-  const [viewContent, setViewContent] = useState(null); // lưu object thay vì id
+  const [viewContent, setViewContent] = useState(null); 
   const [editingContentId, setEditingContentId] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [editContentForm, setEditContentForm] = useState({
     chapter: '',
     title: '',
-    file: null, // file content mới (tuỳ chọn),
+    file: null, 
     isDeleted: false,
   });
   const navigate = useNavigate();
@@ -41,22 +41,8 @@ const AdminBookDetailPage = () => {
   }, [id]);
 
   const handleNavigate = () => {
-    // Điều hướng đến trang chỉnh sửa sách
     navigate(`/admin/books/add/${book.id}`);
   }
-
-  const handleToggleVisibility = async (contentId, isHidden) => {
-    try {
-      await axios.put(`http://localhost:8080/api/book-contents/${contentId}/visibility`, {
-        hidden: !isHidden,
-      });
-      setContents((prev) =>
-        prev.map((c) => (c.id === contentId ? { ...c, hidden: !c.hidden } : c))
-      );
-    } catch (err) {
-      console.error("Failed to toggle visibility:", err);
-    }
-  };
 
   const startEditContent = (content) => {
     console.log(content)
@@ -80,16 +66,12 @@ const AdminBookDetailPage = () => {
 
   const saveEditContent = async (contentId) => {
     try {
-      // ✅ Gửi FormData để BE nhận được @ModelAttribute / multipart dễ nhất
       const form = new FormData();
       form.append('chapter', editContentForm.chapter ?? '');
       form.append('title', editContentForm.title ?? '');
-      if (editContentForm.file) form.append('file', editContentForm.file); // tuỳ BE đặt tên field: file/content
+      if (editContentForm.file) form.append('file', editContentForm.file); 
       form.append('isDeleted', editContentForm.isDeleted);
 
-
-
-      // TODO: đổi URL theo BE bạn (ví dụ PATCH/PUT)
       const response = await bookApi.updateBookContent(contentId, form);
       console.log(response.data)
 
@@ -99,13 +81,11 @@ const AdminBookDetailPage = () => {
       } else {
         throw new Error('Upload failed');
       }
-      // Cập nhật UI lạc quan
       setContents(response.data);
 
       cancelEditContent();
     } catch (err) {
       console.error('Update content failed:', err);
-      // bạn có thể show toast/alert ở đây
     }
   };
 
@@ -120,7 +100,6 @@ const AdminBookDetailPage = () => {
 
   return (
     <div className={styles.bookDetailPage}>
-      {/* ===== BOOK INFO ===== */}
       <div className={styles.bookInfoCard}>
         <div className={styles.bookInfoWrapper}>
           <div className={styles.bookCoverContainer}>
@@ -151,7 +130,6 @@ const AdminBookDetailPage = () => {
         </div>
       </div>
 
-      {/* ===== CONTENTS TABLE ===== */}
       <div className={styles.contentsCard}>
         <div className={styles.sectionHeader}>
           {showAlert && <Alert variant="success" className={styles.alert}>{alertMessage}</Alert>}
@@ -181,7 +159,6 @@ const AdminBookDetailPage = () => {
                   >
                     <td>{index + 1}</td>
 
-                    {/* Chapter */}
                     <td>
                       {!isEditing ? (
                         c.chapter
@@ -197,7 +174,6 @@ const AdminBookDetailPage = () => {
                       )}
                     </td>
 
-                    {/* Title (+ chọn file khi edit) */}
                     <td>
                       {!isEditing ? (
                         c.title
@@ -216,7 +192,6 @@ const AdminBookDetailPage = () => {
                               className="form-control form-control-sm"
                               onChange={(e) => onChangeContent('file', e.target.files?.[0] ?? null)}
                               accept="application/pdf"
-                            // tuỳ BE: nếu content là PDF/HTML, sửa accept cho phù hợp
                             />
                             {c.content && (
                               <a
@@ -244,13 +219,12 @@ const AdminBookDetailPage = () => {
                           type="switch"
                           id={`status-${c.id}`}
                           label={editContentForm.isDeleted ? 'Inactive' : 'Active'}
-                          checked={!editContentForm.isDeleted} // Active = false
+                          checked={!editContentForm.isDeleted} 
                           onChange={(e) => onChangeContent('isDeleted', !e.target.checked)}
                         />
                       )}
                     </td>
 
-                    {/* Actions */}
                     <td className={styles.actionsCell}>
                       <div className={styles.actionButtons}>
                         {!isEditing ? (

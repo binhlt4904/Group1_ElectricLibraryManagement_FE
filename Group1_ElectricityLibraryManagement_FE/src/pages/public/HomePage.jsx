@@ -11,7 +11,7 @@ const HomePage = () => {
             <section className={styles.heroSection}>
                 <Container>
                     <Row className="align-items-center min-vh-75">
-                        <Col lg={6}>
+                        <Col lg={7}>
                             <h1 className={styles.heroTitle}>
                                 Discover Your Next Great Read
                             </h1>
@@ -29,12 +29,13 @@ const HomePage = () => {
                                 </Button>
                             </div>
                         </Col>
-                        <Col lg={6}>
+                        <Col lg={5}>
                             <div className={styles.heroImage}>
                                 <img 
-                                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&crop=center" 
+                                    src="https://kenh14cdn.com/203336854389633024/2022/6/3/photo-4-1654248568386463179018.jpg" 
                                     alt="Library interior with books and reading spaces"
-                                    className="img-fluid rounded"
+                                    className="img-fluid rounded "
+                                    style={{ maxHeight: "500px" }} 
                                 />
                             </div>
                         </Col>

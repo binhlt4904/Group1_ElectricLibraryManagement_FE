@@ -10,7 +10,6 @@ import styles from './ReadersManagementPage.module.css';
 
 const PAGE_SIZE = 10;
 
-/** Chuẩn hoá nhiều định dạng lỗi BE về { field: message } */
 function parseFieldErrors(err) {
   const map = {};
   const data = err?.response?.data ?? err?.data ?? err;
@@ -94,6 +93,10 @@ const ReadersManagementPage = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState('');
   const [detail, setDetail] = useState(null);
+
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState(null);
 
   // ===== LOAD DATA =====
   const loadData = async () => {
@@ -286,6 +289,11 @@ const ReadersManagementPage = () => {
             <option value="INACTIVE">INACTIVE</option>
             <option value="DELETED">DELETED</option>
           </Form.Select>
+        </Col>
+        <Col lg={3} className="mb-3 text-end">
+          <Button variant="primary" size="lg" onClick={() => setShowImportModal(true)}>
+            Import Excel
+          </Button>
         </Col>
       </Row>
 
@@ -518,6 +526,59 @@ const ReadersManagementPage = () => {
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleting}>Cancel</Button>
           <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
             {deleting ? 'Deleting…' : 'Delete'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showImportModal} onHide={() => setShowImportModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Import Readers from Excel</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group controlId="formFile" className="mb-3">
+            <Form.Label>Select Excel file (.xlsx)</Form.Label>
+            <Form.Control
+              type="file"
+              accept=".xlsx, .xls"
+              onChange={(e) => setImportFile(e.target.files[0])}
+            />
+          </Form.Group>
+          <p className="text-muted small mb-0">
+            File should contain reader details like: username, fullName, email, phone, etc.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowImportModal(false)}
+            disabled={importing}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              if (!importFile) {
+                toast('danger', 'Please select a file first.');
+                return;
+              }
+              setImporting(true);
+              try {
+                await accountManagementApi.importReaders(importFile);
+                toast('success', 'Readers imported successfully!');
+                setShowImportModal(false);
+                setImportFile(null);
+                loadData(); // reload list
+              } catch (e) {
+                console.error(e);
+                toast('danger', 'Import failed. Please check file format.');
+              } finally {
+                setImporting(false);
+              }
+            }}
+            disabled={importing}
+          >
+            {importing ? 'Uploading…' : 'Upload'}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -52,8 +52,7 @@ const TabSection = ({ activeTab, setActiveTab, contents, reviews, book, renderSt
                             if (canReadContents) {
                               navigate(`/user/book-reader/${book.id}/${content.chapter}`);
                             } else {
-                              // 👇 gửi phần tử click (e.currentTarget) cho Overlay bám vào
-                              showLockOverlay(lockMsg || "Bạn cần mượn sách để đọc chương này.", e.currentTarget);
+                              showLockOverlay(lockMsg || "You need to borrow this book to read content.", e.currentTarget);
                             }
                           }}
                           className={`${styles.chapterLink} ${!canReadContents ? styles.locked : ""}`}
@@ -94,7 +93,6 @@ const TabSection = ({ activeTab, setActiveTab, contents, reviews, book, renderSt
 
               <Tab.Pane eventKey="reviews">
                 <div className={styles.reviews}>
-                  {/* FORM VIẾT REVIEW */}
                   <div className="mb-4 p-3 border rounded bg-light">
                     <h5 className="fw-bold mb-2">Write a Review</h5>
                     <textarea
@@ -130,10 +128,7 @@ const TabSection = ({ activeTab, setActiveTab, contents, reviews, book, renderSt
                     </Button>
                   </div>
 
-                  {/* DANH SÁCH REVIEW */}
                   {reviews.map((review) => {
-                    console.log("🧾 Review:", review);
-                    console.log("👤 User:", user);
                     const canModify =
                       user &&
                       ((review.reviewerId) ===
@@ -239,7 +234,7 @@ const TabSection = ({ activeTab, setActiveTab, contents, reviews, book, renderSt
                     {relatedBooks.map(relatedBook => (
                       <Col key={relatedBook.id} md={6} lg={4} className="mb-3">
                         <Link
-                          to={`/books/${relatedBook.id}`} // 👉 điều hướng tới trang chi tiết
+                          to={`/books/${relatedBook.id}`} 
                           className="text-decoration-none text-dark"
                         >
                         <Card className={styles.relatedBookCard}>

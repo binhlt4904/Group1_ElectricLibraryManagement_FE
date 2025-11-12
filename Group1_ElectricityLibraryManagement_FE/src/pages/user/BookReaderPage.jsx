@@ -4,6 +4,9 @@ import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./BookReaderPage.module.css"; // ✅ thêm dòng này
 import bookApi from "../../api/book";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "react-bootstrap-icons";
+import { useContext } from "react";
+import UserContext from "../../components/contexts/UserContext";
+import borrowalReaderHistoryApi from '../../api/user/borrowReaderHistory';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -13,11 +16,45 @@ const BookReaderPage = () => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [content, setContent] = useState({});
+  const [canReadContents, setCanReadContents] = useState(false);
+
+  const { user } = useContext(UserContext);
+  console.log(user)
+
+  const fetchActive = async () => {
+        try {
+          if (!user) {
+            setCanReadContents(false);
+            return;
+          }
+          const userId = user.accountId;
+  
+          const res = await borrowalReaderHistoryApi.getActiveBorrowedBookIds(userId);
+          console.log(res)
+          const ids = res || [];
+          const setIds = new Set(ids.map(Number));
+  
+          const allowed = setIds.has(Number(bookId));
+          setCanReadContents(allowed);
+          console.log(allowed);
+  
+          console.log(allowed)
+  
+          
+        } catch (e) {
+          console.error(e);
+          setActiveBorrowBookIds(new Set());
+         
+        }
+      };
 
 
   useEffect(() => {
     const fetchPDF = async () => {
       try {
+        await fetchActive(); 
+        console.log("canReadContents", canReadContents);
+        if (!canReadContents) return;
         const response = await bookApi.getBookContentByBookIdAndChapter(bookId, chapter);
         console.log(response)
         setContent(response.data);
@@ -27,7 +64,7 @@ const BookReaderPage = () => {
       }
     };
     fetchPDF();
-  }, [chapter, bookId]);
+  }, [chapter, bookId, canReadContents]);
 
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
   const goPrev = () => setPageNumber((prev) => Math.max(prev - 1, 1));

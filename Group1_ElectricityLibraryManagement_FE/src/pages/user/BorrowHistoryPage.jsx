@@ -121,15 +121,6 @@ const BorrowHistoryPage = () => {
   // };
 
   const handleReturn = async (borrowalId) => {
-    // console.log('Return book:', borrowalId);
-    // try {
-    //   const response = await borrowReaderHistory.returnBook(borrowalId);
-    //   console.log('Return book response:', response);
-    //   fetchBorrowals();
-    // } catch (error) {
-    //   console.error('Failed to return book:', error);
-    // }
-
     try {
       const response = await borrowReaderHistory.returnBook(borrowalId);
 
@@ -137,17 +128,35 @@ const BorrowHistoryPage = () => {
         const data = response.data.data;
         setIsSuccess(true);
         setModalMessage(
-          `Book "${data.bookTitle}" returned successfully!\nFine: $${data.fine.toFixed(2)}\nAllowed Date: ${data.allowedDate}\nReturn Date: ${data.returnedDate}`
+          `Book "${data.bookTitle}" returned successfully!\n` +
+          `Fine: $${data.fine.toFixed(2)}\n` +
+          `Allowed Date: ${data.allowedDate}\n` +
+          `Return Date: ${data.returnedDate}`
         );
         fetchBorrowals();
       } else {
+        // Backend trả về success=false
         setIsSuccess(false);
-        setModalMessage(response.data.message);
+        setModalMessage(response.data.message || "Failed to return the book.");
       }
     } catch (error) {
+      // Nếu backend trả về lỗi HTTP 400 hoặc 500
+      console.error("Return book error:", error);
+
+      let errorMsg = "An unexpected error occurred.";
+      if (error.response) {
+        // Nếu backend gửi message trong body
+        errorMsg =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Không có phản hồi từ server
+        errorMsg = "No response from server. Please check your connection.";
+      }
+
       setIsSuccess(false);
-      const msg = error.response?.data?.message || "Failed to return book.";
-      setModalMessage(msg);
+      setModalMessage(`${errorMsg}`);
     } finally {
       setShowReturnModal(true);
     }

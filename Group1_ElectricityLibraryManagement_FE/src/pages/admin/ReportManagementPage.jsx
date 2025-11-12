@@ -154,12 +154,14 @@ const ReportManagementPage = () => {
     setShowResolveModal(false);
     try {
       const response = await reportApi.updateReport(id, resolvedNote);
+      setResolvedNote('');
       fetchReports();
     } catch (error) {
       console.error('Failed to resolve report:', error);
     }
 
   };
+
 
   const handleProcessConfirm = async (id) => {
     setShowProcessModal(false);
@@ -378,7 +380,7 @@ const ReportManagementPage = () => {
                       <th>Date</th>
                       <th>Status</th>
                       <th>Assigned To</th>
-                      {user && user.role === '[ROLE_STAFF]' ?
+                      {user && user.role === 'LIBRARIAN' ?
                         (<th>Actions</th>) : null}
 
                     </tr>
@@ -438,7 +440,7 @@ const ReportManagementPage = () => {
                             <span className={styles.unassigned}>Unassigned</span>
                           )}
                         </td>
-                        {user && user.role === '[ROLE_STAFF]' ? (
+                        {user && user.role === 'LIBRARIAN' ? (
                           <td className={styles.actionsCell}>
                             <div className={styles.actionButtons}>
                               {/* <Button

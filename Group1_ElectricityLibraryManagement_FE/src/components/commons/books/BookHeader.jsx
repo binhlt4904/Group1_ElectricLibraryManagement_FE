@@ -27,15 +27,7 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
             <h1 className={styles.bookTitle}>{book.title}</h1>
             <h2 className={styles.bookAuthor}>by {book.author}</h2>
 
-            {/* <div className={styles.ratingSection}>
-                <div className={styles.stars}>
-                  {renderStars(reviews.rating)}
-                </div>
-                <span className={styles.ratingText}>
-                  {book.rating.toFixed(1)} ({book.totalRatings} reviews)
-                </span>
-              </div> */}
-
+           
             <div className={styles.genreSection}>
 
               <Badge bg="light" text="dark" className={styles.genreBadge}>
@@ -46,15 +38,7 @@ const BookHeader = ({ book, handleBorrow, handleWishlistToggle, isInWishlist, ha
 
 
             <div className={styles.actionButtons}>
-              {/* <Button
-                  variant="primary"
-                  size="lg"
-                  className="me-3"
-                  disabled={book.copiesAvailable === 0}
-                  onClick={book.copiesAvailable > 0 ? handleBorrow : handleReserve}
-                >
-                  {book.copiesAvailable > 0 ? 'Borrow Now' : 'Join Waitlist'}
-                </Button> */}
+              
               {(!hideBorrowButton) && (
                 <Button
                   variant="primary"
