@@ -11,6 +11,8 @@ class WebSocketService {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
+    this.currentUserId = null;
+    this.pendingSubscriptions = new Set();
   }
 
   /**
@@ -43,6 +45,9 @@ class WebSocketService {
       return;
     }
 
+    // Remember the current user for (re)subscription needs
+    this.currentUserId = userId;
+
     this.isConnecting = true;
     console.log('[WebSocket] Connecting with JWT authentication...');
     const socket = new SockJS('http://localhost:8080/ws');
@@ -64,11 +69,20 @@ class WebSocketService {
         this.isConnecting = false;
         this.reconnectAttempts = 0;
         
-        // Subscribe to user-specific notifications
-        this.subscribe(userId);
-        
         if (onConnect) {
           onConnect();
+        }
+
+        // Flush any pending subscriptions queued before connection was established
+        if (this.pendingSubscriptions.size > 0) {
+          console.log(`[WebSocket] Flushing ${this.pendingSubscriptions.size} pending subscription(s) after connect`);
+          for (const path of this.pendingSubscriptions) {
+            if (!this.subscriptions.has(path)) {
+              // Only one subscription currently used; reuse subscribe logic
+              this.subscribe(this.currentUserId);
+            }
+          }
+          this.pendingSubscriptions.clear();
         }
       },
       onStompError: (frame) => {
@@ -105,12 +119,20 @@ class WebSocketService {
    * @param {Function} onMessage - Callback for new messages
    */
   subscribe(userId, onMessage) {
+    const subscriptionPath = `/user/queue/notifications`;
+    
+    // If not connected yet, queue and return. It will be flushed in onConnect
     if (!this.client || !this.client.connected) {
-      console.error('WebSocket not connected');
+      console.warn('[WebSocket] Not connected yet. Queuing subscription for path:', subscriptionPath);
+      this.pendingSubscriptions.add(subscriptionPath);
       return;
     }
-
-    const subscriptionPath = `/user/queue/notifications`;
+    
+    console.log('[WebSocket] 📡 Subscription details:');
+    console.log('   → User ID passed:', userId);
+    console.log('   → Subscription path:', subscriptionPath);
+    console.log('   → Expected server destination: /user/{username}/queue/notifications');
+    console.log('   → Current handlers registered:', Array.from(this.messageHandlers.keys()));
     
     // Avoid duplicate subscriptions
     if (this.subscriptions.has(subscriptionPath)) {
@@ -121,13 +143,25 @@ class WebSocketService {
     const subscription = this.client.subscribe(subscriptionPath, (message) => {
       try {
         const notification = JSON.parse(message.body);
-        console.log('Notification received:', notification);
+        console.log('🔔 [WebSocket] Notification received:', notification);
+        console.log('   → Type:', notification.notificationType);
+        console.log('   → Title:', notification.title);
+        console.log('   → ID:', notification.id);
+        console.log('   → Handlers available:', Array.from(this.messageHandlers.keys()));
         
-        // Call registered handlers
+        // Call registered handlers (check current state, not stale closure)
         if (this.messageHandlers.has('notification')) {
-          this.messageHandlers.get('notification').forEach(handler => {
-            handler(notification);
+          const handlers = this.messageHandlers.get('notification');
+          console.log('   → Calling', handlers.length, 'handler(s)');
+          handlers.forEach(handler => {
+            try {
+              handler(notification);
+            } catch (handlerError) {
+              console.error('   → Handler error:', handlerError);
+            }
           });
+        } else {
+          console.warn('   ⚠️ No handlers registered for type "notification"');
         }
         
         // Call specific callback
@@ -140,7 +174,7 @@ class WebSocketService {
     });
 
     this.subscriptions.set(subscriptionPath, subscription);
-    console.log('Subscribed to:', subscriptionPath);
+    console.log('✅ [WebSocket] Subscribed to:', subscriptionPath);
   }
 
   /**
@@ -149,10 +183,28 @@ class WebSocketService {
    * @param {Function} handler - Handler function
    */
   onMessage(type, handler) {
-    if (!this.messageHandlers.has(type)) {
-      this.messageHandlers.set(type, []);
+    // CRITICAL FIX: Replace all handlers of this type instead of pushing
+    // This prevents stale closure issues when the handler is re-registered
+    console.log(`[WebSocket] Registering handler for type: ${type}`);
+    this.messageHandlers.set(type, [handler]);
+
+    // If a handler is registered after connection, ensure we are subscribed
+    const subscriptionPath = `/user/queue/notifications`;
+    if (this.isConnected && this.client && this.client.connected && !this.subscriptions.has(subscriptionPath) && this.currentUserId != null) {
+      console.log('[WebSocket] Handler registered while connected. Ensuring subscription exists...');
+      this.subscribe(this.currentUserId);
     }
-    this.messageHandlers.get(type).push(handler);
+  }
+
+  /**
+   * Clear all handlers for a specific type
+   * @param {string} type - Handler type
+   */
+  clearHandlers(type) {
+    if (this.messageHandlers.has(type)) {
+      this.messageHandlers.delete(type);
+      console.log(`[WebSocket] Cleared handlers for type: ${type}`);
+    }
   }
 
   /**
@@ -177,22 +229,26 @@ class WebSocketService {
    * @param {number} notificationId - Notification ID
    */
   markAsRead(notificationId) {
-    this.send('/app/notifications/mark-read', {
-      notificationId
-    });
+    this.send('/app/notifications/mark-read', notificationId);
   }
 
   /**
    * Disconnect from WebSocket
    */
   disconnect() {
-    if (this.client && this.client.connected) {
-      this.client.deactivate();
-      this.isConnected = false;
-      this.subscriptions.clear();
-      this.messageHandlers.clear();
-      console.log('WebSocket disconnected');
+    if (this.client) {
+      try {
+        this.client.deactivate();
+      } catch (e) {
+        console.error('[WebSocket] Error during disconnect:', e);
+      }
     }
+    this.isConnected = false;
+    this.isConnecting = false;
+    this.currentUserId = null;
+    this.subscriptions.clear();
+    this.messageHandlers.clear();
+    console.log('WebSocket disconnected');
   }
 
   /**

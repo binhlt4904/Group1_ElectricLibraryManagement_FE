@@ -12,115 +12,26 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
 
-  // Handle incoming WebSocket notifications
-  const handleNewNotification = useCallback((notification) => {
-    console.log('🔔 [NotificationProvider] New notification received:', notification);
-    console.log('📋 Notification details:', {
-      id: notification.id,
-      type: notification.notificationType,
-      title: notification.title,
-      isRead: notification.isRead
-    });
-    
-    // Add to notifications list
-    setNotifications(prev => {
-      console.log('✅ Adding notification to list. Current count:', prev.length);
-      return [notification, ...prev];
-    });
-    
-    // Increment unread count if notification is unread
-    if (!notification.isRead) {
-      setUnreadCount(prev => {
-        const newCount = prev + 1;
-        console.log('📊 Unread count updated:', prev, '→', newCount);
-        return newCount;
-      });
+  // Mark notification as read (defined early for use in handleNotificationClick)
+  const markAsRead = async (notificationId) => {
+    try {
+      await notificationAPI.markAsRead(notificationId);
+      
+      // Update local state
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.id === notificationId ? { ...notif, isRead: true } : notif
+        )
+      );
+      
+      // Decrement unread count
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
-    
-    // Show toast notification
-    const toastMessage = notification.title || 'New notification';
-    const toastOptions = {
-      position: 'top-right',
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      onClick: () => handleNotificationClick(notification)
-    };
+  };
 
-    console.log('🎨 Showing toast notification:', notification.notificationType);
-    
-    switch (notification.notificationType) {
-      case 'NEW_BOOK':
-        toast.info(`📘 ${toastMessage}`, toastOptions);
-        break;
-      case 'NEW_EVENT':
-        toast.success(`📅 ${toastMessage}`, toastOptions);
-        break;
-      case 'REMINDER':
-        toast.warning(`⏰ ${toastMessage}`, toastOptions);
-        break;
-      case 'OVERDUE':
-        toast.error(`⚠️ ${toastMessage}`, toastOptions);
-        break;
-      default:
-        toast.info(toastMessage, toastOptions);
-    }
-  }, []);
-
-  // Connect to WebSocket for real-time notifications
-  const connectWebSocket = useCallback(() => {
-    if (!user || !user.accountId) {
-      console.log('No user found, skipping WebSocket connection');
-      return;
-    }
-
-    if (webSocketService.isConnectedStatus()) {
-      console.log('WebSocket already connected');
-      return;
-    }
-
-    console.log('Connecting to WebSocket for user:', user.accountId);
-
-    webSocketService.connect(
-      user.accountId,
-      () => {
-        console.log('WebSocket connected successfully');
-        setConnected(true);
-      },
-      (error) => {
-        console.error('WebSocket connection error:', error);
-        setConnected(false);
-        
-        // Show error toast
-        toast.error('Failed to connect to notification service. Retrying...', {
-          position: 'top-right',
-          autoClose: 3000
-        });
-      }
-    );
-
-    // Register message handler for new notifications
-    webSocketService.onMessage('notification', handleNewNotification);
-  }, [user, handleNewNotification]);
-
-  // Fetch notifications on mount and when user changes
-  useEffect(() => {
-    if (user && user.accountId) {
-      fetchNotifications();
-      fetchUnreadCount();
-      connectWebSocket();
-    }
-
-    return () => {
-      if (webSocketService.isConnectedStatus()) {
-        webSocketService.disconnect();
-      }
-    };
-  }, [user, connectWebSocket]);
-
-  // Handle notification click
+  // Handle notification click (defined before handleNewNotification)
   const handleNotificationClick = useCallback((notification) => {
     // Mark as read
     if (!notification.isRead) {
@@ -136,6 +47,150 @@ export const NotificationProvider = ({ children }) => {
       window.location.href = '/user/borrowed-books';
     }
   }, []);
+
+  // Handle incoming WebSocket notifications
+  // CRITICAL: NO dependencies on handleNotificationClick to prevent re-render loop
+  const handleNewNotification = useCallback((notification) => {
+    console.log('--- [NotificationProvider] START: New Notification Received ---');
+    console.log('Raw notification object:', notification);
+
+    // Add to notifications list
+    setNotifications(prev => {
+      console.log(`Updating notifications state. Previous count: ${prev.length}`);
+      const newList = [notification, ...prev];
+      console.log(`New notifications list created. New count: ${newList.length}`);
+      return newList;
+    });
+    
+    // Increment unread count if notification is unread
+    if (!notification.isRead) {
+      setUnreadCount(prev => {
+        console.log(`Updating unread count. Previous count: ${prev}`);
+        const newCount = prev + 1;
+        console.log(`New unread count: ${newCount}`);
+        return newCount;
+      });
+    }
+    
+    // Show toast notification
+    const toastMessage = notification.title || 'New notification';
+    const toastOptions = {
+      position: 'top-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      onClick: () => handleNotificationClick(notification)
+    };
+    
+    switch (notification.notificationType) {
+      case 'NEW_BOOK':
+        toast.info(`📘 ${toastMessage}`, toastOptions);
+        break;
+      case 'NEW_EVENT':
+        toast.success(`📅 ${toastMessage}`, toastOptions);
+        break;
+      case 'REMINDER':
+        toast.warning(`⏰ ${toastMessage}`, toastOptions);
+        break;
+      case 'OVERDUE':
+        toast.error(`⚠️ ${toastMessage}`, toastOptions);
+        break;
+      case 'CARD_SUSPENDED':
+        toast.error(`🚫 ${toastMessage}`, toastOptions);
+        break;
+      default:
+        toast.info(toastMessage, toastOptions);
+    }
+    console.log('--- [NotificationProvider] END: New Notification Handled ---');
+  }, []);
+
+  // Extract userId for cleaner dependency management
+  const userId = user?.accountId;
+
+  // Effect 1: Manage WebSocket connection lifecycle
+  // Only depends on userId to avoid race conditions and re-render loops
+  useEffect(() => {
+    console.log('[Effect 1] Managing WebSocket connection. userId:', userId);
+    
+    // Only proceed if we have a userId
+    if (!userId) {
+      console.log('[Effect 1] No userId yet. Disconnecting WebSocket.');
+      webSocketService.disconnect();
+      setConnected(false);
+      return;
+    }
+
+    // We have a userId, establish connection
+    console.log('[Effect 1] userId detected. Establishing WebSocket connection...');
+    
+    const onConnect = () => {
+      console.log('[Effect 1] ✅ WebSocket connected successfully');
+      setConnected(true);
+    };
+    
+    const onError = (error) => {
+      console.error('[Effect 1] ❌ WebSocket connection error:', error);
+      setConnected(false);
+      toast.error('Notification service connection failed.');
+    };
+
+    // Establish connection
+    if (!webSocketService.isConnectedStatus()) {
+      console.log('[Effect 1] Attempting to connect...');
+      webSocketService.connect(userId, onConnect, onError);
+    } else {
+      console.log('[Effect 1] WebSocket already connected.');
+      onConnect(); // Ensure connected state is set
+    }
+    
+    // Cleanup: Disconnect when userId changes (logout) or component unmounts
+    return () => {
+      console.log('[Effect 1] Cleaning up WebSocket connection for userId:', userId);
+      webSocketService.disconnect();
+      setConnected(false);
+    };
+  }, [userId]);
+
+  // Effect 2: Register handler and subscribe to notifications
+  // Only depends on userId to ensure handler is registered once per user
+  // Separated from connection effect to avoid re-render loops
+  useEffect(() => {
+    console.log('[Effect 2] Registering handler and subscribing. userId:', userId);
+    
+    // Only proceed if we have a userId
+    if (!userId) {
+      console.log('[Effect 2] No userId yet. Skipping handler registration.');
+      return;
+    }
+
+    // Register the handler
+    console.log('[Effect 2] Registering handler for type: notification');
+    webSocketService.onMessage('notification', handleNewNotification);
+    
+    // Subscribe to the notification channel
+    console.log('[Effect 2] Subscribing to /user/queue/notifications');
+    webSocketService.subscribe(userId);
+    
+    // Cleanup: Remove handler when userId changes or component unmounts
+    return () => {
+      console.log('[Effect 2] Cleaning up handler and subscription for userId:', userId);
+      webSocketService.clearHandlers('notification');
+    };
+  }, [userId]);
+
+
+  // Fetch initial data on mount and when user changes
+  useEffect(() => {
+    console.log('[Effect] Fetching initial data. User:', user?.accountId);
+    if (user && user.accountId) {
+      fetchNotifications();
+      fetchUnreadCount();
+    }
+  }, [user]);
+
+  // handleNotificationClick moved above
 
   // Fetch all notifications
   const fetchNotifications = async () => {
@@ -172,26 +227,7 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Mark notification as read
-  const markAsRead = async (notificationId) => {
-    try {
-      await notificationAPI.markAsRead(notificationId);
-      
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
-      );
-      
-      // Decrement unread count
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      toast.error('Failed to mark notification as read', {
-        position: 'top-right',
-        autoClose: 3000
-      });
-    }
-  };
+  // markAsRead moved above
 
   // Mark all notifications as read
   const markAllAsRead = async () => {

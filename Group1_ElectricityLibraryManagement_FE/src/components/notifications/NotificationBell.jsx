@@ -10,9 +10,16 @@ const NotificationBell = () => {
   const [show, setShow] = useState(false);
   const [shake, setShake] = useState(false);
 
+  // Debug: Log when unreadCount changes
+  useEffect(() => {
+    console.log('🔔 [NotificationBell] unreadCount changed:', unreadCount);
+    console.log('🔔 [NotificationBell] Component will re-render');
+  }, [unreadCount]);
+
   // Trigger shake animation when unread count increases
   useEffect(() => {
     if (unreadCount > 0) {
+      console.log('🔔 [NotificationBell] Triggering shake animation');
       setShake(true);
       const timer = setTimeout(() => setShake(false), 1000);
       return () => clearTimeout(timer);
