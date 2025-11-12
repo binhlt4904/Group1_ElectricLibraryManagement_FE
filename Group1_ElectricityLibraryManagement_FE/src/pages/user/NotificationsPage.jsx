@@ -5,7 +5,7 @@ import {
   Trash, Check, Filter
 } from 'react-bootstrap-icons';
 import styles from './NotificationsPage.module.css';
-import NotificationContext from '../../components/contexts/NotificationContext';
+import { NotificationContext } from '../../components/contexts/NotificationContext';
 import NotificationItem from '../../components/notifications/NotificationItem';
 import UserContext from '../../components/contexts/UserContext';
 

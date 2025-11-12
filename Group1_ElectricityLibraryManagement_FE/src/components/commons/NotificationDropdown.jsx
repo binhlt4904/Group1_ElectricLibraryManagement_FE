@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Bell
 } from 'react-bootstrap-icons';
-import NotificationContext from '../contexts/NotificationContext';
+import { NotificationContext } from '../contexts/NotificationContext';
 import styles from './NotificationDropdown.module.css';
 
 /**
@@ -17,7 +17,7 @@ import styles from './NotificationDropdown.module.css';
  * Displays recent notifications in a dropdown menu
  */
 const NotificationDropdown = ({ onClose }) => {
-  const { notifications, loading, markAsRead } = useContext(NotificationContext);
+  const { notifications = [], loading, markAsRead } = useContext(NotificationContext);
 
   // Get recent notifications (limit to 5)
   const recentNotifications = notifications.slice(0, 5);

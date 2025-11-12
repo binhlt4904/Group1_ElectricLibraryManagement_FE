@@ -108,7 +108,6 @@ const AppContent = () => {
                                 <Route path="reader-report-history" element={<ReaderReportManagementPage />} />
                                 <Route path="book-reader/:bookId/:chapter" element={<BookReaderPage />} />
                                 <Route path="wishlist" element={<WishlistPage />} />
-
                             </Route>
 
 

@@ -95,6 +95,7 @@ const EventDetailPage = () => {
   // Fetch event data from API
   useEffect(() => {
     fetchEventDetails();
+    checkRegistrationStatus();
   }, [id]);
 
   const fetchEventDetails = async () => {
@@ -108,6 +109,17 @@ const EventDetailPage = () => {
       setError('Failed to load event details. The event may not exist.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const checkRegistrationStatus = async () => {
+    try {
+      const response = await eventRegistrationAPI.isUserRegistered(id);
+      const value = response?.data?.isRegistered ?? response?.data?.data?.isRegistered ?? response?.data?.data ?? response?.data;
+      setIsRegistered(Boolean(value));
+    } catch (err) {
+      console.error('Error checking registration status:', err);
+      setIsRegistered(false);
     }
   };
 
@@ -196,6 +208,21 @@ Refreshments will be provided during the break.`,
     return { text: 'Available', variant: 'success', canRegister: true };
   };
 
+  const getStatusVariant = (status) => {
+    switch ((status || '').toUpperCase()) {
+      case 'UPCOMING':
+        return 'success';
+      case 'ONGOING':
+        return 'info';
+      case 'COMPLETED':
+        return 'secondary';
+      case 'CANCELLED':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
+
   const handleRegistration = async () => {
     if (isRegistered) {
       // Handle unregistration
@@ -229,7 +256,12 @@ Refreshments will be provided during the break.`,
       alert('Successfully registered for event');
     } catch (error) {
       console.error('Error registering for event:', error);
-      alert('Failed to register for event: ' + (error.response?.data?.message || error.message));
+      const msg = error.response?.data?.message || error.message || '';
+      if (/already registered/i.test(msg)) {
+        setIsRegistered(true);
+        setShowRegistrationModal(false);
+      }
+      alert('Failed to register for event: ' + msg);
     }
   };
 
@@ -360,14 +392,12 @@ Refreshments will be provided during the break.`,
                 {/* Event Header */}
                 <div className={styles.eventHeader}>
                   <h1 className={styles.eventTitle}>{eventData.title}</h1>
-                  {eventData.capacity && (
-                    <Badge 
-                      bg={availabilityStatus.variant}
-                      className={styles.availabilityBadge}
-                    >
-                      {availabilityStatus.text}
-                    </Badge>
-                  )}
+                  <Badge 
+                    bg={getStatusVariant(eventData.status)}
+                    className={styles.availabilityBadge}
+                  >
+                    {(eventData.status || 'UPCOMING').toString().toUpperCase()}
+                  </Badge>
                 </div>
 
                 {/* Event Details */}
@@ -494,14 +524,18 @@ Refreshments will be provided during the break.`,
 
                 <div className={styles.registrationActions}>
                   <Button
-                    variant={isRegistered ? "outline-danger" : "primary"}
+                    variant={isRegistered ? "success" : "primary"}
                     size="lg"
                     onClick={handleRegistration}
-                    disabled={!availabilityStatus.canRegister && !isRegistered}
+                    disabled={isRegistered || (!availabilityStatus.canRegister && !isRegistered)}
                     className={styles.registrationButton}
                   >
-                    {isRegistered ? 'Cancel Registration' : 
-                     !availabilityStatus.canRegister ? 'Event Full' : 'Register Now'}
+                    {isRegistered ? (
+                      <>
+                        <CheckCircle className="me-2" />
+                        Already Registered
+                      </>
+                    ) : !availabilityStatus.canRegister ? 'Event Full' : 'Register Now'}
                   </Button>
                 </div>
 

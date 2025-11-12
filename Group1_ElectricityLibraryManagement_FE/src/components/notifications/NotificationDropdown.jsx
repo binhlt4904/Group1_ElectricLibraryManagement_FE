@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Button, ListGroup, Spinner } from 'react-bootstrap';
 import { CheckAll, Bell } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
-import NotificationContext from '../contexts/NotificationContext';
+import { NotificationContext } from '../contexts/NotificationContext';
 import NotificationItem from './NotificationItem';
 import styles from './NotificationDropdown.module.css';
 
@@ -13,7 +13,7 @@ const NotificationDropdown = ({ onClose }) => {
   const recentNotifications = notifications.slice(0, 5);
 
   const handleViewAll = () => {
-    navigate('/notifications');
+    navigate('/user/notifications');
     if (onClose) onClose();
   };
 

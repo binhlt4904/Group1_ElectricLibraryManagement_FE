@@ -5,176 +5,111 @@ class WebSocketService {
   constructor() {
     this.client = null;
     this.isConnected = false;
-    this.isConnecting = false;
     this.subscriptions = new Map();
-    this.messageHandlers = new Map();
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 3000;
-    this.currentUserId = null;
-    this.pendingSubscriptions = new Set();
+    this.reconnectDelay = 5000;
+    
+    // Create the client instance once and reuse it
+    this.client = new Client({
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      reconnectDelay: this.reconnectDelay,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+      debug: (str) => {
+        console.log('[WebSocket]', str);
+      },
+    });
   }
 
-  /**
-   * Connect to WebSocket server
-   * @param {number} userId - User ID for subscription
-   * @param {Function} onConnect - Callback when connected
-   * @param {Function} onError - Callback on error
-   */
-  connect(userId, onConnect, onError) {
-    // Prevent duplicate connection attempts
-    if (this.isConnected) {
-      console.log('[WebSocket] Already connected');
+  connect(token, onConnect, onError, onDisconnectCallback) {
+    if (this.client.active) {
+      console.log('[WebSocket] Client is already active.');
       if (onConnect) onConnect();
       return;
     }
 
-    if (this.isConnecting) {
-      console.log('[WebSocket] Connection already in progress');
-      return;
-    }
-
-    // Get JWT token from localStorage
-    const token = localStorage.getItem('accessToken');
+    console.log('[WebSocket] Configuring and activating client...');
     
-    if (!token) {
-      console.error('[WebSocket] No access token found. Cannot establish WebSocket connection.');
-      if (onError) {
-        onError(new Error('Authentication token not found'));
-      }
-      return;
-    }
-
-    // Remember the current user for (re)subscription needs
-    this.currentUserId = userId;
-
-    this.isConnecting = true;
-    console.log('[WebSocket] Connecting with JWT authentication...');
-    const socket = new SockJS('http://localhost:8080/ws');
-    
-    this.client = new Client({
-      webSocketFactory: () => socket,
+    // Configure headers and callbacks before activating
+    this.client.configure({
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
-      debug: (str) => {
-        console.log('[WebSocket]', str);
-      },
-      reconnectDelay: this.reconnectDelay,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
       onConnect: (frame) => {
         console.log('[WebSocket] ✅ Connected successfully:', frame);
         this.isConnected = true;
-        this.isConnecting = false;
-        this.reconnectAttempts = 0;
         
-        if (onConnect) {
-          onConnect();
-        }
-
-        // Flush any pending subscriptions queued before connection was established
-        if (this.pendingSubscriptions.size > 0) {
-          console.log(`[WebSocket] Flushing ${this.pendingSubscriptions.size} pending subscription(s) after connect`);
-          for (const path of this.pendingSubscriptions) {
-            if (!this.subscriptions.has(path)) {
-              // Only one subscription currently used; reuse subscribe logic
-              this.subscribe(this.currentUserId);
-            }
-          }
-          this.pendingSubscriptions.clear();
-        }
+        // Call the provider's onConnect callback FIRST
+        // The provider will then call subscribe() to register subscriptions
+        if (onConnect) onConnect();
+        
+        // DO NOT call resubscribeAll() here - it causes duplicate subscriptions
+        // The provider will handle subscription management
       },
       onStompError: (frame) => {
-        console.error('[WebSocket] ❌ STOMP error:', frame);
+        console.error('[WebSocket] ❌ STOMP error:', frame.headers['message']);
         this.isConnected = false;
-        this.isConnecting = false;
-        
-        if (onError) {
-          onError(frame);
-        }
+        if (onError) onError(frame);
       },
-      onWebSocketError: (error) => {
-        console.error('[WebSocket] ❌ Connection error:', error);
+      onWebSocketClose: () => {
+        console.log('[WebSocket] 🔌 Connection closed.');
         this.isConnected = false;
-        this.isConnecting = false;
-        
-        if (onError) {
-          onError(error);
-        }
-      },
-      onDisconnect: () => {
-        console.log('[WebSocket] 🔌 Disconnected');
-        this.isConnected = false;
-        this.isConnecting = false;
+        if (onDisconnectCallback) onDisconnectCallback();
       }
     });
 
     this.client.activate();
   }
 
-  /**
-   * Subscribe to notification channel
-   * @param {number} userId - User ID
-   * @param {Function} onMessage - Callback for new messages
-   */
-  subscribe(userId, onMessage) {
-    const subscriptionPath = `/user/queue/notifications`;
-    
-    // If not connected yet, queue and return. It will be flushed in onConnect
-    if (!this.client || !this.client.connected) {
-      console.warn('[WebSocket] Not connected yet. Queuing subscription for path:', subscriptionPath);
-      this.pendingSubscriptions.add(subscriptionPath);
-      return;
-    }
-    
-    console.log('[WebSocket] 📡 Subscription details:');
-    console.log('   → User ID passed:', userId);
-    console.log('   → Subscription path:', subscriptionPath);
-    console.log('   → Expected server destination: /user/{username}/queue/notifications');
-    console.log('   → Current handlers registered:', Array.from(this.messageHandlers.keys()));
-    
-    // Avoid duplicate subscriptions
-    if (this.subscriptions.has(subscriptionPath)) {
-      console.log('Already subscribed to:', subscriptionPath);
+  subscribe(destination, callback) {
+    // Check if already subscribed to avoid duplicates
+    if (this.subscriptions.has(destination) && this.subscriptions.get(destination).stompSubscription) {
+      console.log(`[WebSocket] Already subscribed to: ${destination}`);
       return;
     }
 
-    const subscription = this.client.subscribe(subscriptionPath, (message) => {
+    // Store subscription details so we can re-apply them on reconnect
+    this.subscriptions.set(destination, { callback });
+
+    if (!this.client.active) {
+      console.log('[WebSocket] Client not active. Subscription will be applied upon connection.');
+      return;
+    }
+    
+    console.log(`[WebSocket] 📡 Subscribing to: ${destination}`);
+    const subscription = this.client.subscribe(destination, (message) => {
       try {
-        const notification = JSON.parse(message.body);
-        console.log('🔔 [WebSocket] Notification received:', notification);
-        console.log('   → Type:', notification.notificationType);
-        console.log('   → Title:', notification.title);
-        console.log('   → ID:', notification.id);
-        console.log('   → Handlers available:', Array.from(this.messageHandlers.keys()));
+        const notificationData = typeof message.body === 'string'
+          ? JSON.parse(message.body)
+          : message.body;
         
-        // Call registered handlers (check current state, not stale closure)
-        if (this.messageHandlers.has('notification')) {
-          const handlers = this.messageHandlers.get('notification');
-          console.log('   → Calling', handlers.length, 'handler(s)');
-          handlers.forEach(handler => {
-            try {
-              handler(notification);
-            } catch (handlerError) {
-              console.error('   → Handler error:', handlerError);
-            }
-          });
+        if (notificationData) {
+          console.log('[WebSocket] Message received and passed to callback');
+          callback(notificationData);
         } else {
-          console.warn('   ⚠️ No handlers registered for type "notification"');
+          console.warn('[WebSocket] Received an empty or invalid message body.');
         }
-        
-        // Call specific callback
-        if (onMessage) {
-          onMessage(notification);
-        }
-      } catch (error) {
-        console.error('Error parsing notification:', error);
+      } catch (e) {
+        console.error('[WebSocket] Could not parse or process message:', e, 'Raw body:', message.body);
       }
     });
+    
+    // Store the actual subscription object to allow for unsubscribing if needed
+    this.subscriptions.get(destination).stompSubscription = subscription;
+    console.log(`[WebSocket] ✅ Successfully subscribed to: ${destination}`);
+  }
 
-    this.subscriptions.set(subscriptionPath, subscription);
-    console.log('✅ [WebSocket] Subscribed to:', subscriptionPath);
+  resubscribeAll() {
+    console.log('[WebSocket] Re-subscribing to all channels after reconnect...');
+    this.subscriptions.forEach((sub, destination) => {
+      // Unsubscribe old if exists
+      if (sub.stompSubscription) {
+        console.log(`[WebSocket] Unsubscribing old subscription for ${destination}`);
+        sub.stompSubscription.unsubscribe();
+        sub.stompSubscription = null;
+      }
+      console.log(`[WebSocket] Re-subscribing to ${destination}`);
+      this.subscribe(destination, sub.callback);
+    });
   }
 
   /**
@@ -186,14 +121,8 @@ class WebSocketService {
     // CRITICAL FIX: Replace all handlers of this type instead of pushing
     // This prevents stale closure issues when the handler is re-registered
     console.log(`[WebSocket] Registering handler for type: ${type}`);
-    this.messageHandlers.set(type, [handler]);
-
-    // If a handler is registered after connection, ensure we are subscribed
-    const subscriptionPath = `/user/queue/notifications`;
-    if (this.isConnected && this.client && this.client.connected && !this.subscriptions.has(subscriptionPath) && this.currentUserId != null) {
-      console.log('[WebSocket] Handler registered while connected. Ensuring subscription exists...');
-      this.subscribe(this.currentUserId);
-    }
+    // This method is no longer needed as subscriptions are managed directly
+    // The handler registration logic needs to be re-evaluated based on new subscription model
   }
 
   /**
@@ -201,10 +130,7 @@ class WebSocketService {
    * @param {string} type - Handler type
    */
   clearHandlers(type) {
-    if (this.messageHandlers.has(type)) {
-      this.messageHandlers.delete(type);
-      console.log(`[WebSocket] Cleared handlers for type: ${type}`);
-    }
+    // This method is no longer needed as handlers are not managed in this way
   }
 
   /**
@@ -213,8 +139,8 @@ class WebSocketService {
    * @param {Object} body - Message body
    */
   send(destination, body) {
-    if (!this.client || !this.client.connected) {
-      console.error('WebSocket not connected');
+    if (!this.client || !this.client.active) {
+      console.error('WebSocket not connected, cannot send message.');
       return;
     }
 
@@ -236,19 +162,20 @@ class WebSocketService {
    * Disconnect from WebSocket
    */
   disconnect() {
-    if (this.client) {
-      try {
-        this.client.deactivate();
-      } catch (e) {
-        console.error('[WebSocket] Error during disconnect:', e);
+    // Unsubscribe all before deactivating
+    this.subscriptions.forEach((sub, destination) => {
+      if (sub.stompSubscription) {
+        console.log(`[WebSocket] Unsubscribing from ${destination}`);
+        sub.stompSubscription.unsubscribe();
       }
+    });
+    this.subscriptions.clear(); // Clear map after unsubscribe
+
+    if (this.client && this.client.active) {
+      console.log('[WebSocket] Deactivating client.');
+      this.client.deactivate();
     }
     this.isConnected = false;
-    this.isConnecting = false;
-    this.currentUserId = null;
-    this.subscriptions.clear();
-    this.messageHandlers.clear();
-    console.log('WebSocket disconnected');
   }
 
   /**
@@ -256,7 +183,7 @@ class WebSocketService {
    * @returns {boolean} Connection status
    */
   isConnectedStatus() {
-    return this.isConnected && this.client && this.client.connected;
+    return this.isConnected && this.client && this.client.active;
   }
 }
 

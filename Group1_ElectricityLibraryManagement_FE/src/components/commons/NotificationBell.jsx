@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Bell, BellFill } from 'react-bootstrap-icons';
 import { Badge, Button } from 'react-bootstrap';
-import NotificationContext from '../contexts/NotificationContext';
+import { NotificationContext } from '../contexts/NotificationContext';
 import NotificationDropdown from '../notifications/NotificationDropdown';
 import styles from './NotificationBell.module.css';
 

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { ListGroup } from 'react-bootstrap';
 import { Book, CalendarEvent, ExclamationTriangle, InfoCircle, Trash } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
-import NotificationContext from '../contexts/NotificationContext';
+import { NotificationContext } from '../contexts/NotificationContext';
 import styles from './NotificationItem.module.css';
 
 const NotificationItem = ({ notification, onClick }) => {

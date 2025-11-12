@@ -1,16 +1,11 @@
 import { createContext } from 'react';
 
-const NotificationContext = createContext({
+export const NotificationContext = createContext({
   notifications: [],
   unreadCount: 0,
-  loading: false,
-  connected: false,
+  loading: true,
   fetchNotifications: () => {},
-  fetchUnreadCount: () => {},
   markAsRead: () => {},
   markAllAsRead: () => {},
   deleteNotification: () => {},
-  addNotification: () => {}
 });
-
-export default NotificationContext;

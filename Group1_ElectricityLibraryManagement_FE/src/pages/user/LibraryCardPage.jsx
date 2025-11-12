@@ -60,8 +60,8 @@ const LibraryCardPage = () => {
 
   // Use real card data from API
   const userData = cardData ? {
-    firstName: user?.fullName?.split(' ')[0] || 'Member',
-    lastName: user?.fullName?.split(' ').slice(1).join(' ') || '',
+    firstName: (cardData.readerName || user?.fullName || 'Member').split(' ')[0],
+    lastName: (cardData.readerName || user?.fullName || '').split(' ').slice(1).join(' '),
     memberId: cardData.cardNumber,
     card_number: cardData.cardNumber,
     membershipType: 'Standard', // Can be enhanced based on backend data
@@ -70,8 +70,8 @@ const LibraryCardPage = () => {
     expirationDate: cardData.expiryDate,
     expiry_date: cardData.expiryDate,
     status: cardData.status,
-    email: user?.email || '',
-    phone: user?.phone || '',
+    email: cardData.readerEmail || cardData.email || user?.email || '',
+    phone: cardData.readerPhone || cardData.phone || user?.phone || '',
     address: user?.address || '',
     photo: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     daysUntilExpiry: cardData.daysUntilExpiry,
@@ -80,16 +80,125 @@ const LibraryCardPage = () => {
   } : null;
 
   const handleDownload = () => {
-    // Simulate download functionality
-    setShowDownloadAlert(true);
-    setTimeout(() => setShowDownloadAlert(false), 3000);
-    console.log('Downloading library card...');
+    if (!userData) return;
+    
+    try {
+      // Create a canvas element to draw the card
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 500;
+      const ctx = canvas.getContext('2d');
+      
+      // Draw card background
+      ctx.fillStyle = '#1a5490';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw card border
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+      
+      // Draw library name
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 28px Arial';
+      ctx.fillText('LIBRARY CARD', 40, 60);
+      
+      // Draw card details
+      ctx.font = '16px Arial';
+      ctx.fillText(`Card Number: ${userData.card_number}`, 40, 120);
+      ctx.fillText(`Name: ${userData.readerName || userData.firstName + ' ' + userData.lastName}`, 40, 160);
+      ctx.fillText(`Email: ${userData.email || '-'}`, 40, 200);
+      ctx.fillText(`Phone: ${userData.phone || '-'}`, 40, 240);
+      ctx.fillText(`Issue Date: ${formatDate(userData.issue_date)}`, 40, 280);
+      ctx.fillText(`Expiry Date: ${formatDate(userData.expiry_date)}`, 40, 320);
+      ctx.fillText(`Status: ${userData.status}`, 40, 360);
+      
+      // Convert canvas to blob and download
+      canvas.toBlob((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `library-card-${userData.card_number}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        setShowDownloadAlert(true);
+        setTimeout(() => setShowDownloadAlert(false), 3000);
+      });
+    } catch (err) {
+      console.error('Error downloading card:', err);
+      setError('Failed to download library card');
+    }
   };
 
   const handlePrint = () => {
-    // Simulate print functionality
-    window.print();
-    console.log('Printing library card...');
+    if (!userData) return;
+    
+    try {
+      // Create a new window for printing
+      const printWindow = window.open('', '', 'height=600,width=800');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Library Card - ${userData.card_number}</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f5f5f5;
+              }
+              .card-container {
+                background: linear-gradient(135deg, #1a5490 0%, #2a6ba0 100%);
+                color: white;
+                padding: 40px;
+                border-radius: 10px;
+                max-width: 600px;
+                margin: 20px auto;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              }
+              .card-title {
+                font-size: 28px;
+                font-weight: bold;
+                margin-bottom: 30px;
+                border-bottom: 2px solid white;
+                padding-bottom: 15px;
+              }
+              .card-detail {
+                margin: 12px 0;
+                font-size: 16px;
+              }
+              .card-detail strong {
+                display: inline-block;
+                width: 150px;
+              }
+              @media print {
+                body { margin: 0; }
+                .card-container { margin: 0; border-radius: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card-container">
+              <div class="card-title">LIBRARY CARD</div>
+              <div class="card-detail"><strong>Card Number:</strong> ${userData.card_number}</div>
+              <div class="card-detail"><strong>Name:</strong> ${userData.readerName || userData.firstName + ' ' + userData.lastName}</div>
+              <div class="card-detail"><strong>Email:</strong> ${userData.email}</div>
+              <div class="card-detail"><strong>Phone:</strong> ${userData.phone}</div>
+              <div class="card-detail"><strong>Issue Date:</strong> ${formatDate(userData.issue_date)}</div>
+              <div class="card-detail"><strong>Expiry Date:</strong> ${formatDate(userData.expiry_date)}</div>
+              <div class="card-detail"><strong>Status:</strong> ${userData.status}</div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    } catch (err) {
+      console.error('Error printing card:', err);
+      setError('Failed to print library card');
+    }
   };
 
   const getMembershipColor = (type) => {
@@ -110,6 +219,9 @@ const LibraryCardPage = () => {
   };
 
   const getStatusBadgeVariant = (status) => {
+    if (!status) {
+      return 'secondary';
+    }
     switch (status.toLowerCase()) {
       case 'active':
         return 'success';
@@ -190,7 +302,7 @@ const LibraryCardPage = () => {
         {/* Expiration Warning */}
         {isExpiringSoon() && (
           <Alert variant="warning" className={styles.expirationAlert}>
-            <strong>Card Expiring Soon!</strong> Your library card expires on {formatDate(userData.expiryDate || userData.expirationDate)} 
+            <strong>Card Expiring Soon!</strong> Your library card expires on {formatDate(userData?.expiryDate || userData?.expirationDate)} 
             ({getDaysUntilExpiry()} days remaining). 
             <Button 
               variant="warning" 
@@ -332,7 +444,7 @@ const LibraryCardPage = () => {
                 <Printer className="me-2" />
                 Print Card
               </Button>
-              {(isExpiringSoon() || userData.status?.toLowerCase() === 'expired') && (
+              {(isExpiringSoon() || userData?.status?.toLowerCase() === 'expired') && (
                 <Button
                   variant="warning"
                   size="lg"
@@ -359,18 +471,18 @@ const LibraryCardPage = () => {
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Full Name</label>
                       <div className={styles.infoValue}>
-                        {userData.firstName} {userData.lastName}
+                        {userData?.firstName} {userData?.lastName}
                       </div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Card Number</label>
-                      <div className={styles.infoValue}>{userData.card_number}</div>
+                      <div className={styles.infoValue}>{userData?.card_number}</div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Membership Type</label>
                       <div className={styles.infoValue}>
-                        <Badge bg={getMembershipColor(userData.membershipType)}>
-                          {userData.membershipType}
+                        <Badge bg={getMembershipColor(userData?.membershipType)}>
+                          {userData?.membershipType}
                         </Badge>
                       </div>
                     </div>
@@ -378,19 +490,19 @@ const LibraryCardPage = () => {
                   <Col md={6}>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Issue Date</label>
-                      <div className={styles.infoValue}>{formatDate(userData.issue_date)}</div>
+                      <div className={styles.infoValue}>{formatDate(userData?.issue_date)}</div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Expiration Date</label>
                       <div className={`${styles.infoValue} ${isExpiringSoon() ? styles.expiring : ''}`}>
-                        {formatDate(userData.expiry_date)}
+                        {formatDate(userData?.expiry_date)}
                         {isExpiringSoon() && <span className={styles.expiringText}> (Expiring Soon)</span>}
                       </div>
                     </div>
                     <div className={styles.infoGroup}>
                       <label className={styles.infoLabel}>Status</label>
                       <div className={styles.infoValue}>
-                        <Badge bg={getStatusBadgeVariant(userData.status)}>{userData.status}</Badge>
+                        <Badge bg={getStatusBadgeVariant(userData?.status)}>{userData?.status}</Badge>
                       </div>
                     </div>
                   </Col>
@@ -399,25 +511,35 @@ const LibraryCardPage = () => {
             </Card>
 
 
-            {/* Digital Wallet Integration */}
+            {/* Download Card */}
             {userData && (
-            <Card className={`custom-card ${styles.walletCard} mt-4`}>
-              <Card.Header className={styles.walletCardHeader}>
-                <h4 className={styles.walletCardTitle}>
-                  <CreditCardFill className="me-2" />
-                  Add to Digital Wallet
+            <Card className={`custom-card ${styles.downloadCard} mt-4`}>
+              <Card.Header className={styles.downloadCardHeader}>
+                <h4 className={styles.downloadCardTitle}>
+                  <Download className="me-2" />
+                  Download Your Card
                 </h4>
               </Card.Header>
-              <Card.Body className={styles.walletCardBody}>
-                <p className={styles.walletDescription}>
-                  Add your library card to your phone's digital wallet for quick access at the library.
+              <Card.Body className={styles.downloadCardBody}>
+                <p className={styles.downloadDescription}>
+                  Download your library card as a PDF or image file for offline access or printing.
                 </p>
-                <div className={styles.walletButtons}>
-                  <Button variant="dark" className={styles.walletButton}>
-                    Add to Apple Wallet
+                <div className={styles.downloadButtons}>
+                  <Button 
+                    variant="primary" 
+                    className={styles.downloadButton}
+                    onClick={handleDownload}
+                  >
+                    <Download className="me-2" />
+                    Download as PDF
                   </Button>
-                  <Button variant="outline-dark" className={styles.walletButton}>
-                    Add to Google Pay
+                  <Button 
+                    variant="outline-primary" 
+                    className={styles.downloadButton}
+                    onClick={handlePrint}
+                  >
+                    <Printer className="me-2" />
+                    Print Card
                   </Button>
                 </div>
               </Card.Body>
@@ -446,7 +568,7 @@ const LibraryCardPage = () => {
                 />
               </Form.Group>
             </Form>
-            {userData.expiryDate && (
+            {userData?.expiryDate && (
               <Alert variant="info" className="mt-3 mb-0">
                 <small>
                   <strong>Current Expiry:</strong> {formatDate(userData.expiryDate)}<br />

@@ -1,301 +1,241 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
-import NotificationContext from './NotificationContext';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import notificationAPI from '../../api/notification'; // Assuming you have this API
 import UserContext from './UserContext';
-import notificationAPI from '../../api/notification';
-import webSocketService from '../../services/webSocketService';
+import { NotificationContext } from './NotificationContext';
+
+ 
 
 export const NotificationProvider = ({ children }) => {
-  const { user } = useContext(UserContext) || {};
+  const { user, isLoggedIn } = useContext(UserContext);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const stompClientRef = useRef(null);
 
-  // Mark notification as read (defined early for use in handleNotificationClick)
-  const markAsRead = async (notificationId) => {
-    try {
-      await notificationAPI.markAsRead(notificationId);
-      
-      // Update local state
-      setNotifications(prev =>
-        prev.map(notif =>
-          notif.id === notificationId ? { ...notif, isRead: true } : notif
-        )
-      );
-      
-      // Decrement unread count
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
+  const mapDtoToUi = useCallback((dto) => ({
+    id: dto.id ?? `ws-${Date.now()}`,
+    title: dto.title,
+    description: dto.description ?? dto.message,
+    notificationType: dto.notificationType ?? dto.type,
+    createdDate: dto.createdDate ?? dto.createdAt ?? new Date().toISOString(),
+    isRead: dto.isRead ?? false,
+  }), []);
 
-  // Handle notification click (defined before handleNewNotification)
-  const handleNotificationClick = useCallback((notification) => {
-    // Mark as read
-    if (!notification.isRead) {
-      markAsRead(notification.id);
+  const isTransientId = useCallback((id) => typeof id === 'string' && id.startsWith('ws-'), []);
+
+  const fetchNotifications = useCallback(async () => {
+    if (user?.accountId) {
+      setLoading(true);
+      try {
+        const response = await notificationAPI.getUserNotifications(user.accountId, 0, 20); // Fetch more for initial view
+        const items = (response?.data?.content || []).map(mapDtoToUi);
+        setNotifications(items);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
     }
-    
-    // Navigate based on notification type
-    if (notification.relatedBookId) {
-      window.location.href = `/books/${notification.relatedBookId}`;
-    } else if (notification.relatedEventId) {
-      window.location.href = `/events/${notification.relatedEventId}`;
-    } else if (notification.relatedBorrowRecordId) {
-      window.location.href = '/user/borrowed-books';
+  }, [user?.accountId, mapDtoToUi]);
+
+  const fetchUnreadCount = useCallback(async () => {
+    if (user?.accountId) {
+      try {
+        const response = await notificationAPI.getUnreadCount(user.accountId);
+        const count = response?.data?.data?.count ?? response?.data ?? 0;
+        setUnreadCount(count);
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+      }
     }
+  }, [user?.accountId]);
+
+  const handleNewNotification = useCallback((notification) => {
+    console.log('[WebSocket] New notification received:', notification);
+    setNotifications((prev) => [notification, ...prev]);
+    setUnreadCount((prev) => prev + 1);
+
+    toast.info(
+      <div>
+        <p className="font-bold">{notification.title || 'New Notification'}</p>
+        <p>{notification.message}</p>
+      </div>,
+      {
+        icon: '🔔',
+        autoClose: 5000,
+      }
+    );
   }, []);
 
-  // Handle incoming WebSocket notifications
-  // CRITICAL: NO dependencies on handleNotificationClick to prevent re-render loop
-  const handleNewNotification = useCallback((notification) => {
-    console.log('--- [NotificationProvider] START: New Notification Received ---');
-    console.log('Raw notification object:', notification);
-
-    // Add to notifications list
-    setNotifications(prev => {
-      console.log(`Updating notifications state. Previous count: ${prev.length}`);
-      const newList = [notification, ...prev];
-      console.log(`New notifications list created. New count: ${newList.length}`);
-      return newList;
+  useEffect(() => {
+    console.log('[DEBUG] useEffect triggered:', { isLoggedIn, user });
+    console.log('[DEBUG] Condition check:', { 
+      isLoggedIn, 
+      hasUser: !!user, 
+      hasUsername: !!user?.username,
+      username: user?.username,
+      userKeys: user ? Object.keys(user) : 'no user'
     });
     
-    // Increment unread count if notification is unread
-    if (!notification.isRead) {
-      setUnreadCount(prev => {
-        console.log(`Updating unread count. Previous count: ${prev}`);
-        const newCount = prev + 1;
-        console.log(`New unread count: ${newCount}`);
-        return newCount;
-      });
-    }
-    
-    // Show toast notification
-    const toastMessage = notification.title || 'New notification';
-    const toastOptions = {
-      position: 'top-right',
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      onClick: () => handleNotificationClick(notification)
-    };
-    
-    switch (notification.notificationType) {
-      case 'NEW_BOOK':
-        toast.info(`📘 ${toastMessage}`, toastOptions);
-        break;
-      case 'NEW_EVENT':
-        toast.success(`📅 ${toastMessage}`, toastOptions);
-        break;
-      case 'REMINDER':
-        toast.warning(`⏰ ${toastMessage}`, toastOptions);
-        break;
-      case 'OVERDUE':
-        toast.error(`⚠️ ${toastMessage}`, toastOptions);
-        break;
-      case 'CARD_SUSPENDED':
-        toast.error(`🚫 ${toastMessage}`, toastOptions);
-        break;
-      default:
-        toast.info(toastMessage, toastOptions);
-    }
-    console.log('--- [NotificationProvider] END: New Notification Handled ---');
-  }, []);
-
-  // Extract userId for cleaner dependency management
-  const userId = user?.accountId;
-
-  // Effect 1: Manage WebSocket connection lifecycle
-  // Only depends on userId to avoid race conditions and re-render loops
-  useEffect(() => {
-    console.log('[Effect 1] Managing WebSocket connection. userId:', userId);
-    
-    // Only proceed if we have a userId
-    if (!userId) {
-      console.log('[Effect 1] No userId yet. Disconnecting WebSocket.');
-      webSocketService.disconnect();
-      setConnected(false);
-      return;
-    }
-
-    // We have a userId, establish connection
-    console.log('[Effect 1] userId detected. Establishing WebSocket connection...');
-    
-    const onConnect = () => {
-      console.log('[Effect 1] ✅ WebSocket connected successfully');
-      setConnected(true);
-    };
-    
-    const onError = (error) => {
-      console.error('[Effect 1] ❌ WebSocket connection error:', error);
-      setConnected(false);
-      toast.error('Notification service connection failed.');
-    };
-
-    // Establish connection
-    if (!webSocketService.isConnectedStatus()) {
-      console.log('[Effect 1] Attempting to connect...');
-      webSocketService.connect(userId, onConnect, onError);
-    } else {
-      console.log('[Effect 1] WebSocket already connected.');
-      onConnect(); // Ensure connected state is set
-    }
-    
-    // Cleanup: Disconnect when userId changes (logout) or component unmounts
-    return () => {
-      console.log('[Effect 1] Cleaning up WebSocket connection for userId:', userId);
-      webSocketService.disconnect();
-      setConnected(false);
-    };
-  }, [userId]);
-
-  // Effect 2: Register handler and subscribe to notifications
-  // Only depends on userId to ensure handler is registered once per user
-  // Separated from connection effect to avoid re-render loops
-  useEffect(() => {
-    console.log('[Effect 2] Registering handler and subscribing. userId:', userId);
-    
-    // Only proceed if we have a userId
-    if (!userId) {
-      console.log('[Effect 2] No userId yet. Skipping handler registration.');
-      return;
-    }
-
-    // Register the handler
-    console.log('[Effect 2] Registering handler for type: notification');
-    webSocketService.onMessage('notification', handleNewNotification);
-    
-    // Subscribe to the notification channel
-    console.log('[Effect 2] Subscribing to /user/queue/notifications');
-    webSocketService.subscribe(userId);
-    
-    // Cleanup: Remove handler when userId changes or component unmounts
-    return () => {
-      console.log('[Effect 2] Cleaning up handler and subscription for userId:', userId);
-      webSocketService.clearHandlers('notification');
-    };
-  }, [userId]);
-
-
-  // Fetch initial data on mount and when user changes
-  useEffect(() => {
-    console.log('[Effect] Fetching initial data. User:', user?.accountId);
-    if (user && user.accountId) {
-      fetchNotifications();
+    if (user?.username) {
+      console.log('[NotificationProvider] User logged in. Initializing notifications...');
+      console.log('[DEBUG] User details:', { username: user.username, accountId: user.accountId });
       fetchUnreadCount();
-    }
-  }, [user]);
-
-  // handleNotificationClick moved above
-
-  // Fetch all notifications
-  const fetchNotifications = async () => {
-    if (!user || !user.accountId) return;
-
-    try {
-      setLoading(true);
-      const response = await notificationAPI.getUserNotifications(user.accountId, 0, 50);
-      const notificationData = response.data.content || response.data || [];
-      setNotifications(notificationData);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      toast.error('Failed to load notifications', {
-        position: 'top-right',
-        autoClose: 3000
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch unread count
-  const fetchUnreadCount = async () => {
-    if (!user || !user.accountId) return;
-
-    try {
-      const response = await notificationAPI.getUnreadCount(user.accountId);
-      // Extract count from structured response data
-      const count = response.data.data?.count || 0;
-      setUnreadCount(count);
-      console.log('[NotificationProvider] Unread count:', count);
-    } catch (error) {
-      console.error('[NotificationProvider] Error fetching unread count:', error);
-    }
-  };
-
-  // markAsRead moved above
-
-  // Mark all notifications as read
-  const markAllAsRead = async () => {
-    if (!user || !user.accountId) return;
-
-    try {
-      await notificationAPI.markAllAsRead(user.accountId);
+      fetchNotifications();
       
-      // Update local state
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      // Get auth token from localStorage
+      const token = localStorage.getItem('accessToken');
+      console.log('[DEBUG] Auth token:', token ? 'present' : 'missing');
+      
+      // Build WebSocket URL with token as query parameter
+      const wsUrl = token 
+        ? `http://localhost:8080/ws?token=${encodeURIComponent(token)}`
+        : 'http://localhost:8080/ws';
+      
+      const socket = new SockJS(wsUrl);
+      
+      const client = new Client({
+        webSocketFactory: () => socket,
+        debug: (str) => console.log('[STOMP Debug]', str),
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+        onConnect: (frame) => {
+          console.log('✅ Connected to WebSocket:', frame);
+          stompClientRef.current = client;
+
+          const subscriptionPath = `/user/${user.username}/queue/new-notification`;
+          console.log('🔔 Subscribing to:', subscriptionPath);
+          
+          const subscription = client.subscribe(subscriptionPath, (message) => {
+            console.log('📨 WebSocket message received:', message);
+            try {
+              const notification = JSON.parse(message.body);
+              console.log('📋 Parsed notification:', notification);
+
+              toast.success(
+                (t) => (
+                  <div onClick={() => toast.dismiss(t.id)}>
+                    <p className="font-bold">{notification.title}</p>
+                    <p>{notification.message}</p>
+                  </div>
+                ), { 
+                  icon: '⏰',
+                  duration: 10000 
+                }
+              );
+
+              // Push into local list so the bell shows it immediately (even if backend persistence is stubbed)
+              const uiItem = mapDtoToUi(notification);
+              setNotifications(prev => [uiItem, ...prev]);
+              setUnreadCount(prev => prev + 1);
+            } catch (e) {
+              console.error("❌ Error parsing WebSocket notification:", e);
+            }
+          });
+          
+          console.log('✅ Subscription created:', subscription);
+        },
+        onStompError: (error) => {
+          console.error('WebSocket connection error:', error);
+        }
+      });
+      
+      client.activate();
+
+      return () => {
+        if (stompClientRef.current) {
+          stompClientRef.current.disconnect(() => {
+            console.log('WebSocket disconnected');
+          });
+          stompClientRef.current = null;
+        }
+      };
+    } else {
       setUnreadCount(0);
-      
-      toast.success('All notifications marked as read', {
-        position: 'top-right',
-        autoClose: 2000
-      });
+      setLoading(false);
+      if (stompClientRef.current) {
+        stompClientRef.current.disconnect();
+        stompClientRef.current = null;
+      }
+    }
+  }, [user?.username, fetchNotifications, fetchUnreadCount]);
+
+  const markAsRead = async (notificationId) => {
+    try {
+      if (isTransientId(notificationId)) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
+        );
+        const notification = notifications.find(n => n.id === notificationId);
+        if (notification && !notification.isRead) {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+        return;
+      }
+
+      await notificationAPI.markAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
+      );
+      const notification = notifications.find(n => n.id === notificationId);
+      if (notification && !notification.isRead) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      toast.error('Failed to mark all as read', {
-        position: 'top-right',
-        autoClose: 3000
-      });
+      console.error('Failed to mark notification as read:', error);
     }
   };
 
-  // Delete notification
+  const markAllAsRead = async () => {
+    if(user?.accountId) {
+      try {
+        await notificationAPI.markAllAsRead(user.accountId);
+      } catch (error) {
+        console.error('Failed to mark all notifications as read:', error);
+      } finally {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+        setUnreadCount(0);
+      }
+    }
+  };
+
   const deleteNotification = async (notificationId) => {
     try {
+      const notification = notifications.find(n => n.id === notificationId);
+      const wasUnread = notification && !notification.isRead;
+
+      if (isTransientId(notificationId)) {
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+        if (wasUnread) {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+        return;
+      }
+
       await notificationAPI.deleteNotification(notificationId);
-      
-      // Remove from local state
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      
-      // Refresh unread count
-      fetchUnreadCount();
-      
-      toast.success('Notification deleted', {
-        position: 'top-right',
-        autoClose: 2000
-      });
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      if (wasUnread) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+
     } catch (error) {
-      console.error('Error deleting notification:', error);
-      toast.error('Failed to delete notification', {
-        position: 'top-right',
-        autoClose: 3000
-      });
+      console.error('Failed to delete notification:', error);
+      toast.error('Could not delete notification.');
     }
   };
 
-  // Add notification (for testing or manual addition)
-  const addNotification = useCallback((notification) => {
-    setNotifications(prev => [notification, ...prev]);
-    if (!notification.isRead) {
-      setUnreadCount(prev => prev + 1);
-    }
-  }, []);
 
   const contextValue = {
     notifications,
     unreadCount,
     loading,
-    connected,
     fetchNotifications,
-    fetchUnreadCount,
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    addNotification
   };
 
   return (
@@ -304,5 +244,3 @@ export const NotificationProvider = ({ children }) => {
     </NotificationContext.Provider>
   );
 };
-
-export default NotificationProvider;
