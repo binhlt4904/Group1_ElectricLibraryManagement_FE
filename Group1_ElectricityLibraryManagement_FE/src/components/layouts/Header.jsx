@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, Container, Form, Button, InputGroup, Dropdown } from 'react-bootstrap';
-import { Search, PersonFill, BoxArrowRight, PersonCircle, CreditCard, ClockHistory, Wallet, Heart } from 'react-bootstrap-icons';
+import { Search, PersonFill, BoxArrowRight, PersonCircle, CreditCard, ClockHistory, Wallet, Heart, ExclamationTriangle } from 'react-bootstrap-icons';
 import styles from './Header.module.css';
 import auth from "../../api/auth";
 import UserContext from "../contexts/UserContext";
@@ -105,6 +105,10 @@ const Header = () => {
                                                 <Dropdown.Item as={Link} to="/user/borrow-history">
                                                     <ClockHistory className="me-2" />
                                                     Borrowing History
+                                                </Dropdown.Item>
+                                                <Dropdown.Item as={Link} to="/user/report">
+                                                    <ExclamationTriangle className="me-2" />
+                                                    Reports
                                                 </Dropdown.Item>
                                                 <Dropdown.Item as={Link} to="/user/library-card">
                                                     <CreditCard className="me-2" />

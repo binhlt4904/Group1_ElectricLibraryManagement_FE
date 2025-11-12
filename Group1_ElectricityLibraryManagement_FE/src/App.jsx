@@ -48,6 +48,7 @@ import ReaderReportManagementPage from './pages/user/ReaderReportManager'
 import LibraryCardManagementPage from './pages/admin/LibraryCardManagementPage';
 import AddAuthorPage from './pages/admin/AddAuthorPage';
 import AddPublisherPage from './pages/admin/AddPublisherPage';
+import ReaderReportManager from './pages/user/ReaderReportManager';
 
 import { ProtectedRoute } from './routes/ProtectedRoute';
 
@@ -100,6 +101,7 @@ const AppContent = () => {
                             //</PrivateRoute>
                         }>
                             {/* Các route con KHÔNG có / ở đầu */}
+                            <Route path="report" element={<ReaderReportManager />} />
                             <Route path="profile" element={<ProfilePage />} />
                             <Route path="borrow-history" element={<BorrowHistoryPage />} />
                             <Route path="library-card" element={<LibraryCardPage />} />
