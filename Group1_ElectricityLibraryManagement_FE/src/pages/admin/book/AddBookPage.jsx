@@ -15,13 +15,13 @@ const AddBookPage = () => {
     categoryId: "",
     publisherId: "",
     publishedDate: "",
-    image: null, // 🔹 đổi từ content -> image
+    image: null,
   });
 
   const [authors, setAuthors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [publishers, setPublishers] = useState([]);
-  const [previewImage, setPreviewImage] = useState(null); // 🔹 thêm preview
+  const [previewImage, setPreviewImage] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -38,7 +38,7 @@ const AddBookPage = () => {
         setPublishers(publishersRes.data);
       } catch (err) {
         console.error(err);
-        setErrorMessage("Không thể tải dữ liệu. Vui lòng thử lại!");
+        setErrorMessage("Error loading data. Please try again!");
       }
     };
     fetchData();
@@ -51,7 +51,7 @@ const AddBookPage = () => {
       const file = files[0];
       setFormData({ ...formData, image: file });
       if (file) {
-        setPreviewImage(URL.createObjectURL(file)); // 🔹 hiện preview
+        setPreviewImage(URL.createObjectURL(file)); 
       } else {
         setPreviewImage(null);
       }
@@ -74,7 +74,7 @@ const AddBookPage = () => {
     data.append("publisherId", formData.publisherId);
     data.append("publishedDate", formData.publishedDate);
     if (formData.image) {
-      data.append("image", formData.image); // 🔹 đổi field name
+      data.append("image", formData.image); 
     }
 
     try {
@@ -94,7 +94,7 @@ const AddBookPage = () => {
       setPreviewImage(null);
     } catch (err) {
       console.error(err);
-      setErrorMessage("Thêm sách thất bại. Vui lòng kiểm tra lại dữ liệu.");
+      setErrorMessage("Error adding book. " + err.response?.data?.message || "Error adding book. Please try again.");
     }
   };
 

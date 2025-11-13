@@ -5,22 +5,18 @@ import {
 import { Search, Tag, Pencil, Trash, ArrowCounterclockwise, Plus } from "react-bootstrap-icons";
 import categoryManagementApi from "../../api/admin/categoryManagementApi";
 
-/** Chuẩn hoá lỗi trả về từ BE về { fieldErrors, common } */
 const parseBackendError = (err) => {
   const d = err?.response?.data ?? err?.data ?? err ?? {};
   const fieldErrors = {};
   let common = "";
 
-  // các format thường gặp
   if (typeof d.message === "string" && d.message.trim()) common = d.message.trim();
   if (!common && typeof d.error === "string" && d.error.trim()) common = d.error.trim();
 
-  // Spring validation: Map<String, String> errors
   if (d.errors && typeof d.errors === "object" && !Array.isArray(d.errors)) {
     Object.entries(d.errors).forEach(([k, v]) => (fieldErrors[k] = Array.isArray(v) ? v[0] : String(v)));
   }
 
-  // List violations/details/fieldErrors
   ["violations", "details", "fieldErrors"].forEach((key) => {
     if (Array.isArray(d[key])) {
       d[key].forEach((it) => {
@@ -30,14 +26,11 @@ const parseBackendError = (err) => {
       });
     }
   });
-
-  // Nếu phát hiện thông điệp kiểu duplicate/exist → đổ vào field name khi chưa có
   if (!fieldErrors.name && /exist|already|duplicate/i.test(common || "")) {
     fieldErrors.name = common;
     common = "";
   }
 
-  // Nếu hoàn toàn không có message cụ thể
   if (!common && !Object.keys(fieldErrors).length) {
     common = "Something went wrong. Please try again.";
   }

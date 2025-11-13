@@ -96,10 +96,8 @@ const DashboardPage = () => {
     try {
       setExporting(true);
 
-      // ví dụ có thể truyền year: currentYear nếu BE cần
       const res = await dashboardApi.exportReportExcel({ year: currentYear });
 
-      // Lấy tên file từ Content-Disposition (nếu BE trả)
       const dispo = res?.headers?.['content-disposition'] || res?.headers?.get?.('content-disposition');
       let filename = `dashboard_report_${currentYear}.xlsx`;
       if (dispo) {
@@ -109,7 +107,6 @@ const DashboardPage = () => {
         }
       }
 
-      // Tạo blob & tải
       const mime = res?.headers?.['content-type'] ||
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       const blob = new Blob([res.data], { type: mime });
@@ -160,7 +157,6 @@ const DashboardPage = () => {
 
   const { statistics } = dashboardData;
 
-  // Chart data normalize + scale
   const monthly = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, borrowCount: 0 }));
   (dashboardData.trends || []).forEach(t => {
     const m = Number(t.month);
