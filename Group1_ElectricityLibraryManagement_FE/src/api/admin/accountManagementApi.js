@@ -51,6 +51,13 @@ const accountManagementApi = {
     });
   },
 
+  // === SEARCH READERS (for AsyncSelect autocomplete) ===
+  searchReaders: async (query = "", page = 0, size = 10) => {
+    const params = { page, size };
+    if (query?.trim()) params.query = query.trim();
+    return await axiosClient.get("/api/v1/admin/readers/search", { params });
+  },
+
 };
 
 export default accountManagementApi;

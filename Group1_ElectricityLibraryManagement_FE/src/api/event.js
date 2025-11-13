@@ -21,6 +21,10 @@ const eventAPI = {
 
   deleteEvent: (id) => {
     return axiosClient.delete(`/api/v1/admin/events/${id}`);
+  },
+
+  getEventStatistics: () => {
+    return axiosClient.get('/api/v1/admin/events/statistics');
   }
 };
 

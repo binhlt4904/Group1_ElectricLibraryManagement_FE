@@ -25,31 +25,82 @@ const PDFViewer = ({ fileUrl, fileName = 'Document' }) => {
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [navigationTab, setNavigationTab] = useState('pages');  // 'pages' or 'headings'
   const [headings, setHeadings] = useState([]);  // Store extracted headings
+  const [pdfDocument, setPdfDocument] = useState(null);  // Store PDF document reference
 
-  // Extract headings from PDF (simulated - based on page structure)
-  const extractHeadings = ({ numPages }) => {
-    // Create sample headings for demonstration
-    // In a real scenario, you would parse PDF structure for actual headings
-    const sampleHeadings = [];
+  // Extract headings from PDF outline
+  const extractHeadings = async (pdf) => {
+    try {
+      const outline = await pdf.getOutline();
+      
+      if (!outline || outline.length === 0) {
+        console.log('No outline found in PDF');
+        setHeadings([]);
+        return;
+      }
 
-    // Add some sample headings based on page count
-    if (numPages >= 1) sampleHeadings.push({ title: 'Introduction', page: 1, level: 1 });
-    if (numPages >= 2) sampleHeadings.push({ title: 'Chapter 1: Overview', page: 2, level: 1 });
-    if (numPages >= 3) sampleHeadings.push({ title: 'Section 1.1: Details', page: 3, level: 2 });
-    if (numPages >= 4) sampleHeadings.push({ title: 'Chapter 2: Content', page: 4, level: 1 });
-    if (numPages >= 5) sampleHeadings.push({ title: 'Section 2.1: Information', page: 5, level: 2 });
-    if (numPages >= 6) sampleHeadings.push({ title: 'Conclusion', page: Math.ceil(numPages / 2), level: 1 });
-
-    setHeadings(sampleHeadings);
+      // Process outline items recursively
+      const processOutlineItems = async (items, level = 1) => {
+        const headingsList = [];
+        
+        for (const item of items) {
+          try {
+            // Get destination page number
+            let pageNumber = null;
+            
+            if (item.dest) {
+              // Handle different destination formats
+              let dest = item.dest;
+              if (typeof dest === 'string') {
+                dest = await pdf.getDestination(dest);
+              }
+              
+              if (dest && dest[0]) {
+                const pageRef = dest[0];
+                const pageIndex = await pdf.getPageIndex(pageRef);
+                pageNumber = pageIndex + 1; // Convert 0-based to 1-based
+              }
+            }
+            
+            // Add heading if we have a valid page number
+            if (pageNumber) {
+              headingsList.push({
+                title: item.title || 'Untitled',
+                page: pageNumber,
+                level: level
+              });
+            }
+            
+            // Process children recursively
+            if (item.items && item.items.length > 0) {
+              const childHeadings = await processOutlineItems(item.items, level + 1);
+              headingsList.push(...childHeadings);
+            }
+          } catch (err) {
+            console.warn('Error processing outline item:', err);
+          }
+        }
+        
+        return headingsList;
+      };
+      
+      const extractedHeadings = await processOutlineItems(outline);
+      console.log('Extracted headings from PDF:', extractedHeadings);
+      setHeadings(extractedHeadings);
+      
+    } catch (error) {
+      console.error('Error extracting PDF outline:', error);
+      setHeadings([]);
+    }
   };
 
   // Handle PDF load success
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
+  const onDocumentLoadSuccess = (pdf) => {
+    setNumPages(pdf.numPages);
     setCurrentPage(1);
     setIsLoading(false);
     setError(null);
-    extractHeadings({ numPages });
+    setPdfDocument(pdf);
+    extractHeadings(pdf);
   };
 
   // Handle PDF load error

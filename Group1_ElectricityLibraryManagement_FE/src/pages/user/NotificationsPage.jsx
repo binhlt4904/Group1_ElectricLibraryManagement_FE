@@ -1,53 +1,27 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Container, Row, Col, Card, Button, Badge, ButtonGroup, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, ButtonGroup, Alert, Spinner, ListGroup } from 'react-bootstrap';
 import {
   Bell, BellFill, BookFill, CalendarEvent, ExclamationTriangleFill,
   Trash, Check, Filter
 } from 'react-bootstrap-icons';
 import styles from './NotificationsPage.module.css';
-import useNotificationStore, { notificationTypeConfig } from '../../stores/notificationStore';
+import { NotificationContext } from '../../components/contexts/NotificationContext';
+import NotificationItem from '../../components/notifications/NotificationItem';
 import UserContext from '../../components/contexts/UserContext';
 
 const NotificationsPage = () => {
   const { user } = useContext(UserContext);
   const {
     notifications,
-    isLoading,
-    error,
-    fetchNotifications,
-    markAsReadAPI,
-    markAllAsReadAPI,
-    deleteNotificationAPI,
-    deleteAllNotificationsAPI,
-    connectWebSocket,
-    disconnectWebSocket,
-    getNotificationConfig
-  } = useNotificationStore();
+    loading,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
+  } = useContext(NotificationContext);
 
   const [filteredNotifications, setFilteredNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize] = useState(10);
-
-  // Fetch notifications on mount and connect WebSocket
-  useEffect(() => {
-    if (user?.id) {
-      // Fetch initial notifications
-      fetchNotifications(user.id, page, pageSize).catch(err => {
-        console.error('Failed to fetch notifications:', err);
-      });
-
-      // Connect to WebSocket for real-time updates
-      connectWebSocket(user.id);
-
-      // Cleanup on unmount
-      return () => {
-        disconnectWebSocket();
-      };
-    }
-  }, [user?.id, fetchNotifications, connectWebSocket, disconnectWebSocket, page, pageSize]);
 
   // Filter notifications
   useEffect(() => {
@@ -60,12 +34,6 @@ const NotificationsPage = () => {
       case 'read':
         filtered = notifications.filter(n => n.isRead);
         break;
-      case 'high_priority':
-        filtered = notifications.filter(n => {
-          const config = getNotificationConfig(n.notificationType);
-          return config.priority === 'high';
-        });
-        break;
       case 'NEW_BOOK':
       case 'NEW_EVENT':
       case 'REMINDER':
@@ -77,7 +45,7 @@ const NotificationsPage = () => {
     }
 
     setFilteredNotifications(filtered);
-  }, [notifications, filter, getNotificationConfig]);
+  }, [notifications, filter]);
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -94,17 +62,16 @@ const NotificationsPage = () => {
     }
   };
 
-  const getPriorityBadge = (type) => {
-    const config = getNotificationConfig(type);
-    const priority = config.priority;
-
-    switch (priority) {
-      case 'high':
-        return <Badge bg="danger" className={styles.priorityBadge}>High</Badge>;
-      case 'medium':
-        return <Badge bg="warning" className={styles.priorityBadge}>Medium</Badge>;
-      case 'low':
-        return <Badge bg="info" className={styles.priorityBadge}>Low</Badge>;
+  const getTypeBadge = (type) => {
+    switch (type) {
+      case 'NEW_BOOK':
+        return <Badge bg="primary" className={styles.typeBadge}>New Book</Badge>;
+      case 'NEW_EVENT':
+        return <Badge bg="success" className={styles.typeBadge}>Event</Badge>;
+      case 'REMINDER':
+        return <Badge bg="warning" className={styles.typeBadge}>Reminder</Badge>;
+      case 'OVERDUE':
+        return <Badge bg="danger" className={styles.typeBadge}>Overdue</Badge>;
       default:
         return null;
     }
@@ -126,56 +93,17 @@ const NotificationsPage = () => {
   };
 
   const handleMarkAsRead = async (id) => {
-    try {
-      await markAsReadAPI(id);
-      showAlertMessage('Notification marked as read');
-    } catch (error) {
-      showAlertMessage('Failed to mark notification as read');
-      console.error('Error:', error);
-    }
+    await markAsRead(id);
   };
 
   const handleDelete = async (id) => {
-    try {
-      await deleteNotificationAPI(id);
-      showAlertMessage('Notification deleted');
-    } catch (error) {
-      showAlertMessage('Failed to delete notification');
-      console.error('Error:', error);
-    }
+    await deleteNotification(id);
   };
 
   const handleMarkAllAsRead = async () => {
-    try {
-      if (user?.id) {
-        await markAllAsReadAPI(user.id);
-        showAlertMessage('All notifications marked as read');
-      }
-    } catch (error) {
-      showAlertMessage('Failed to mark all notifications as read');
-      console.error('Error:', error);
-    }
+    await markAllAsRead();
   };
 
-  const handleClearAll = async () => {
-    try {
-      if (user?.id) {
-        await deleteAllNotificationsAPI(user.id);
-        showAlertMessage('All notifications have been cleared');
-      }
-    } catch (error) {
-      showAlertMessage('Failed to clear notifications');
-      console.error('Error:', error);
-    }
-  };
-
-  const showAlertMessage = (message) => {
-    setAlertMessage(message);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-  };
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <div className={styles.notificationsPage}>
@@ -208,26 +136,12 @@ const NotificationsPage = () => {
                   <Check className="me-1" />
                   Mark All Read
                 </Button>
-                <Button
-                  variant="outline-danger"
-                  onClick={handleClearAll}
-                  disabled={notifications.length === 0}
-                >
-                  <Trash className="me-1" />
-                  Clear All
-                </Button>
               </div>
             </div>
           </Col>
         </Row>
 
-        {showAlert && (
-          <Alert variant="success" className={styles.alert}>
-            {alertMessage}
-          </Alert>
-        )}
-
-        {isLoading && (
+        {loading && (
           <Alert variant="info" className={styles.alert}>
             <Spinner animation="border" size="sm" className="me-2" />
             Loading notifications...
@@ -264,13 +178,6 @@ const NotificationsPage = () => {
                     size="sm"
                   >
                     Read ({notifications.filter(n => n.isRead).length})
-                  </Button>
-                  <Button
-                    variant={filter === 'high_priority' ? 'primary' : 'outline-primary'}
-                    onClick={() => setFilter('high_priority')}
-                    size="sm"
-                  >
-                    High Priority
                   </Button>
                   <Button
                     variant={filter === 'NEW_BOOK' ? 'primary' : 'outline-primary'}
@@ -323,69 +230,16 @@ const NotificationsPage = () => {
                 </Card.Body>
               </Card>
             ) : (
-              <div className={styles.notificationsList}>
-                {filteredNotifications.map(notification => (
-                  <Card
-                    key={notification.id}
-                    className={`custom-card ${styles.notificationCard} ${notification.isRead ? '' : styles.unread}`}
-                  >
-                    <Card.Body className={styles.notificationBody}>
-                      <div className={styles.notificationContent}>
-                        <div className={styles.notificationIcon}>
-                          {getNotificationIcon(notification.notificationType)}
-                        </div>
-                        <div className={styles.notificationDetails}>
-                          <div className={styles.notificationHeader}>
-                            <h5 className={styles.notificationTitle}>
-                              {notification.title}
-                              {!notification.isRead && <div className={styles.unreadDot}></div>}
-                            </h5>
-                            <div className={styles.notificationMeta}>
-                              {getPriorityBadge(notification.notificationType)}
-                              <span className={styles.timestamp}>
-                                {formatTimestamp(notification.createdAt)}
-                              </span>
-                            </div>
-                          </div>
-                          <p className={styles.notificationMessage}>
-                            {notification.message}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={styles.notificationActions}>
-                        {notification.isRead ? (
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            disabled
-                            className={styles.actionButton}
-                          >
-                            Read
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            className={styles.actionButton}
-                          >
-                            <Check className="me-1" />
-                            Mark Read
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDelete(notification.id)}
-                          className={styles.actionButton}
-                        >
-                          <Trash />
-                        </Button>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                ))}
-              </div>
+              <Card className={`custom-card ${styles.notificationsList}`}>
+                <ListGroup variant="flush">
+                  {filteredNotifications.map(notification => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                    />
+                  ))}
+                </ListGroup>
+              </Card>
             )}
           </Col>
         </Row>

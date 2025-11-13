@@ -176,6 +176,21 @@ const EventsListPage = () => {
     return colors[category] || 'secondary';
   };
 
+  const getStatusVariant = (status) => {
+    switch ((status || '').toUpperCase()) {
+      case 'UPCOMING':
+        return 'success';
+      case 'ONGOING':
+        return 'info';
+      case 'COMPLETED':
+        return 'secondary';
+      case 'CANCELLED':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Date TBD';
     const date = new Date(dateString);
@@ -308,10 +323,10 @@ const EventsListPage = () => {
                       {event.title}
                     </Card.Title>
                     <Badge 
-                      bg={getAvailabilityStatus(event.registered, event.capacity).variant}
+                      bg={getStatusVariant(event.status)}
                       className={styles.availabilityBadge}
                     >
-                      {getAvailabilityStatus(event.registered, event.capacity).text}
+                      {(event.status || 'UPCOMING').toString().toUpperCase()}
                     </Badge>
                   </div>
                   
@@ -364,16 +379,6 @@ const EventsListPage = () => {
                       View Details
                       <ChevronRight className="ms-1" />
                     </Button>
-                    {event.capacity && (
-                      <Button 
-                        variant="primary" 
-                        size="sm"
-                        className={styles.actionButton}
-                        disabled={event.registered >= event.capacity}
-                      >
-                        {event.registered >= event.capacity ? 'Full' : 'Register'}
-                      </Button>
-                    )}
                   </div>
                 </Card.Body>
               </Card>

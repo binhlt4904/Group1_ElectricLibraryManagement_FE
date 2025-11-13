@@ -1,0 +1,134 @@
+/* Notification Bell Container */
+.notificationBellContainer {
+  position: relative;
+  display: inline-block;
+}
+
+/* Notification Button */
+.notificationButton {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.notificationButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.notificationButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+/* Bell Container */
+.bellContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Bell Icon */
+.bellIcon {
+  color: #495057;
+  transition: color 0.2s ease;
+}
+
+.notificationButton:hover .bellIcon {
+  color: #0d6efd;
+}
+
+/* Unread Badge */
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 5px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Shake Animation */
+.shake {
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+  20%, 40%, 60%, 80% { transform: rotate(10deg); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Dropdown Menu */
+.dropdownMenu {
+  min-width: 380px;
+  max-width: 450px;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid #dee2e6;
+  margin-top: 8px;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dropdownMenu {
+    min-width: 320px;
+    max-width: 95vw;
+    max-height: 80vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdownMenu {
+    min-width: 280px;
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: 60px !important;
+  }
+
+  .notificationButton {
+    padding: 6px 10px;
+  }
+
+  .bellIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+}

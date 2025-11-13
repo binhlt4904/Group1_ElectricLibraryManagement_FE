@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import UserContext from '../../components/contexts/UserContext';
 import { 
   Container, 
   Row, 
@@ -27,6 +28,8 @@ import {
 } from 'react-bootstrap-icons';
 import { Spinner } from 'react-bootstrap';
 import eventAPI from '../../api/event';
+import eventRegistrationAPI from '../../api/eventRegistration';
+import profileApi from '../../api/user/profile';
 import styles from './EventDetailPage.module.css';
 
 // Backend base URL for image display
@@ -42,6 +45,7 @@ const getImageUrl = (imageUrl) => {
 const EventDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(UserContext) || {};
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,15 +53,49 @@ const EventDetailPage = () => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [registrationForm, setRegistrationForm] = useState({
-    name: '',
-    email: '',
+    name: user?.fullName || '',
+    email: user?.email || '',
     phone: '',
     specialRequests: ''
   });
 
+  // Update registration form when user info changes
+  useEffect(() => {
+    if (user) {
+      setRegistrationForm(prev => ({
+        ...prev,
+        name: user.fullName || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user]);
+
+  // Prefill from profile when modal opens
+  useEffect(() => {
+    let mounted = true;
+    if (showRegistrationModal) {
+      (async () => {
+        try {
+          const profile = await profileApi.get();
+          if (!mounted || !profile) return;
+          setRegistrationForm(prev => ({
+            ...prev,
+            name: profile.fullName || prev.name || '',
+            email: profile.email || prev.email || '',
+            phone: profile.phone || prev.phone || ''
+          }));
+        } catch (e) {
+          // ignore prefill error
+        }
+      })();
+    }
+    return () => { mounted = false; };
+  }, [showRegistrationModal]);
+
   // Fetch event data from API
   useEffect(() => {
     fetchEventDetails();
+    checkRegistrationStatus();
   }, [id]);
 
   const fetchEventDetails = async () => {
@@ -71,6 +109,17 @@ const EventDetailPage = () => {
       setError('Failed to load event details. The event may not exist.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const checkRegistrationStatus = async () => {
+    try {
+      const response = await eventRegistrationAPI.isUserRegistered(id);
+      const value = response?.data?.isRegistered ?? response?.data?.data?.isRegistered ?? response?.data?.data ?? response?.data;
+      setIsRegistered(Boolean(value));
+    } catch (err) {
+      console.error('Error checking registration status:', err);
+      setIsRegistered(false);
     }
   };
 
@@ -159,21 +208,61 @@ Refreshments will be provided during the break.`,
     return { text: 'Available', variant: 'success', canRegister: true };
   };
 
-  const handleRegistration = () => {
+  const getStatusVariant = (status) => {
+    switch ((status || '').toUpperCase()) {
+      case 'UPCOMING':
+        return 'success';
+      case 'ONGOING':
+        return 'info';
+      case 'COMPLETED':
+        return 'secondary';
+      case 'CANCELLED':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const handleRegistration = async () => {
     if (isRegistered) {
       // Handle unregistration
-      setIsRegistered(false);
+      try {
+        await eventRegistrationAPI.cancelRegistration(id);
+        setIsRegistered(false);
+        alert('Registration cancelled successfully');
+      } catch (error) {
+        console.error('Error cancelling registration:', error);
+        alert('Failed to cancel registration');
+      }
     } else {
       setShowRegistrationModal(true);
     }
   };
 
-  const handleRegistrationSubmit = (e) => {
+  const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    setIsRegistered(true);
-    setShowRegistrationModal(false);
-    setRegistrationForm({ name: '', email: '', phone: '', specialRequests: '' });
+    try {
+      const registrationData = {
+        fullName: registrationForm.name,
+        email: registrationForm.email,
+        phone: registrationForm.phone,
+        specialRequests: registrationForm.specialRequests
+      };
+      
+      await eventRegistrationAPI.registerForEvent(id, registrationData);
+      setIsRegistered(true);
+      setShowRegistrationModal(false);
+      setRegistrationForm({ name: '', email: '', phone: '', specialRequests: '' });
+      alert('Successfully registered for event');
+    } catch (error) {
+      console.error('Error registering for event:', error);
+      const msg = error.response?.data?.message || error.message || '';
+      if (/already registered/i.test(msg)) {
+        setIsRegistered(true);
+        setShowRegistrationModal(false);
+      }
+      alert('Failed to register for event: ' + msg);
+    }
   };
 
   const handleShare = () => {
@@ -303,14 +392,12 @@ Refreshments will be provided during the break.`,
                 {/* Event Header */}
                 <div className={styles.eventHeader}>
                   <h1 className={styles.eventTitle}>{eventData.title}</h1>
-                  {eventData.capacity && (
-                    <Badge 
-                      bg={availabilityStatus.variant}
-                      className={styles.availabilityBadge}
-                    >
-                      {availabilityStatus.text}
-                    </Badge>
-                  )}
+                  <Badge 
+                    bg={getStatusVariant(eventData.status)}
+                    className={styles.availabilityBadge}
+                  >
+                    {(eventData.status || 'UPCOMING').toString().toUpperCase()}
+                  </Badge>
                 </div>
 
                 {/* Event Details */}
@@ -437,14 +524,18 @@ Refreshments will be provided during the break.`,
 
                 <div className={styles.registrationActions}>
                   <Button
-                    variant={isRegistered ? "outline-danger" : "primary"}
+                    variant={isRegistered ? "success" : "primary"}
                     size="lg"
                     onClick={handleRegistration}
-                    disabled={!availabilityStatus.canRegister && !isRegistered}
+                    disabled={isRegistered || (!availabilityStatus.canRegister && !isRegistered)}
                     className={styles.registrationButton}
                   >
-                    {isRegistered ? 'Cancel Registration' : 
-                     !availabilityStatus.canRegister ? 'Event Full' : 'Register Now'}
+                    {isRegistered ? (
+                      <>
+                        <CheckCircle className="me-2" />
+                        Already Registered
+                      </>
+                    ) : !availabilityStatus.canRegister ? 'Event Full' : 'Register Now'}
                   </Button>
                 </div>
 
@@ -508,45 +599,57 @@ Refreshments will be provided during the break.`,
         </Modal.Header>
         <Form onSubmit={handleRegistrationSubmit}>
           <Modal.Body>
+            <Alert variant="info" className="mb-4">
+              <strong>Note:</strong> Your Full Name and Email Address are pre-filled from your account information. You can edit them if needed.
+            </Alert>
+            
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Full Name *</Form.Label>
+                  <Form.Label>Full Name <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     required
                     value={registrationForm.name}
                     onChange={(e) => setRegistrationForm({...registrationForm, name: e.target.value})}
+                    placeholder="Enter your full name"
                   />
+                  <Form.Text className="text-muted">From your account profile</Form.Text>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Email Address *</Form.Label>
+                  <Form.Label>Email Address <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="email"
                     required
                     value={registrationForm.email}
                     onChange={(e) => setRegistrationForm({...registrationForm, email: e.target.value})}
+                    placeholder="Enter your email address"
                   />
+                  <Form.Text className="text-muted">From your account profile</Form.Text>
                 </Form.Group>
               </Col>
             </Row>
+            
             <Form.Group className="mb-3">
               <Form.Label>Phone Number</Form.Label>
               <Form.Control
                 type="tel"
                 value={registrationForm.phone}
                 onChange={(e) => setRegistrationForm({...registrationForm, phone: e.target.value})}
+                placeholder="Enter your phone number (optional)"
               />
             </Form.Group>
+            
             <Form.Group className="mb-3">
               <Form.Label>Special Requests or Questions</Form.Label>
               <Form.Control
                 as="textarea"
-                rows={3}
+                rows={4}
                 value={registrationForm.specialRequests}
                 onChange={(e) => setRegistrationForm({...registrationForm, specialRequests: e.target.value})}
+                placeholder="Tell us about any special requests, dietary restrictions, accessibility needs, or questions about the event..."
               />
             </Form.Group>
           </Modal.Body>

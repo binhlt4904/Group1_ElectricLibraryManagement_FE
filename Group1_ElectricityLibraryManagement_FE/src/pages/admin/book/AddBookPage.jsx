@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./BooksManagementPage.module.css";
-import categoryApi from "../../../api/category";
-import authorApi from "../../../api/author";
-import publisherApi from "../../../api/publisher";
 import bookApi from "../../../api/book";
+import authorApi from "../../../api/author";
+import categoryApi from "../../../api/category";
+import publisherApi from "../../../api/publisher";
+import notificationAPI from "../../../api/notification";
 
 const AddBookPage = () => {
   const [formData, setFormData] = useState({
@@ -78,7 +79,18 @@ const AddBookPage = () => {
     }
 
     try {
-      await bookApi.addBook(data);
+      const response = await bookApi.addBook(data);
+
+      // Send notification to all users about the new book
+      try {
+        if (response.data && response.data.id) {
+          await notificationAPI.sendNewBookNotification(response.data.id, formData.title);
+          console.log('Book notification sent successfully');
+        }
+      } catch (notifError) {
+        console.error('Failed to send book notification:', notifError);
+        // Don't fail the book creation if notification fails
+      }
 
       setSuccessMessage("Add Book Successfully!");
       setFormData({

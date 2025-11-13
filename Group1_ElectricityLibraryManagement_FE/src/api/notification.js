@@ -9,7 +9,7 @@ const notificationAPI = {
    * @returns {Promise} Paginated notifications
    */
   getUserNotifications: (userId, page = 0, size = 10) => {
-    return axiosClient.get(`/api/v1/admin/notifications/user/${userId}`, {
+    return axiosClient.get(`/api/v1/user/notifications/user/${userId}`, {
       params: { page, size }
     });
   },
@@ -20,7 +20,7 @@ const notificationAPI = {
    * @returns {Promise} Unread count
    */
   getUnreadCount: (userId) => {
-    return axiosClient.get(`/api/v1/admin/notifications/user/${userId}/unread-count`);
+    return axiosClient.get(`/api/v1/user/notifications/user/${userId}/unread-count`);
   },
 
   /**
@@ -31,7 +31,7 @@ const notificationAPI = {
    * @returns {Promise} Unread notifications
    */
   getUnreadNotifications: (userId, page = 0, size = 10) => {
-    return axiosClient.get(`/api/v1/admin/notifications/user/${userId}/unread`, {
+    return axiosClient.get(`/api/v1/user/notifications/user/${userId}/unread`, {
       params: { page, size }
     });
   },
@@ -42,7 +42,7 @@ const notificationAPI = {
    * @returns {Promise} Updated notification
    */
   markAsRead: (notificationId) => {
-    return axiosClient.put(`/api/v1/admin/notifications/${notificationId}/read`);
+    return axiosClient.put(`/api/v1/user/notifications/${notificationId}/read`);
   },
 
   /**
@@ -51,7 +51,7 @@ const notificationAPI = {
    * @returns {Promise} Response
    */
   markAllAsRead: (userId) => {
-    return axiosClient.put(`/api/v1/admin/notifications/user/${userId}/read-all`);
+    return axiosClient.put(`/api/v1/user/notifications/user/${userId}/read-all`);
   },
 
   /**
@@ -60,7 +60,7 @@ const notificationAPI = {
    * @returns {Promise} Response
    */
   deleteNotification: (notificationId) => {
-    return axiosClient.delete(`/api/v1/admin/notifications/${notificationId}`);
+    return axiosClient.delete(`/api/v1/user/notifications/${notificationId}`);
   },
 
   /**
@@ -69,7 +69,7 @@ const notificationAPI = {
    * @returns {Promise} Response
    */
   deleteAllNotifications: (userId) => {
-    return axiosClient.delete(`/api/v1/admin/notifications/user/${userId}`);
+    return axiosClient.delete(`/api/v1/user/notifications/user/${userId}`);
   },
 
   /**
@@ -81,27 +81,33 @@ const notificationAPI = {
    * @returns {Promise} Filtered notifications
    */
   getNotificationsByType: (userId, type, page = 0, size = 10) => {
-    return axiosClient.get(`/api/v1/admin/notifications/user/${userId}/type/${type}`, {
+    return axiosClient.get(`/api/v1/user/notifications/user/${userId}/type/${type}`, {
       params: { page, size }
     });
   },
 
   /**
    * Send a new book notification (Admin only)
-   * @param {Object} data - Notification data
+   * @param {number} bookId - Book ID
+   * @param {string} bookTitle - Book title
    * @returns {Promise} Response
    */
-  sendNewBookNotification: (data) => {
-    return axiosClient.post('/api/v1/admin/notifications/new-book', data);
+  sendNewBookNotification: (bookId, bookTitle) => {
+    return axiosClient.post('/api/v1/admin/notifications/new-book', null, {
+      params: { bookId, bookTitle }
+    });
   },
 
   /**
    * Send a new event notification (Admin only)
-   * @param {Object} data - Notification data
+   * @param {number} eventId - Event ID
+   * @param {string} eventTitle - Event title
    * @returns {Promise} Response
    */
-  sendNewEventNotification: (data) => {
-    return axiosClient.post('/api/v1/admin/notifications/new-event', data);
+  sendNewEventNotification: (eventId, eventTitle) => {
+    return axiosClient.post('/api/v1/admin/notifications/new-event', null, {
+      params: { eventId, eventTitle }
+    });
   }
 };
 

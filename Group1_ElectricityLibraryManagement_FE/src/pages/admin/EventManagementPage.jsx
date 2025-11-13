@@ -27,6 +27,7 @@ import {
   PersonFill
 } from 'react-bootstrap-icons';
 import eventAPI from '../../api/event';
+import notificationAPI from '../../api/notification';
 import styles from './EventManagementPage.module.css';
 
 // Backend base URL for image display
@@ -71,11 +72,31 @@ const EventManagementPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [statistics, setStatistics] = useState({
+    upcomingEvents: 0,
+    totalRegistrations: 0,
+    ongoingEvents: 0,
+    avgAttendance: 0
+  });
 
-  // Fetch events from API
+  // Fetch events and statistics from API
   useEffect(() => {
     fetchEvents();
+    fetchStatistics();
   }, [currentPage, pageSize]); // Re-fetch when page or page size changes
+
+  const fetchStatistics = async () => {
+    try {
+      const response = await eventAPI.getEventStatistics();
+      if (response.data && response.data.data) {
+        setStatistics(response.data.data);
+        console.log('📊 Event statistics loaded:', response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching event statistics:', error);
+      // Keep default values if fetch fails
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -226,6 +247,7 @@ const EventManagementPage = () => {
       setShowDeleteModal(false);
       setEventToDelete(null);
       await fetchEvents();
+      await fetchStatistics(); // Refresh statistics after deleting event
     } catch (err) {
       console.error('Error deleting event:', err);
       setError('Failed to delete event. Please try again.');
@@ -275,14 +297,35 @@ const EventManagementPage = () => {
       if (newEvent.location) formData.append('location', newEvent.location);
       if (newEvent.category) formData.append('category', newEvent.category);
       if (newEvent.capacity) formData.append('capacity', parseInt(newEvent.capacity));
-      if (newEvent.status) formData.append('status', newEvent.status);
       
       // Append image file if selected
       if (newEvent.image) {
         formData.append('image', newEvent.image);
       }
 
-      await eventAPI.createEvent(formData);
+      const response = await eventAPI.createEvent(formData);
+      
+      // Send notification to all users about the new event
+      try {
+        // Handle both response structures: response.data.data.id or response.data.id
+        const eventId = response.data?.data?.id || response.data?.id;
+        
+        console.log('=== CREATE EVENT DEBUG ===');
+        console.log('Response structure:', response.data);
+        console.log('Extracted event ID:', eventId);
+        
+        if (eventId) {
+          await notificationAPI.sendNewEventNotification(eventId, newEvent.title);
+          console.log('✅ Event notification sent successfully for event ID:', eventId);
+        } else {
+          console.warn('⚠️ Event created but ID not found in response:', response.data);
+        }
+      } catch (notifError) {
+        console.error('❌ Failed to send event notification:', notifError);
+        console.error('Error details:', notifError.response?.data);
+        // Don't fail the event creation if notification fails
+      }
+      
       setShowCreateModal(false);
       setNewEvent({
         title: '',
@@ -298,6 +341,7 @@ const EventManagementPage = () => {
       });
       setImagePreview(null);
       await fetchEvents();
+      await fetchStatistics(); // Refresh statistics after creating event
     } catch (err) {
       console.error('Error creating event:', err);
       console.error('Error response:', err.response?.data);
@@ -445,21 +489,38 @@ const EventManagementPage = () => {
       if (editingEvent.capacity) {
         formData.append('capacity', editingEvent.capacity);
       }
-      if (editingEvent.status) {
-        formData.append('status', editingEvent.status);
-      }
 
       // Add image file if a new one was selected
       if (editingEvent.image) {
         formData.append('image', editingEvent.image);
       }
 
-      await eventAPI.updateEvent(editingEvent.id, formData);
+      const response = await eventAPI.updateEvent(editingEvent.id, formData);
+
+      // Send notification to all users about the event update
+      try {
+        // Handle both response structures and fallback to editingEvent.id
+        const eventId = response.data?.data?.id || response.data?.id || editingEvent.id;
+        
+        console.log('=== UPDATE EVENT DEBUG ===');
+        console.log('Response structure:', response.data);
+        console.log('Extracted event ID:', eventId);
+        
+        if (eventId) {
+          await notificationAPI.sendNewEventNotification(eventId, editingEvent.title);
+          console.log('✅ Event update notification sent successfully for event ID:', eventId);
+        }
+      } catch (notifError) {
+        console.error('❌ Failed to send event update notification:', notifError);
+        console.error('Error details:', notifError.response?.data);
+        // Don't fail the update if notification fails
+      }
 
       setShowEditModal(false);
       setEditingEvent(null);
       setEditImagePreview(null);
       await fetchEvents();
+      await fetchStatistics(); // Refresh statistics after updating event
     } catch (err) {
       console.error('Error updating event:', err);
       console.error('Error response:', err.response?.data);
@@ -561,7 +622,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {(events.length > 0 ? events : mockEvents).filter(e => e.status === 'upcoming').length}
+                    {statistics.upcomingEvents}
                   </div>
                   <div className={styles.statLabel}>Upcoming Events</div>
                 </div>
@@ -578,7 +639,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {(events.length > 0 ? events : mockEvents).reduce((sum, e) => sum + (e.registered || 0), 0)}
+                    {statistics.totalRegistrations}
                   </div>
                   <div className={styles.statLabel}>Total Registrations</div>
                 </div>
@@ -595,7 +656,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {(events.length > 0 ? events : mockEvents).filter(e => e.status === 'ongoing').length}
+                    {statistics.ongoingEvents}
                   </div>
                   <div className={styles.statLabel}>Ongoing Events</div>
                 </div>
@@ -612,7 +673,7 @@ const EventManagementPage = () => {
                 </div>
                 <div className={styles.statInfo}>
                   <div className={styles.statValue}>
-                    {(events.length > 0 ? events : mockEvents).length > 0 ? Math.round((events.length > 0 ? events : mockEvents).reduce((sum, e) => sum + ((e.registered || 0) / (e.capacity || 1)), 0) / (events.length > 0 ? events : mockEvents).length * 100) : 0}%
+                    {statistics.avgAttendance}%
                   </div>
                   <div className={styles.statLabel}>Avg. Attendance</div>
                 </div>
@@ -1238,22 +1299,7 @@ const EventManagementPage = () => {
               </Col>
             </Row>
 
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
-                  <Form.Select
-                    value={newEvent.status}
-                    onChange={(e) => setNewEvent({ ...newEvent, status: e.target.value })}
-                  >
-                    <option value="upcoming">Upcoming</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
+            {/* Status is auto-managed by backend (upcoming -> ongoing -> completed). Field removed from form. */}
 
             <Row>
               <Col md={12}>
@@ -1414,20 +1460,7 @@ const EventManagementPage = () => {
               </Row>
 
               <Row>
-                <Col md={12}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Status</Form.Label>
-                    <Form.Select
-                      value={editingEvent.status}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
-                    >
-                      <option value="upcoming">Upcoming</option>
-                      <option value="ongoing">Ongoing</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
+                {/* Status is auto-managed by backend; not editable here. */}
               </Row>
 
               <Row>
